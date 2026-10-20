@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
 
-String errorMessage(Object error) =>
-    error is ApiException ? error.message : 'Une erreur est survenue. Réessayez.';
+String errorMessage(Object error) => error is ApiException ? error.message : 'Une erreur est survenue. Réessayez.';
 
 void showError(BuildContext context, Object error) {
   ScaffoldMessenger.of(context)
@@ -19,13 +18,7 @@ void showInfo(BuildContext context, String message) {
 
 /// Gros bouton qui affiche un indicateur pendant l'action et montre l'erreur éventuelle.
 class BusyButton extends StatefulWidget {
-  const BusyButton({
-    super.key,
-    required this.label,
-    required this.onPressed,
-    this.icon,
-    this.outlined = false,
-  });
+  const BusyButton({super.key, required this.label, required this.onPressed, this.icon, this.outlined = false});
 
   final String label;
   final IconData? icon;
@@ -100,13 +93,16 @@ class _LoaderState<T> extends State<Loader<T>> {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                const Icon(Icons.cloud_off, size: 48),
-                const SizedBox(height: 12),
-                Text(errorMessage(snapshot.error!), textAlign: TextAlign.center),
-                const SizedBox(height: 12),
-                OutlinedButton(onPressed: _reload, child: const Text('Réessayer')),
-              ]),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.cloud_off, size: 48),
+                  const SizedBox(height: 12),
+                  Text(errorMessage(snapshot.error!), textAlign: TextAlign.center),
+                  const SizedBox(height: 12),
+                  OutlinedButton(onPressed: _reload, child: const Text('Réessayer')),
+                ],
+              ),
             ),
           );
         }
@@ -127,15 +123,15 @@ class PinField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => TextField(
-        controller: controller,
-        autofocus: autofocus,
-        obscureText: true,
-        keyboardType: TextInputType.number,
-        maxLength: 6,
-        textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 24, letterSpacing: 12),
-        decoration: InputDecoration(labelText: label, counterText: '', border: const OutlineInputBorder()),
-      );
+    controller: controller,
+    autofocus: autofocus,
+    obscureText: true,
+    keyboardType: TextInputType.number,
+    maxLength: 6,
+    textAlign: TextAlign.center,
+    style: const TextStyle(fontSize: 24, letterSpacing: 12),
+    decoration: InputDecoration(labelText: label, counterText: ''),
+  );
 }
 
 class InfoRow extends StatelessWidget {
@@ -147,18 +143,23 @@ class InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          if (icon != null) ...[Icon(icon, size: 20), const SizedBox(width: 8)],
-          Expanded(child: Text(label, style: Theme.of(context).textTheme.bodyMedium)),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(value,
-                textAlign: TextAlign.end,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (icon != null) ...[Icon(icon, size: 20), const SizedBox(width: 8)],
+        Expanded(child: Text(label, style: Theme.of(context).textTheme.bodyMedium)),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
-        ]),
-      );
+        ),
+      ],
+    ),
+  );
 }
 
 /// Rappel affiché là où l'on parle d'argent.

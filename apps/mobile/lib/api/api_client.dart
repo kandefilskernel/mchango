@@ -27,8 +27,7 @@ class ApiClient {
   /// Rouvre la session ; renvoie false si impossible (l'utilisateur doit se reconnecter).
   Future<bool> Function()? onUnauthorized;
 
-  Future<dynamic> get(String path, {Map<String, String>? query}) =>
-      _send('GET', path, query: query);
+  Future<dynamic> get(String path, {Map<String, String>? query}) => _send('GET', path, query: query);
 
   Future<dynamic> post(String path, [Object? body]) => _send('POST', path, body: body ?? {});
 
@@ -44,8 +43,7 @@ class ApiClient {
     bool retried = false,
   }) async {
     final uri = Uri.parse('$baseUrl$path').replace(queryParameters: query);
-    final request = http.Request(method, uri)
-      ..headers['Accept'] = 'application/json';
+    final request = http.Request(method, uri)..headers['Accept'] = 'application/json';
     if (accessToken != null) request.headers['Authorization'] = 'Bearer $accessToken';
     if (body != null) {
       request.headers['Content-Type'] = 'application/json';
@@ -54,9 +52,7 @@ class ApiClient {
 
     final http.Response response;
     try {
-      response = await http.Response.fromStream(
-        await _http.send(request).timeout(const Duration(seconds: 20)),
-      );
+      response = await http.Response.fromStream(await _http.send(request).timeout(const Duration(seconds: 20)));
     } catch (_) {
       throw ApiException(0, 'Pas de connexion. Vérifiez le réseau et réessayez.');
     }
@@ -70,8 +66,11 @@ class ApiClient {
     final text = utf8.decode(response.bodyBytes);
     final decoded = text.isEmpty ? null : jsonDecode(text);
     if (response.statusCode >= 400) {
-      throw ApiException(response.statusCode, _messageOf(decoded),
-          body: decoded is Map<String, dynamic> ? decoded : null);
+      throw ApiException(
+        response.statusCode,
+        _messageOf(decoded),
+        body: decoded is Map<String, dynamic> ? decoded : null,
+      );
     }
     return decoded;
   }

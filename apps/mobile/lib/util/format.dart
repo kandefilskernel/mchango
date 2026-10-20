@@ -36,11 +36,7 @@ String formatDate(String isoDate) {
 
 String formatDateTime(DateTime t) => DateFormat('dd/MM/yyyy HH:mm').format(t.toLocal());
 
-const frequencyLabels = {
-  'daily': 'Chaque jour',
-  'weekly': 'Chaque semaine',
-  'monthly': 'Chaque mois',
-};
+const frequencyLabels = {'daily': 'Chaque jour', 'weekly': 'Chaque semaine', 'monthly': 'Chaque mois'};
 
 const methodLabels = {
   'mpesa': 'M-Pesa',
@@ -57,12 +53,7 @@ const groupStatusLabels = {
   'closed': 'Terminé',
 };
 
-const cycleStatusLabels = {
-  'upcoming': 'À venir',
-  'open': 'En cours',
-  'completed': 'Terminé',
-  'cancelled': 'Annulé',
-};
+const cycleStatusLabels = {'upcoming': 'À venir', 'open': 'En cours', 'completed': 'Terminé', 'cancelled': 'Annulé'};
 
 /// Statut d'une cotisation : libellé, couleur, icône (lisible même sans savoir lire).
 class StatusStyle {

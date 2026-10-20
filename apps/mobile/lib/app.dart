@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'auth/auth_repository.dart';
@@ -5,11 +7,16 @@ import 'services.dart';
 import 'ui/auth/sign_in_flow.dart';
 import 'ui/auth/unlock_screen.dart';
 import 'ui/groups/home_screen.dart';
+import 'ui/onboarding/onboarding_screen.dart';
+import 'ui/theme.dart';
 
 class MchangoApp extends StatefulWidget {
   const MchangoApp({super.key, required this.services});
 
   final AppServices services;
+
+  /// Durée minimale de l'écran de démarrage, pour qu'on ait le temps de voir l'image.
+  static const splashDuration = Duration(milliseconds: 1500);
 
   @override
   State<MchangoApp> createState() => _MchangoAppState();
@@ -22,6 +29,11 @@ class _MchangoAppState extends State<MchangoApp> with WidgetsBindingObserver {
 
   /// Après ce délai en arrière-plan, l'app redemande le PIN.
   static const _relockAfter = Duration(minutes: 2);
+  static const _kOnboardingDone = 'onboarding_done';
+
+  bool _splashDone = false;
+  bool? _onboardingDone;
+  Timer? _splashTimer;
 
   AuthRepository get _auth => widget.services.auth;
 
@@ -30,13 +42,21 @@ class _MchangoAppState extends State<MchangoApp> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _auth.addListener(_onAuthChanged);
+    _splashTimer = Timer(MchangoApp.splashDuration, () => setState(() => _splashDone = true));
+    widget.services.store.read(_kOnboardingDone).then((v) => setState(() => _onboardingDone = v == '1'));
   }
 
   @override
   void dispose() {
+    _splashTimer?.cancel();
     _auth.removeListener(_onAuthChanged);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  Future<void> _finishOnboarding() async {
+    await widget.services.store.write(_kOnboardingDone, '1');
+    setState(() => _onboardingDone = true);
   }
 
   /// Verrouillage ou déconnexion : on referme les écrans ouverts par-dessus l'accueil.
@@ -58,6 +78,18 @@ class _MchangoAppState extends State<MchangoApp> with WidgetsBindingObserver {
     }
   }
 
+  Widget _home() {
+    if (!_splashDone || _onboardingDone == null || _auth.status == AuthStatus.loading) {
+      return const SplashScreen();
+    }
+    return switch (_auth.status) {
+      AuthStatus.signedOut when !_onboardingDone! => OnboardingScreen(onDone: _finishOnboarding),
+      AuthStatus.signedOut => const SignInFlow(),
+      AuthStatus.locked => const UnlockScreen(),
+      _ => const HomeScreen(),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     return Services(
@@ -66,18 +98,13 @@ class _MchangoAppState extends State<MchangoApp> with WidgetsBindingObserver {
         navigatorKey: _navigatorKey,
         title: 'Mchango',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1B7F5A)),
-          visualDensity: VisualDensity.standard,
-        ),
+        theme: buildTheme(),
         home: ListenableBuilder(
           listenable: _auth,
-          builder: (context, _) => switch (_auth.status) {
-            AuthStatus.loading => const Scaffold(body: Center(child: CircularProgressIndicator())),
-            AuthStatus.signedOut => const SignInFlow(),
-            AuthStatus.locked => const UnlockScreen(),
-            AuthStatus.signedIn => const HomeScreen(),
-          },
+          builder: (context, _) => AnimatedSwitcher(
+            duration: const Duration(milliseconds: 400),
+            child: KeyedSubtree(key: ValueKey('${_auth.status}-$_splashDone-$_onboardingDone'), child: _home()),
+          ),
         ),
       ),
     );

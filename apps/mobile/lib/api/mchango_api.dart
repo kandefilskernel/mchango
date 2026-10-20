@@ -8,8 +8,8 @@ class MchangoApi {
   final ApiClient client;
 
   Future<List<Group>> myGroups() async => [
-        for (final g in await client.get('/groups') as List) Group.fromJson(g as Json),
-      ];
+    for (final g in await client.get('/groups') as List) Group.fromJson(g as Json),
+  ];
 
   Future<Group> group(String id) async => Group.fromJson(await client.get('/groups/$id') as Json);
 
@@ -20,15 +20,16 @@ class MchangoApi {
     required String frequency,
     required String startDate,
     required int maxMembers,
-  }) async =>
-      Group.fromJson(await client.post('/groups', {
-        'name': name,
-        'currency': currency,
-        'contributionAmountMinor': contributionAmountMinor,
-        'frequency': frequency,
-        'startDate': startDate,
-        'maxMembers': maxMembers,
-      }) as Json);
+  }) async => Group.fromJson(
+    await client.post('/groups', {
+      'name': name,
+      'currency': currency,
+      'contributionAmountMinor': contributionAmountMinor,
+      'frequency': frequency,
+      'startDate': startDate,
+      'maxMembers': maxMembers,
+    }) as Json,
+  );
 
   Future<Invitation> createInvitation(String groupId) async =>
       Invitation.fromJson(await client.post('/groups/$groupId/invitations') as Json);
@@ -49,8 +50,7 @@ class MchangoApi {
 
   Future<void> start(String groupId) => client.post('/groups/$groupId/start');
 
-  Future<Board> board(String groupId) async =>
-      Board.fromJson(await client.get('/groups/$groupId/cycles') as Json);
+  Future<Board> board(String groupId) async => Board.fromJson(await client.get('/groups/$groupId/cycles') as Json);
 
   Future<CycleDetail> cycle(String groupId, int number) async =>
       CycleDetail.fromJson(await client.get('/groups/$groupId/cycles/$number') as Json);
@@ -63,20 +63,19 @@ class MchangoApi {
     required String offlineId,
     String? txReference,
     String? witnessMembershipId,
-  }) async =>
-      Contribution.fromJson(await client.post('/groups/$groupId/cycles/$cycleNumber/contributions', {
-        'method': method,
-        'amountMinor': amountMinor,
-        'offlineId': offlineId,
-        'txReference': ?txReference,
-        'witnessMembershipId': ?witnessMembershipId,
-      }) as Json);
+  }) async => Contribution.fromJson(
+    await client.post('/groups/$groupId/cycles/$cycleNumber/contributions', {
+      'method': method,
+      'amountMinor': amountMinor,
+      'offlineId': offlineId,
+      'txReference': ?txReference,
+      'witnessMembershipId': ?witnessMembershipId,
+    }) as Json,
+  );
 
-  Future<Contribution> decide(String contributionId, String decision, {String? note}) async =>
-      Contribution.fromJson(await client.post('/contributions/$contributionId/decisions', {
-        'decision': decision,
-        'note': ?note,
-      }) as Json);
+  Future<Contribution> decide(String contributionId, String decision, {String? note}) async => Contribution.fromJson(
+    await client.post('/contributions/$contributionId/decisions', {'decision': decision, 'note': ?note}) as Json,
+  );
 
   Future<Receipt> receipt(String contributionId) async =>
       Receipt.fromJson(await client.get('/contributions/$contributionId/receipt') as Json);
@@ -85,8 +84,10 @@ class MchangoApi {
   Future<List<HistoryEvent>> history(String groupId) async {
     final events = <HistoryEvent>[];
     while (true) {
-      final page = await client.get('/groups/$groupId/history',
-          query: {'afterSeq': '${events.isEmpty ? 0 : events.last.audit.seq}'}) as Json;
+      final page = await client.get(
+        '/groups/$groupId/history',
+        query: {'afterSeq': '${events.isEmpty ? 0 : events.last.audit.seq}'},
+      ) as Json;
       final batch = [for (final e in page['events'] as List) HistoryEvent.fromJson(e as Json)];
       events.addAll(batch);
       if (batch.length < 500) return events;

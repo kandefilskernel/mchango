@@ -12,9 +12,8 @@ import 'package:mchango/util/format.dart';
 void main() {
   group("clé de l'appareil", () {
     // Vecteur calculé par Node, avec le même code que l'API
-    final vector = jsonDecode(
-      File('../../spec/test-vectors/device_signature.json').readAsStringSync(),
-    ) as Map<String, dynamic>;
+    final vector =
+        jsonDecode(File('../../spec/test-vectors/device_signature.json').readAsStringSync()) as Map<String, dynamic>;
 
     test('même clé publique et même signature que Node (Ed25519 déterministe)', () async {
       final identity = await DeviceIdentity.fromSeed(base64.decode(vector['seed'] as String));
@@ -81,17 +80,23 @@ void main() {
   });
 
   group('ApiClient', () {
-    ApiClient clientReturning(int status, Object body) => ApiClient('http://api',
-        client: MockClient((_) async => http.Response(jsonEncode(body), status,
-            headers: {'content-type': 'application/json; charset=utf-8'})));
+    ApiClient clientReturning(int status, Object body) => ApiClient(
+      'http://api',
+      client: MockClient(
+        (_) async =>
+            http.Response(jsonEncode(body), status, headers: {'content-type': 'application/json; charset=utf-8'}),
+      ),
+    );
 
     test("message d'erreur du serveur, en français", () async {
       final c = clientReturning(409, {'message': 'Le groupe est complet.', 'statusCode': 409});
       expect(
         () => c.post('/groups/join'),
-        throwsA(isA<ApiException>()
-            .having((e) => e.status, 'status', 409)
-            .having((e) => e.message, 'message', 'Le groupe est complet.')),
+        throwsA(
+          isA<ApiException>()
+              .having((e) => e.status, 'status', 409)
+              .having((e) => e.message, 'message', 'Le groupe est complet.'),
+        ),
       );
     });
 
@@ -102,8 +107,10 @@ void main() {
           {'field': 'phone', 'message': 'Numéro de téléphone RDC invalide.'},
         ],
       });
-      expect(() => c.post('/auth/otp/request'),
-          throwsA(isA<ApiException>().having((e) => e.message, 'message', 'Numéro de téléphone RDC invalide.')));
+      expect(
+        () => c.post('/auth/otp/request'),
+        throwsA(isA<ApiException>().having((e) => e.message, 'message', 'Numéro de téléphone RDC invalide.')),
+      );
     });
 
     test('pas de réseau', () async {
@@ -113,12 +120,14 @@ void main() {
 
     test('401 : rouvre la session une fois puis rejoue la requête', () async {
       var calls = 0;
-      final c = ApiClient('http://api', client: MockClient((req) async {
-        calls++;
-        final ok = req.headers['Authorization'] == 'Bearer nouveau';
-        return http.Response(ok ? '[]' : '{"message":"Session expirée."}', ok ? 200 : 401);
-      }))
-        ..accessToken = 'ancien';
+      final c = ApiClient(
+        'http://api',
+        client: MockClient((req) async {
+          calls++;
+          final ok = req.headers['Authorization'] == 'Bearer nouveau';
+          return http.Response(ok ? '[]' : '{"message":"Session expirée."}', ok ? 200 : 401);
+        }),
+      )..accessToken = 'ancien';
       c.onUnauthorized = () async {
         c.accessToken = 'nouveau';
         return true;

@@ -56,18 +56,28 @@ class HistoryScreen extends StatelessWidget {
         load: () async => checkHistory(services.store, groupId, await services.api.history(groupId)),
         builder: (context, check, reload) => RefreshIndicator(
           onRefresh: reload,
-          child: ListView(padding: const EdgeInsets.all(16), children: [
-            _Banner(check: check),
-            const SizedBox(height: 12),
-            for (final e in check.events.reversed)
-              ListTile(
-                dense: true,
-                leading: CircleAvatar(radius: 16, child: Text('${e.audit.seq}', style: const TextStyle(fontSize: 12))),
-                title: Text(describeEvent(e.audit.action, e.audit.payload, e.actorName ?? 'Mchango')),
-                subtitle: Text('${formatDateTime(DateTime.parse(e.audit.createdAt))} · ${e.audit.hash.substring(0, 12)}…'),
-                tileColor: check.verification.firstInvalidSeq == e.audit.seq ? Colors.red.withValues(alpha: 0.1) : null,
-              ),
-          ]),
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              _Banner(check: check),
+              const SizedBox(height: 12),
+              for (final e in check.events.reversed)
+                ListTile(
+                  dense: true,
+                  leading: CircleAvatar(
+                    radius: 16,
+                    child: Text('${e.audit.seq}', style: const TextStyle(fontSize: 12)),
+                  ),
+                  title: Text(describeEvent(e.audit.action, e.audit.payload, e.actorName ?? 'Mchango')),
+                  subtitle: Text(
+                    '${formatDateTime(DateTime.parse(e.audit.createdAt))} · ${e.audit.hash.substring(0, 12)}…',
+                  ),
+                  tileColor: check.verification.firstInvalidSeq == e.audit.seq
+                      ? Colors.red.withValues(alpha: 0.1)
+                      : null,
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -84,17 +94,19 @@ class _Banner extends StatelessWidget {
     final ok = check.trusted;
     final message = ok
         ? 'Journal vérifié sur ce téléphone : ${check.events.length} événements, '
-            'aucun n\'a été modifié ni supprimé.'
+              'aucun n\'a été modifié ni supprimé.'
         : check.rewritten
-            ? "Alerte : l'historique a changé depuis votre dernière vérification. Prévenez le groupe et Mchango."
-            : 'Alerte : le journal est incohérent à partir de l\'événement n°${check.verification.firstInvalidSeq}. '
-                'Prévenez le groupe et Mchango.';
+        ? "Alerte : l'historique a changé depuis votre dernière vérification. Prévenez le groupe et Mchango."
+        : 'Alerte : le journal est incohérent à partir de l\'événement n°${check.verification.firstInvalidSeq}. '
+              'Prévenez le groupe et Mchango.';
     return Card(
       color: ok ? Colors.green.shade50 : Colors.red.shade50,
       child: ListTile(
         leading: Icon(ok ? Icons.verified_user : Icons.gpp_bad, color: ok ? Colors.green : Colors.red, size: 36),
-        title: Text(ok ? 'Intact' : 'Problème détecté',
-            style: TextStyle(fontWeight: FontWeight.bold, color: ok ? Colors.green.shade900 : Colors.red.shade900)),
+        title: Text(
+          ok ? 'Intact' : 'Problème détecté',
+          style: TextStyle(fontWeight: FontWeight.bold, color: ok ? Colors.green.shade900 : Colors.red.shade900),
+        ),
         subtitle: Text(message),
       ),
     );

@@ -100,8 +100,7 @@ class AuthRepository extends ChangeNotifier {
       final failures = int.parse(await _store.read(_kPinFailures) ?? '0') + 1;
       if (failures >= maxPinFailures) {
         await _store.write(_kPinFailures, '0');
-        await _store.write(
-            _kLockedUntil, '${DateTime.now().add(lockDuration).millisecondsSinceEpoch}');
+        await _store.write(_kLockedUntil, '${DateTime.now().add(lockDuration).millisecondsSinceEpoch}');
       } else {
         await _store.write(_kPinFailures, '$failures');
       }

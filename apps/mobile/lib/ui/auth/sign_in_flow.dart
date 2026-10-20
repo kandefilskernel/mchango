@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../auth/auth_repository.dart';
 import '../../auth/local_pin.dart';
 import '../../services.dart';
 import '../common.dart';
+import '../theme.dart';
 
 enum _Step { phone, code, register, link }
 
@@ -68,98 +70,105 @@ class _SignInFlowState extends State<SignInFlow> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Mchango'),
-          leading: _step == _Step.phone
-              ? null
-              : BackButton(onPressed: () => setState(() => _step = _Step.phone)),
+          title: const BrandMark(size: 30),
+          leading: _step == _Step.phone ? null : BackButton(onPressed: () => setState(() => _step = _Step.phone)),
         ),
         body: SafeArea(
-          child: ListView(padding: const EdgeInsets.all(24), children: switch (_step) {
-            _Step.phone => _phoneStep(context),
-            _Step.code => _codeStep(context),
-            _Step.register => _registerStep(context),
-            _Step.link => _linkStep(context),
-          }),
+          child: ListView(
+            padding: const EdgeInsets.all(24),
+            children: switch (_step) {
+              _Step.phone => _phoneStep(context),
+              _Step.code => _codeStep(context),
+              _Step.register => _registerStep(context),
+              _Step.link => _linkStep(context),
+            },
+          ),
         ),
       ),
     );
   }
 
   List<Widget> _phoneStep(BuildContext context) => [
-        Text('Bienvenue', style: Theme.of(context).textTheme.headlineMedium),
-        const SizedBox(height: 8),
-        const Text('Chaque cotisation, vérifiable. Entrez votre numéro de téléphone.'),
-        const SizedBox(height: 24),
-        TextField(
-          key: const Key('phone'),
-          controller: _phone,
-          keyboardType: TextInputType.phone,
-          autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'Numéro de téléphone',
-            hintText: '099 123 4567',
-            prefixIcon: Icon(Icons.phone),
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 16),
-        BusyButton(label: 'Recevoir un code par SMS', icon: Icons.sms, onPressed: _sendCode),
-        const SizedBox(height: 24),
-        Text(noCustodyNotice, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
-      ];
+    ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: const Illustration('ensemble', height: 190, semanticLabel: 'Des membres cotisent ensemble'),
+    ),
+    const SizedBox(height: 24),
+    Text('Bienvenue', style: Theme.of(context).textTheme.headlineMedium),
+    const SizedBox(height: 8),
+    Text(
+      'Chaque cotisation, vérifiable. Entrez votre numéro de téléphone pour commencer.',
+      style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Brand.ink.withValues(alpha: 0.7)),
+    ),
+    const SizedBox(height: 24),
+    TextField(
+      key: const Key('phone'),
+      controller: _phone,
+      keyboardType: TextInputType.phone,
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]'))],
+      autofocus: true,
+      decoration: const InputDecoration(
+        labelText: 'Numéro de téléphone',
+        hintText: '099 123 4567',
+        prefixIcon: Icon(Icons.phone),
+      ),
+    ),
+    const SizedBox(height: 16),
+    BusyButton(label: 'Recevoir un code par SMS', icon: Icons.sms, onPressed: _sendCode),
+    const SizedBox(height: 24),
+    Text(noCustodyNotice, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
+  ];
 
   List<Widget> _codeStep(BuildContext context) => [
-        Text('Code reçu par SMS', style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 8),
-        Text('Envoyé au ${_phone.text.trim()}. Il expire dans 5 minutes.'),
-        const SizedBox(height: 24),
-        TextField(
-          key: const Key('code'),
-          controller: _code,
-          autofocus: true,
-          keyboardType: TextInputType.number,
-          maxLength: 6,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 28, letterSpacing: 10),
-          decoration: const InputDecoration(counterText: '', border: OutlineInputBorder()),
-        ),
-        const SizedBox(height: 16),
-        BusyButton(label: 'Valider', onPressed: _verifyCode),
-        TextButton(onPressed: _sendCode, child: const Text('Renvoyer un code')),
-      ];
+    Text('Code reçu par SMS', style: Theme.of(context).textTheme.headlineSmall),
+    const SizedBox(height: 8),
+    Text('Envoyé au ${_phone.text.trim()}. Il expire dans 5 minutes.'),
+    const SizedBox(height: 24),
+    TextField(
+      key: const Key('code'),
+      controller: _code,
+      autofocus: true,
+      keyboardType: TextInputType.number,
+      maxLength: 6,
+      textAlign: TextAlign.center,
+      style: const TextStyle(fontSize: 28, letterSpacing: 10),
+      decoration: const InputDecoration(counterText: ''),
+    ),
+    const SizedBox(height: 16),
+    BusyButton(label: 'Valider', onPressed: _verifyCode),
+    TextButton(onPressed: _sendCode, child: const Text('Renvoyer un code')),
+  ];
 
   List<Widget> _registerStep(BuildContext context) => [
-        Text('Créer votre compte', style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 24),
-        TextField(
-          key: const Key('name'),
-          controller: _name,
-          textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(
-            labelText: 'Votre nom',
-            hintText: 'tel que les membres vous connaissent',
-            prefixIcon: Icon(Icons.person),
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 16),
-        PinField(key: const Key('pin'), controller: _pin, label: 'Choisissez un PIN (6 chiffres)'),
-        const SizedBox(height: 12),
-        PinField(key: const Key('pin2'), controller: _pin2, label: 'Retapez le PIN'),
-        const SizedBox(height: 8),
-        const Text("N'utilisez pas votre PIN mobile money."),
-        const SizedBox(height: 16),
-        BusyButton(label: 'Créer mon compte', onPressed: _register),
-      ];
+    Text('Créer votre compte', style: Theme.of(context).textTheme.headlineSmall),
+    const SizedBox(height: 24),
+    TextField(
+      key: const Key('name'),
+      controller: _name,
+      textCapitalization: TextCapitalization.words,
+      decoration: const InputDecoration(
+        labelText: 'Votre nom',
+        hintText: 'tel que les membres vous connaissent',
+        prefixIcon: Icon(Icons.person),
+      ),
+    ),
+    const SizedBox(height: 16),
+    PinField(key: const Key('pin'), controller: _pin, label: 'Choisissez un PIN (6 chiffres)'),
+    const SizedBox(height: 12),
+    PinField(key: const Key('pin2'), controller: _pin2, label: 'Retapez le PIN'),
+    const SizedBox(height: 8),
+    const Text("N'utilisez pas votre PIN mobile money."),
+    const SizedBox(height: 16),
+    BusyButton(label: 'Créer mon compte', onPressed: _register),
+  ];
 
   List<Widget> _linkStep(BuildContext context) => [
-        Text('Vous avez déjà un compte', style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 8),
-        const Text(
-            'Entrez votre PIN Mchango pour utiliser ce téléphone. Votre ancien téléphone sera déconnecté.'),
-        const SizedBox(height: 24),
-        PinField(key: const Key('pin'), controller: _pin, label: 'PIN', autofocus: true),
-        const SizedBox(height: 16),
-        BusyButton(label: 'Continuer', onPressed: _link),
-      ];
+    Text('Vous avez déjà un compte', style: Theme.of(context).textTheme.headlineSmall),
+    const SizedBox(height: 8),
+    const Text('Entrez votre PIN Mchango pour utiliser ce téléphone. Votre ancien téléphone sera déconnecté.'),
+    const SizedBox(height: 24),
+    PinField(key: const Key('pin'), controller: _pin, label: 'PIN', autofocus: true),
+    const SizedBox(height: 16),
+    BusyButton(label: 'Continuer', onPressed: _link),
+  ];
 }

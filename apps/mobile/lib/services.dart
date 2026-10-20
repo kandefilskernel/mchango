@@ -7,8 +7,8 @@ import 'storage/key_value_store.dart';
 
 class AppServices {
   AppServices({required this.client, required this.store})
-      : api = MchangoApi(client),
-        auth = AuthRepository(client, store);
+    : api = MchangoApi(client),
+      auth = AuthRepository(client, store);
 
   final ApiClient client;
   final KeyValueStore store;
@@ -22,8 +22,7 @@ class Services extends InheritedWidget {
 
   final AppServices services;
 
-  static AppServices of(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<Services>()!.services;
+  static AppServices of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<Services>()!.services;
 
   @override
   bool updateShouldNotify(Services oldWidget) => services != oldWidget.services;

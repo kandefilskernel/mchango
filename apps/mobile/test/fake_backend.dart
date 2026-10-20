@@ -16,9 +16,9 @@ class FakeBackend {
   void on(String method, String path, Handler handler) => routes['$method $path'] = handler;
 
   List<Map<String, dynamic>> bodiesOf(String method, String path) => [
-        for (final r in requests)
-          if (r.method == method && r.url.path == path) jsonDecode(r.body) as Map<String, dynamic>,
-      ];
+    for (final r in requests)
+      if (r.method == method && r.url.path == path) jsonDecode(r.body) as Map<String, dynamic>,
+  ];
 
   late final client = MockClient((request) async {
     requests.add(request);
@@ -27,16 +27,21 @@ class FakeBackend {
     final body = request.body.isEmpty ? <String, dynamic>{} : jsonDecode(request.body) as Map<String, dynamic>;
     final result = handler(request, body);
     if (result is http.Response) return result;
-    return http.Response.bytes(utf8.encode(jsonEncode(result)), 200,
-        headers: {'content-type': 'application/json; charset=utf-8'});
+    return http.Response.bytes(
+      utf8.encode(jsonEncode(result)),
+      200,
+      headers: {'content-type': 'application/json; charset=utf-8'},
+    );
   });
 
   AppServices services([MemoryKeyValueStore? store]) => AppServices(
-        client: ApiClient('http://api', client: client),
-        store: store ?? MemoryKeyValueStore(),
-      );
+    client: ApiClient('http://api', client: client),
+    store: store ?? MemoryKeyValueStore(),
+  );
 }
 
 http.Response error(int status, String message) => http.Response.bytes(
-    utf8.encode(jsonEncode({'message': message, 'statusCode': status})), status,
-    headers: {'content-type': 'application/json; charset=utf-8'});
+  utf8.encode(jsonEncode({'message': message, 'statusCode': status})),
+  status,
+  headers: {'content-type': 'application/json; charset=utf-8'},
+);

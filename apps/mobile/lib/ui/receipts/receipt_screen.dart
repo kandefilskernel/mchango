@@ -33,12 +33,14 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
     final image = await boundary.toImage(pixelRatio: 3);
     final png = await image.toByteData(format: ui.ImageByteFormat.png);
     try {
-      await SharePlus.instance.share(ShareParams(
-        text: shareText(r),
-        files: [
-          XFile.fromData(png!.buffer.asUint8List(), mimeType: 'image/png', name: 'recu-${r.receiptNumber}.png'),
-        ],
-      ));
+      await SharePlus.instance.share(
+        ShareParams(
+          text: shareText(r),
+          files: [
+            XFile.fromData(png!.buffer.asUint8List(), mimeType: 'image/png', name: 'recu-${r.receiptNumber}.png'),
+          ],
+        ),
+      );
     } catch (_) {
       // Partage d'image indisponible (navigateur, vieux téléphone) : le texte seul
       await SharePlus.instance.share(ShareParams(text: shareText(r)));
@@ -51,11 +53,17 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
       appBar: AppBar(title: const Text('Reçu')),
       body: Loader<Receipt>(
         load: () => Services.of(context).api.receipt(widget.contributionId),
-        builder: (context, r, _) => ListView(padding: const EdgeInsets.all(16), children: [
-          RepaintBoundary(key: _receiptKey, child: ReceiptCard(receipt: r)),
-          const SizedBox(height: 16),
-          BusyButton(label: 'Partager le reçu', icon: Icons.share, onPressed: () => _share(r)),
-        ]),
+        builder: (context, r, _) => ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            RepaintBoundary(
+              key: _receiptKey,
+              child: ReceiptCard(receipt: r),
+            ),
+            const SizedBox(height: 16),
+            BusyButton(label: 'Partager le reçu', icon: Icons.share, onPressed: () => _share(r)),
+          ],
+        ),
       ),
     );
   }
@@ -78,49 +86,63 @@ class ReceiptCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: DefaultTextStyle.merge(
           style: const TextStyle(color: Colors.black87),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Row(children: [
-              const Icon(Icons.verified, color: Colors.green, size: 32),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('Reçu Mchango', style: text.titleLarge?.copyWith(color: Colors.black87)),
-                  Text(r.receiptNumber, style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
-                ]),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.verified, color: Colors.green, size: 32),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Reçu Mchango', style: text.titleLarge?.copyWith(color: Colors.black87)),
+                        Text(r.receiptNumber, style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ]),
-            const Divider(height: 24),
-            Text(formatAmount(r.amountMinor, r.currency),
-                textAlign: TextAlign.center, style: text.headlineMedium?.copyWith(color: Colors.black87)),
-            Text('${r.payerName}  →  ${r.beneficiaryName}', textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            InfoRow('Tontine', r.groupName),
-            InfoRow('Tour', '${r.cycleNumber}'),
-            InfoRow('Moyen', methodLabels[r.method] ?? r.method),
-            if (r.txReference != null) InfoRow('ID de transaction', r.txReference!),
-            if (r.witnessName != null) InfoRow('Témoin', r.witnessName!),
-            InfoRow('Déclaré le', formatDateTime(r.declaredAt)),
-            InfoRow('Confirmé le', formatDateTime(r.confirmedAt)),
-            if (r.isLate) const InfoRow('Remarque', 'Payé après l\'échéance'),
-            const SizedBox(height: 12),
-            Center(
-              child: QrImageView(
-                data: r.qrPayload,
-                size: 180,
-                backgroundColor: Colors.white,
-                semanticsLabel: 'QR code du reçu ${r.receiptNumber}',
+              const Divider(height: 24),
+              Text(
+                formatAmount(r.amountMinor, r.currency),
+                textAlign: TextAlign.center,
+                style: text.headlineMedium?.copyWith(color: Colors.black87),
               ),
-            ),
-            Text('Journal : événement n°${r.auditSeq} · ${r.auditHash.substring(0, 16)}…',
-                textAlign: TextAlign.center, style: text.bodySmall?.copyWith(color: Colors.black54)),
-            const SizedBox(height: 8),
-            Text(
-              'Ce reçu atteste que le paiement a été déclaré par le payeur et confirmé par le '
-              'bénéficiaire. $noCustodyNotice',
-              textAlign: TextAlign.center,
-              style: text.bodySmall?.copyWith(color: Colors.black54),
-            ),
-          ]),
+              Text('${r.payerName}  →  ${r.beneficiaryName}', textAlign: TextAlign.center),
+              const SizedBox(height: 12),
+              InfoRow('Tontine', r.groupName),
+              InfoRow('Tour', '${r.cycleNumber}'),
+              InfoRow('Moyen', methodLabels[r.method] ?? r.method),
+              if (r.txReference != null) InfoRow('ID de transaction', r.txReference!),
+              if (r.witnessName != null) InfoRow('Témoin', r.witnessName!),
+              InfoRow('Déclaré le', formatDateTime(r.declaredAt)),
+              InfoRow('Confirmé le', formatDateTime(r.confirmedAt)),
+              if (r.isLate) const InfoRow('Remarque', 'Payé après l\'échéance'),
+              const SizedBox(height: 12),
+              Center(
+                child: QrImageView(
+                  data: r.qrPayload,
+                  size: 180,
+                  backgroundColor: Colors.white,
+                  semanticsLabel: 'QR code du reçu ${r.receiptNumber}',
+                ),
+              ),
+              Text(
+                'Journal : événement n°${r.auditSeq} · ${r.auditHash.substring(0, 16)}…',
+                textAlign: TextAlign.center,
+                style: text.bodySmall?.copyWith(color: Colors.black54),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Ce reçu atteste que le paiement a été déclaré par le payeur et confirmé par le '
+                'bénéficiaire. $noCustodyNotice',
+                textAlign: TextAlign.center,
+                style: text.bodySmall?.copyWith(color: Colors.black54),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -21,14 +21,14 @@ const jean = 'aaaaaaaa-0000-4000-8000-000000000002';
 const neema = 'aaaaaaaa-0000-4000-8000-000000000003';
 
 Map<String, dynamic> member(String id, String name, int turn, {String role = 'member'}) => {
-      'membershipId': id,
-      'userId': 'user-$id',
-      'fullName': name,
-      'phone': '+24399000000$turn',
-      'role': role,
-      'turnOrder': turn,
-      'joinedAt': '2026-10-21T08:00:00.000Z',
-    };
+  'membershipId': id,
+  'userId': 'user-$id',
+  'fullName': name,
+  'phone': '+24399000000$turn',
+  'role': role,
+  'turnOrder': turn,
+  'joinedAt': '2026-10-21T08:00:00.000Z',
+};
 
 final groupJson = {
   'id': groupId,
@@ -53,37 +53,45 @@ final groupJson = {
 };
 
 Map<String, dynamic> cycleJson({required String me, String jeanStatus = 'declared'}) => {
-      'myMembershipId': me,
-      'cycleNumber': 1,
-      'dueDate': '2026-11-02',
-      'status': 'open',
-      'beneficiaryMembershipId': furaha,
-      'payers': [
-        {
-          'membershipId': jean,
-          'fullName': 'Papa Jean',
-          'status': jeanStatus,
-          'contribution': {
-            'id': 'c-1',
-            'payerMembershipId': jean,
-            'receiverMembershipId': furaha,
-            'witnessMembershipId': null,
-            'amountMinor': 20000,
-            'method': 'mpesa',
-            'txReference': 'RK45TX9QPL',
-            'status': jeanStatus,
-            'isLate': false,
-            'offlineId': 'o-1',
-            'declaredAt': '2026-10-21T09:00:00.000Z',
-          },
-          'decisions': <Object>[],
-        },
-        {'membershipId': neema, 'fullName': 'Mama Neema', 'status': 'expected', 'contribution': null, 'decisions': <Object>[]},
-      ],
-    };
+  'myMembershipId': me,
+  'cycleNumber': 1,
+  'dueDate': '2026-11-02',
+  'status': 'open',
+  'beneficiaryMembershipId': furaha,
+  'payers': [
+    {
+      'membershipId': jean,
+      'fullName': 'Papa Jean',
+      'status': jeanStatus,
+      'contribution': {
+        'id': 'c-1',
+        'payerMembershipId': jean,
+        'receiverMembershipId': furaha,
+        'witnessMembershipId': null,
+        'amountMinor': 20000,
+        'method': 'mpesa',
+        'txReference': 'RK45TX9QPL',
+        'status': jeanStatus,
+        'isLate': false,
+        'offlineId': 'o-1',
+        'declaredAt': '2026-10-21T09:00:00.000Z',
+      },
+      'decisions': <Object>[],
+    },
+    {
+      'membershipId': neema,
+      'fullName': 'Mama Neema',
+      'status': 'expected',
+      'contribution': null,
+      'decisions': <Object>[],
+    },
+  ],
+};
 
-Widget host(AppServices services, Widget child) =>
-    Services(services: services, child: MaterialApp(home: child));
+Widget host(AppServices services, Widget child) => Services(
+  services: services,
+  child: MaterialApp(home: child),
+);
 
 void main() {
   setUpAll(() => initializeDateFormatting('fr_FR'));
@@ -92,14 +100,29 @@ void main() {
     final backend = FakeBackend()
       ..on('POST', '/auth/otp/request', (_, _) => {'message': 'ok'})
       ..on('POST', '/auth/otp/verify', (_, _) => {'otpToken': 'otp', 'accountExists': false})
-      ..on('POST', '/auth/register', (_, _) =>
-          {'userId': 'u-1', 'deviceId': 'd-1', 'accessToken': 'acces', 'expiresIn': 900})
+      ..on(
+        'POST',
+        '/auth/register',
+        (_, _) => {'userId': 'u-1', 'deviceId': 'd-1', 'accessToken': 'acces', 'expiresIn': 900},
+      )
       ..on('GET', '/groups', (_, _) => <Object>[]);
     final store = MemoryKeyValueStore();
     final services = backend.services(store);
     await services.auth.load();
     await tester.pumpWidget(MchangoApp(services: services));
+    // Écran de démarrage, puis l'histoire en images (premier lancement)
+    expect(find.text('Chaque cotisation, vérifiable.'), findsOneWidget);
+    await tester.pump(MchangoApp.splashDuration);
     await tester.pumpAndSettle();
+    expect(find.text("Seul, c'est long"), findsOneWidget);
+    for (final title in ['Ensemble, on cotise', 'À chaque tour, un membre reçoit tout', 'Tout est vérifiable']) {
+      await tester.tap(find.byKey(const Key('onboarding_next')));
+      await tester.pumpAndSettle();
+      expect(find.text(title), findsOneWidget);
+    }
+    await tester.tap(find.text('Commencer'));
+    await tester.pumpAndSettle();
+    expect(store.data['onboarding_done'], '1', reason: "l'histoire ne se montre qu'une fois");
 
     await tester.enterText(find.byKey(const Key('phone')), '0991234567');
     await tester.tap(find.text('Recevoir un code par SMS'));
@@ -141,11 +164,15 @@ void main() {
   testWidgets('le bénéficiaire confirme un paiement déclaré', (tester) async {
     final backend = FakeBackend()
       ..on('GET', '/groups/$groupId/cycles/1', (_, _) => cycleJson(me: furaha))
-      ..on('POST', '/contributions/c-1/decisions', (_, body) => {
-            ...(cycleJson(me: furaha)['payers'] as List).first['contribution'] as Map<String, dynamic>,
-            'status': 'confirmed',
-            'cycleStatus': 'open',
-          });
+      ..on(
+        'POST',
+        '/contributions/c-1/decisions',
+        (_, body) => {
+          ...(cycleJson(me: furaha)['payers'] as List).first['contribution'] as Map<String, dynamic>,
+          'status': 'confirmed',
+          'cycleStatus': 'open',
+        },
+      );
     final services = backend.services();
     await tester.pumpWidget(host(services, CycleScreen(group: Group.fromJson(groupJson), cycleNumber: 1)));
     await tester.pumpAndSettle();
@@ -161,8 +188,7 @@ void main() {
   });
 
   testWidgets("un payeur voit à qui payer, et ne voit pas le bouton de confirmation", (tester) async {
-    final backend = FakeBackend()
-      ..on('GET', '/groups/$groupId/cycles/1', (_, _) => cycleJson(me: neema));
+    final backend = FakeBackend()..on('GET', '/groups/$groupId/cycles/1', (_, _) => cycleJson(me: neema));
     await tester.pumpWidget(host(backend.services(), CycleScreen(group: Group.fromJson(groupJson), cycleNumber: 1)));
     await tester.pumpAndSettle();
 
@@ -181,24 +207,26 @@ void main() {
         return {...((cycleJson(me: neema)['payers'] as List).first['contribution'] as Map<String, dynamic>)};
       });
     final group = Group.fromJson(groupJson);
-    await tester.pumpWidget(host(
-      backend.services(),
-      Builder(
-        builder: (context) => Scaffold(
-          body: Center(
-            child: TextButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => DeclareScreen(group: group, cycleNumber: 1, beneficiary: group.members.first),
+    await tester.pumpWidget(
+      host(
+        backend.services(),
+        Builder(
+          builder: (context) => Scaffold(
+            body: Center(
+              child: TextButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => DeclareScreen(group: group, cycleNumber: 1, beneficiary: group.members.first),
+                  ),
                 ),
+                child: const Text('ouvrir'),
               ),
-              child: const Text('ouvrir'),
             ),
           ),
         ),
       ),
-    ));
+    );
     await tester.tap(find.text('ouvrir'));
     await tester.pumpAndSettle();
 
@@ -222,18 +250,23 @@ void main() {
   });
 
   group('historique vérifié sur le téléphone', () {
-    final vectors = jsonDecode(File('../../spec/test-vectors/audit_chain.json').readAsStringSync())
-        as Map<String, dynamic>;
+    final vectors =
+        jsonDecode(File('../../spec/test-vectors/audit_chain.json').readAsStringSync()) as Map<String, dynamic>;
     final chain = (vectors['chains'] as List).cast<Map<String, dynamic>>().firstWhere(
-        (c) => (c['chain_id'] as String).startsWith('group:'));
+      (c) => (c['chain_id'] as String).startsWith('group:'),
+    );
     final vectorGroupId = (chain['chain_id'] as String).substring('group:'.length);
-    List<Map<String, dynamic>> named(List events) =>
-        [for (final e in events) {...(e as Map<String, dynamic>), 'actor_name': 'Mama Furaha'}];
+    List<Map<String, dynamic>> named(List events) => [
+      for (final e in events) {...(e as Map<String, dynamic>), 'actor_name': 'Mama Furaha'},
+    ];
 
     Future<FakeBackend> show(WidgetTester tester, List events, {MemoryKeyValueStore? store}) async {
       final backend = FakeBackend()
-        ..on('GET', '/groups/$vectorGroupId/history',
-            (_, _) => {'chainId': chain['chain_id'], 'events': named(events)});
+        ..on(
+          'GET',
+          '/groups/$vectorGroupId/history',
+          (_, _) => {'chainId': chain['chain_id'], 'events': named(events)},
+        );
       await tester.pumpWidget(host(backend.services(store), HistoryScreen(groupId: vectorGroupId)));
       await tester.pumpAndSettle();
       return backend;
@@ -262,14 +295,22 @@ void main() {
   });
 
   test('libellés des événements', () {
-    expect(describeEvent('groups.insert', '{"name":"Likelemba"}', 'Mama Furaha'),
-        'Mama Furaha a créé la tontine « Likelemba »');
-    expect(describeEvent('confirmations.insert', '{"decision":"witness"}', 'Papa Jean'),
-        'Papa Jean a témoigné de la remise en espèces');
-    expect(describeEvent('contributions.update', '{"status":"confirmed","receipt_number":42}', 'X'),
-        'Paiement confirmé (reçu MCH-00000042)');
-    expect(describeEvent('group.turn_order_set', '{"mode":"draw","seed":"${'ab' * 32}"}', 'Mama'),
-        'Mama a lancé le tirage au sort (graine abababababab…)');
+    expect(
+      describeEvent('groups.insert', '{"name":"Likelemba"}', 'Mama Furaha'),
+      'Mama Furaha a créé la tontine « Likelemba »',
+    );
+    expect(
+      describeEvent('confirmations.insert', '{"decision":"witness"}', 'Papa Jean'),
+      'Papa Jean a témoigné de la remise en espèces',
+    );
+    expect(
+      describeEvent('contributions.update', '{"status":"confirmed","receipt_number":42}', 'X'),
+      'Paiement confirmé (reçu MCH-00000042)',
+    );
+    expect(
+      describeEvent('group.turn_order_set', '{"mode":"draw","seed":"${'ab' * 32}"}', 'Mama'),
+      'Mama a lancé le tirage au sort (graine abababababab…)',
+    );
     expect(describeEvent('inconnu', 'pas du json', 'X'), 'X : inconnu');
   });
 }

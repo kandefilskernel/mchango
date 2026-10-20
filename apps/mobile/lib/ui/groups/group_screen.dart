@@ -57,14 +57,17 @@ class _GroupScreenState extends State<GroupScreen> {
         load: _load,
         builder: (context, data, reload) => RefreshIndicator(
           onRefresh: reload,
-          child: ListView(padding: const EdgeInsets.all(16), children: [
-            _Header(group: data.group),
-            const SizedBox(height: 16),
-            if (data.group.isDraft)
-              ..._draftSection(context, data.group, reload)
-            else
-              ..._boardSection(context, data.group, data.board!),
-          ]),
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              _Header(group: data.group),
+              const SizedBox(height: 16),
+              if (data.group.isDraft)
+                ..._draftSection(context, data.group, reload)
+              else
+                ..._boardSection(context, data.group, data.board!),
+            ],
+          ),
         ),
       ),
     );
@@ -115,74 +118,82 @@ class _GroupScreenState extends State<GroupScreen> {
         if (!g.hasCompleteOrder)
           const Padding(
             padding: EdgeInsets.only(top: 8),
-            child: Text("Pour démarrer : au moins 2 membres et l'ordre des tours fixé.",
-                textAlign: TextAlign.center),
+            child: Text("Pour démarrer : au moins 2 membres et l'ordre des tours fixé.", textAlign: TextAlign.center),
           ),
       ],
     ];
   }
 
   List<Widget> _boardSection(BuildContext context, Group g, Board board) => [
-        Text('Tableau des tours', style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-        for (final c in board.cycles)
-          Card(
-            color: c.status == 'open' ? Theme.of(context).colorScheme.primaryContainer : null,
-            child: ListTile(
-              leading: CircleAvatar(
-                child: c.status == 'completed' ? const Icon(Icons.check) : Text('${c.cycleNumber}'),
-              ),
-              title: Text(c.beneficiaryMembershipId == board.myMembershipId
-                  ? 'Tour ${c.cycleNumber} : vous recevez'
-                  : 'Tour ${c.cycleNumber} : ${c.beneficiaryName}'),
-              subtitle: Text('${formatDate(c.dueDate)} · ${cycleStatusLabels[c.status]} · '
-                  '${c.confirmedCount}/${c.expectedCount} confirmé(s)'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _push(CycleScreen(group: g, cycleNumber: c.cycleNumber)),
-            ),
+    Text('Tableau des tours', style: Theme.of(context).textTheme.titleMedium),
+    const SizedBox(height: 8),
+    for (final c in board.cycles)
+      Card(
+        color: c.status == 'open' ? Theme.of(context).colorScheme.primaryContainer : null,
+        child: ListTile(
+          leading: CircleAvatar(child: c.status == 'completed' ? const Icon(Icons.check) : Text('${c.cycleNumber}')),
+          title: Text(
+            c.beneficiaryMembershipId == board.myMembershipId
+                ? 'Tour ${c.cycleNumber} : vous recevez'
+                : 'Tour ${c.cycleNumber} : ${c.beneficiaryName}',
           ),
-        _OrderInfo(group: g),
-      ];
+          subtitle: Text(
+            '${formatDate(c.dueDate)} · ${cycleStatusLabels[c.status]} · '
+            '${c.confirmedCount}/${c.expectedCount} confirmé(s)',
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => _push(CycleScreen(group: g, cycleNumber: c.cycleNumber)),
+        ),
+      ),
+    _OrderInfo(group: g),
+  ];
 
   Future<void> _showInvitation(BuildContext context, Invitation invitation) => showDialog<void>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Code d'invitation"),
-          content: Column(mainAxisSize: MainAxisSize.min, children: [
-            SelectableText(invitation.code,
-                style: const TextStyle(fontSize: 32, letterSpacing: 4, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('Valable jusqu\'au ${formatDateTime(invitation.expiresAt)}'),
-          ]),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                await Clipboard.setData(ClipboardData(text: invitation.code));
-                if (context.mounted) showInfo(context, 'Code copié.');
-              },
-              child: const Text('Copier'),
-            ),
-            FilledButton.icon(
-              icon: const Icon(Icons.share),
-              label: const Text('Partager'),
-              onPressed: () => SharePlus.instance.share(ShareParams(text: invitation.shareText)),
-            ),
-          ],
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text("Code d'invitation"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SelectableText(
+            invitation.code,
+            style: const TextStyle(fontSize: 32, letterSpacing: 4, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text('Valable jusqu\'au ${formatDateTime(invitation.expiresAt)}'),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () async {
+            await Clipboard.setData(ClipboardData(text: invitation.code));
+            if (context.mounted) showInfo(context, 'Code copié.');
+          },
+          child: const Text('Copier'),
         ),
-      );
+        FilledButton.icon(
+          icon: const Icon(Icons.share),
+          label: const Text('Partager'),
+          onPressed: () => SharePlus.instance.share(ShareParams(text: invitation.shareText)),
+        ),
+      ],
+    ),
+  );
 
   Future<bool?> _confirmStart(BuildContext context, Group g) => showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Démarrer la tontine ?'),
-          content: Text('${g.members.length} tours seront créés à partir du ${formatDate(g.startDate)}. '
-              "Ensuite, l'ordre, le montant et la liste des membres ne pourront plus changer."),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
-            FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Démarrer')),
-          ],
-        ),
-      );
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Démarrer la tontine ?'),
+      content: Text(
+        '${g.members.length} tours seront créés à partir du ${formatDate(g.startDate)}. '
+        "Ensuite, l'ordre, le montant et la liste des membres ne pourront plus changer.",
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+        FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Démarrer')),
+      ],
+    ),
+  );
 }
 
 class _Header extends StatelessWidget {
@@ -192,19 +203,25 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(group.name, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            InfoRow('Cotisation par tour', formatAmount(group.contributionAmountMinor, group.currency),
-                icon: Icons.payments_outlined),
-            InfoRow('Fréquence', frequencyLabels[group.frequency] ?? group.frequency, icon: Icons.repeat),
-            InfoRow('Premier tour', formatDate(group.startDate), icon: Icons.event),
-            InfoRow('Statut', groupStatusLabels[group.status] ?? group.status, icon: Icons.flag_outlined),
-          ]),
-        ),
-      );
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(group.name, style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 8),
+          InfoRow(
+            'Cotisation par tour',
+            formatAmount(group.contributionAmountMinor, group.currency),
+            icon: Icons.payments_outlined,
+          ),
+          InfoRow('Fréquence', frequencyLabels[group.frequency] ?? group.frequency, icon: Icons.repeat),
+          InfoRow('Premier tour', formatDate(group.startDate), icon: Icons.event),
+          InfoRow('Statut', groupStatusLabels[group.status] ?? group.status, icon: Icons.flag_outlined),
+        ],
+      ),
+    ),
+  );
 }
 
 /// Comment l'ordre a été fixé : la transparence passe aussi par là.
@@ -218,8 +235,7 @@ class _OrderInfo extends StatelessWidget {
     final seed = group.drawSeed;
     final text = switch (group.turnOrderMode) {
       'draw' => 'Ordre tiré au sort. Graine publique : ${seed!.substring(0, 16)}…',
-      'chosen' when seed != null =>
-        'Ordre choisi par le président (un tirage au sort avait eu lieu avant).',
+      'chosen' when seed != null => 'Ordre choisi par le président (un tirage au sort avait eu lieu avant).',
       'chosen' => 'Ordre choisi par le président.',
       _ => "Ordre des tours pas encore fixé.",
     };

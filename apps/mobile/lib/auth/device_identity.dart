@@ -3,8 +3,7 @@ import 'dart:convert';
 import 'package:cryptography/cryptography.dart';
 
 /// Message signé pour ouvrir une session (spec/auth.md).
-String challengeMessage(String deviceId, String nonce) =>
-    'mchango-auth-v1\n$deviceId\n$nonce';
+String challengeMessage(String deviceId, String nonce) => 'mchango-auth-v1\n$deviceId\n$nonce';
 
 /// Clé Ed25519 de l'appareil. La graine privée reste dans le stockage sécurisé ;
 /// seule la clé publique est envoyée au serveur.
@@ -20,8 +19,7 @@ class DeviceIdentity {
 
   static Future<DeviceIdentity> generate() async => _wrap(await _algorithm.newKeyPair());
 
-  static Future<DeviceIdentity> fromSeed(List<int> seed) async =>
-      _wrap(await _algorithm.newKeyPairFromSeed(seed));
+  static Future<DeviceIdentity> fromSeed(List<int> seed) async => _wrap(await _algorithm.newKeyPairFromSeed(seed));
 
   static Future<DeviceIdentity> _wrap(SimpleKeyPair keyPair) async {
     final publicKey = await keyPair.extractPublicKey();

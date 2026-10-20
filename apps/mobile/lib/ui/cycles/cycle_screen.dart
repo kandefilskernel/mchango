@@ -47,9 +47,10 @@ class _CycleScreenState extends State<CycleScreen> {
     final result = await Services.of(context).api.decide(c.id, decision, note: note);
     if (!mounted) return;
     showInfo(context, switch (result.status) {
-      'confirmed' => result.cycleStatus == 'completed'
-          ? 'Cotisation confirmée. Tous ont payé : le tour est terminé.'
-          : 'Cotisation confirmée.',
+      'confirmed' =>
+        result.cycleStatus == 'completed'
+            ? 'Cotisation confirmée. Tous ont payé : le tour est terminé.'
+            : 'Cotisation confirmée.',
       'disputed' => 'Contestation enregistrée. Le groupe la voit.',
       _ => 'Réponse enregistrée. En attente des autres confirmations.',
     });
@@ -93,26 +94,37 @@ class _CycleScreenState extends State<CycleScreen> {
           final myRow = cycle.myRow;
           return RefreshIndicator(
             onRefresh: reload,
-            child: ListView(padding: const EdgeInsets.all(16), children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(cycle.iAmBeneficiary ? 'Vous recevez ce tour' : 'Bénéficiaire : ${beneficiary?.fullName}',
-                        style: Theme.of(context).textTheme.titleLarge),
-                    const SizedBox(height: 8),
-                    InfoRow('Échéance', formatDate(cycle.dueDate), icon: Icons.event),
-                    InfoRow('Statut', cycleStatusLabels[cycle.status] ?? cycle.status, icon: Icons.flag_outlined),
-                    InfoRow('Chaque membre verse', formatAmount(g.contributionAmountMinor, g.currency),
-                        icon: Icons.payments_outlined),
-                  ]),
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          cycle.iAmBeneficiary ? 'Vous recevez ce tour' : 'Bénéficiaire : ${beneficiary?.fullName}',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 8),
+                        InfoRow('Échéance', formatDate(cycle.dueDate), icon: Icons.event),
+                        InfoRow('Statut', cycleStatusLabels[cycle.status] ?? cycle.status, icon: Icons.flag_outlined),
+                        InfoRow(
+                          'Chaque membre verse',
+                          formatAmount(g.contributionAmountMinor, g.currency),
+                          icon: Icons.payments_outlined,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              if (myRow != null && beneficiary != null) _myPart(context, cycle, myRow, beneficiary),
-              const SizedBox(height: 16),
-              Text('Paiements', style: Theme.of(context).textTheme.titleMedium),
-              for (final p in cycle.payers) _payerTile(context, cycle, p),
-            ]),
+                if (myRow != null && beneficiary != null) _myPart(context, cycle, myRow, beneficiary),
+                const SizedBox(height: 16),
+                Text('Paiements', style: Theme.of(context).textTheme.titleMedium),
+                for (final p in cycle.payers) _payerTile(context, cycle, p),
+              ],
+            ),
           );
         },
       ),
@@ -125,22 +137,27 @@ class _CycleScreenState extends State<CycleScreen> {
       color: Theme.of(context).colorScheme.secondaryContainer,
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: switch (me.status) {
-          'expected' || 'late' when !closed => [
-              Text('Payez ${formatAmount(g.contributionAmountMinor, g.currency)} à ${beneficiary.fullName}',
-                  style: Theme.of(context).textTheme.titleMedium),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: switch (me.status) {
+            'expected' || 'late' when !closed => [
+              Text(
+                'Payez ${formatAmount(g.contributionAmountMinor, g.currency)} à ${beneficiary.fullName}',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               Text('Numéro : ${beneficiary.phone}'),
               if (me.status == 'late') const Text('⚠ Échéance dépassée'),
               const SizedBox(height: 12),
               BusyButton(
                 label: "J'ai payé",
                 icon: Icons.check,
-                onPressed: () => _push(DeclareScreen(group: g, cycleNumber: cycle.cycleNumber, beneficiary: beneficiary)),
+                onPressed: () =>
+                    _push(DeclareScreen(group: g, cycleNumber: cycle.cycleNumber, beneficiary: beneficiary)),
               ),
             ],
-          'declared' => [const Text('Votre paiement est déclaré. En attente de confirmation.')],
-          'disputed' => [const Text('Votre paiement est contesté. Parlez-en avec le bénéficiaire.')],
-          'confirmed' => [
+            'declared' => [const Text('Votre paiement est déclaré. En attente de confirmation.')],
+            'disputed' => [const Text('Votre paiement est contesté. Parlez-en avec le bénéficiaire.')],
+            'confirmed' => [
               const Text('Votre paiement est confirmé.'),
               const SizedBox(height: 8),
               BusyButton(
@@ -150,8 +167,9 @@ class _CycleScreenState extends State<CycleScreen> {
                 onPressed: () => _push(ReceiptScreen(contributionId: me.contribution!.id)),
               ),
             ],
-          _ => [const Text('Ce tour est clos.')],
-        }),
+            _ => [const Text('Ce tour est clos.')],
+          },
+        ),
       ),
     );
   }
@@ -162,11 +180,8 @@ class _CycleScreenState extends State<CycleScreen> {
     final me = cycle.myMembershipId;
     final open = p.status == 'declared' || p.status == 'disputed';
     final canConfirm = cycle.iAmBeneficiary && open && c != null && !p.hasDecision(me, 'confirm');
-    final canWitness = c != null &&
-        c.method == 'cash' &&
-        c.witnessMembershipId == me &&
-        open &&
-        !p.hasDecision(me, 'witness');
+    final canWitness =
+        c != null && c.method == 'cash' && c.witnessMembershipId == me && open && !p.hasDecision(me, 'witness');
     final canDispute = (cycle.iAmBeneficiary || c?.witnessMembershipId == me) && p.status == 'declared';
 
     final details = <String>[
@@ -179,44 +194,50 @@ class _CycleScreenState extends State<CycleScreen> {
     return Card(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Column(children: [
-          ListTile(
-            leading: Icon(style.icon, color: style.color, size: 32),
-            title: Text(p.membershipId == me ? '${p.fullName} (vous)' : p.fullName),
-            subtitle: Text([style.label, ...details].join(' · ')),
-            trailing: p.status == 'confirmed'
-                ? IconButton(
-                    tooltip: 'Reçu',
-                    icon: const Icon(Icons.receipt_long),
-                    onPressed: () => _push(ReceiptScreen(contributionId: c!.id)),
-                  )
-                : null,
-          ),
-          if (canConfirm || canWitness || canDispute)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: Wrap(spacing: 8, runSpacing: 8, children: [
-                if (canConfirm)
-                  FilledButton.icon(
-                    icon: const Icon(Icons.check),
-                    label: const Text("J'ai reçu"),
-                    onPressed: () => _guard(() => _decide(c, 'confirm')),
-                  ),
-                if (canWitness)
-                  FilledButton.icon(
-                    icon: const Icon(Icons.visibility),
-                    label: const Text("J'ai vu la remise"),
-                    onPressed: () => _guard(() => _decide(c, 'witness')),
-                  ),
-                if (canDispute)
-                  OutlinedButton.icon(
-                    icon: const Icon(Icons.report_outlined),
-                    label: const Text('Contester'),
-                    onPressed: () => _guard(() => _decide(c!, 'dispute')),
-                  ),
-              ]),
+        child: Column(
+          children: [
+            ListTile(
+              leading: Icon(style.icon, color: style.color, size: 32),
+              title: Text(p.membershipId == me ? '${p.fullName} (vous)' : p.fullName),
+              subtitle: Text([style.label, ...details].join(' · ')),
+              trailing: p.status == 'confirmed'
+                  ? IconButton(
+                      tooltip: 'Reçu',
+                      icon: const Icon(Icons.receipt_long),
+                      onPressed: () => _push(ReceiptScreen(contributionId: c!.id)),
+                    )
+                  : null,
             ),
-        ]),
+            if (canConfirm || canWitness || canDispute)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    if (canConfirm)
+                      FilledButton.icon(
+                        icon: const Icon(Icons.check),
+                        label: const Text("J'ai reçu"),
+                        onPressed: () => _guard(() => _decide(c, 'confirm')),
+                      ),
+                    if (canWitness)
+                      FilledButton.icon(
+                        icon: const Icon(Icons.visibility),
+                        label: const Text("J'ai vu la remise"),
+                        onPressed: () => _guard(() => _decide(c, 'witness')),
+                      ),
+                    if (canDispute)
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.report_outlined),
+                        label: const Text('Contester'),
+                        onPressed: () => _guard(() => _decide(c!, 'dispute')),
+                      ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

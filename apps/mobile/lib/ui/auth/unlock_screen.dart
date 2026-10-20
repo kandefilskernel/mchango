@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services.dart';
 import '../common.dart';
+import '../theme.dart';
 
 /// Ouverture de l'app : PIN vérifié sur le téléphone, puis session signée par la clé de l'appareil.
 class UnlockScreen extends StatefulWidget {
@@ -39,7 +40,8 @@ class _UnlockScreenState extends State<UnlockScreen> {
       builder: (context) => AlertDialog(
         title: const Text('Oublier ce téléphone ?'),
         content: const Text(
-            'Pour revenir, il faudra un code SMS et votre PIN. Vos groupes et cotisations ne sont pas effacés.'),
+          'Pour revenir, il faudra un code SMS et votre PIN. Vos groupes et cotisations ne sont pas effacés.',
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
           FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Oublier')),
@@ -54,19 +56,27 @@ class _UnlockScreenState extends State<UnlockScreen> {
     final name = Services.of(context).auth.fullName;
     return Scaffold(
       body: SafeArea(
-        child: ListView(padding: const EdgeInsets.all(24), children: [
-          const SizedBox(height: 48),
-          const Icon(Icons.lock_outline, size: 56),
-          const SizedBox(height: 16),
-          Text(name == null ? 'Mchango' : 'Bonjour $name',
-              style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center),
-          const SizedBox(height: 24),
-          PinField(key: const Key('unlock_pin'), controller: _pin, label: 'Votre PIN', autofocus: true),
-          const SizedBox(height: 16),
-          BusyButton(label: 'Ouvrir', onPressed: _unlock),
-          const SizedBox(height: 24),
-          TextButton(onPressed: _forget, child: const Text('Ce n\'est pas mon compte / PIN oublié')),
-        ]),
+        child: ListView(
+          padding: const EdgeInsets.all(24),
+          children: [
+            const SizedBox(height: 24),
+            const Center(child: BrandMark(size: 40)),
+            const SizedBox(height: 24),
+            const Illustration('verifie', height: 150),
+            const SizedBox(height: 16),
+            Text(
+              name == null ? 'Mchango' : 'Bonjour $name',
+              style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            PinField(key: const Key('unlock_pin'), controller: _pin, label: 'Votre PIN', autofocus: true),
+            const SizedBox(height: 16),
+            BusyButton(label: 'Ouvrir', onPressed: _unlock),
+            const SizedBox(height: 24),
+            TextButton(onPressed: _forget, child: const Text('Ce n\'est pas mon compte / PIN oublié')),
+          ],
+        ),
       ),
     );
   }

@@ -41,8 +41,11 @@ class LocalPin {
   }
 
   static Future<List<int>> _derive(String pin, List<int> salt, int rounds) async {
-    final key = await Pbkdf2(macAlgorithm: Hmac.sha256(), iterations: rounds, bits: 256)
-        .deriveKeyFromPassword(password: pin, nonce: salt);
+    final key = await Pbkdf2(
+      macAlgorithm: Hmac.sha256(),
+      iterations: rounds,
+      bits: 256,
+    ).deriveKeyFromPassword(password: pin, nonce: salt);
     return key.extractBytes();
   }
 

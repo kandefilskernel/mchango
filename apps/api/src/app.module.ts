@@ -1,6 +1,7 @@
 import { Controller, Get, Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module.js';
 import { APP_CONFIG, loadConfig } from './config.js';
+import { GroupsModule } from './groups/groups.module.js';
 import { DatabaseModule } from './infra/database.js';
 import { RedisModule } from './infra/redis.js';
 import { SmsModule } from './infra/sms.js';
@@ -26,6 +27,7 @@ class ConfigModule {}
     RedisModule,
     SmsModule,
     AuthModule,
+    GroupsModule,
   ],
   controllers: [HealthController],
 })

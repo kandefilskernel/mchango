@@ -63,3 +63,4 @@ Tests de la base : voir [`db/README.md`](db/README.md).
 - [Revue du schéma de base de données](docs/revue-schema.md)
 - [Format du hash du journal](spec/audit-hash.md)
 - [Authentification : contrat de l'API](spec/auth.md)
+- [Groupes et invitations : contrat de l'API](spec/groups.md)

@@ -1,80 +1,23 @@
-import { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
-import { generateKeyPairSync, randomInt, sign, type KeyObject } from 'node:crypto';
-import request from 'supertest';
-import { App } from 'supertest/types.js';
-import { AppModule } from '../src/app.module.js';
+import { randomInt, sign } from 'node:crypto';
 import { challengeMessage } from '../src/auth/device-key.js';
-import { Db } from '../src/infra/database.js';
-import { ConsoleSmsSender, SMS_SENDER } from '../src/infra/sms.js';
-
-const GOOD_PIN = '482915';
-
-interface Device {
-  publicKey: string;
-  privateKey: KeyObject;
-}
-
-function newDevice(): Device {
-  const { publicKey, privateKey } = generateKeyPairSync('ed25519');
-  const raw = publicKey.export({ format: 'der', type: 'spki' }).subarray(12);
-  return { publicKey: raw.toString('base64'), privateKey };
-}
-
-/** Numéro unique par test : la base de développement n'est pas vidée entre deux lancements. */
-function newPhone(): string {
-  return `+24399${randomInt(0, 10_000_000).toString().padStart(7, '0')}`;
-}
+import { GOOD_PIN, newDevice, newPhone, TestApi } from './helpers.js';
 
 describe('Authentification (e2e)', () => {
-  let app: INestApplication<App>;
-  let sms: ConsoleSmsSender;
-  let db: Db;
+  let api: TestApi;
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    app = moduleRef.createNestApplication();
-    await app.init();
-    sms = app.get(SMS_SENDER);
-    db = app.get(Db);
+    api = await TestApi.start();
   });
 
   afterAll(async () => {
-    await app.close();
+    await api.close();
   });
 
-  const http = () => request(app.getHttpServer());
-
-  function lastCode(phone: string): string {
-    const message = sms.sent.filter((m) => m.phone === phone).at(-1)?.message ?? '';
-    return /code est (\d{6})/.exec(message)![1];
-  }
-
-  async function verifiedOtpToken(phone: string) {
-    await http().post('/auth/otp/request').send({ phone }).expect(202);
-    const res = await http()
-      .post('/auth/otp/verify')
-      .send({ phone, code: lastCode(phone) })
-      .expect(200);
-    return res.body as { otpToken: string; accountExists: boolean };
-  }
-
-  async function signUp(phone = newPhone(), device = newDevice()) {
-    const { otpToken } = await verifiedOtpToken(phone);
-    const res = await http()
-      .post('/auth/register')
-      .send({ otpToken, fullName: 'Mama Furaha', pin: GOOD_PIN, devicePublicKey: device.publicKey })
-      .expect(201);
-    return { phone, device, session: res.body as { userId: string; deviceId: string; accessToken: string } };
-  }
-
-  async function openSession(deviceId: string, device: Device) {
-    const { body } = await http().post('/auth/challenge').send({ deviceId }).expect(200);
-    const signature = sign(null, Buffer.from(challengeMessage(deviceId, body.nonce)), device.privateKey);
-    return http()
-      .post('/auth/session')
-      .send({ deviceId, nonce: body.nonce, signature: signature.toString('base64') });
-  }
+  const http = () => api.http();
+  const lastCode = (phone: string) => api.lastCode(phone);
+  const verifiedOtpToken = (phone: string) => api.verifiedOtpToken(phone);
+  const signUp = (phone?: string) => api.signUp(phone);
+  const openSession = (...args: Parameters<TestApi['openSession']>) => api.openSession(...args);
 
   it("inscription complète, puis /me avec le jeton d'accès", async () => {
     const phone = newPhone();
@@ -89,7 +32,7 @@ describe('Authentification (e2e)', () => {
   it('accepte le format local 09… et le normalise', async () => {
     const national = `099${randomInt(0, 10_000_000).toString().padStart(7, '0')}`;
     await http().post('/auth/otp/request').send({ phone: national }).expect(202);
-    expect(sms.sent.at(-1)!.phone).toBe(`+243${national.slice(1)}`);
+    expect(api.sms.sent.at(-1)!.phone).toBe(`+243${national.slice(1)}`);
   });
 
   it('refuse un numéro invalide', async () => {
@@ -217,7 +160,7 @@ describe('Authentification (e2e)', () => {
       .send({ otpToken, pin: GOOD_PIN, devicePublicKey: newDevice().publicKey })
       .expect(201);
 
-    const { rows } = await db.query<{ action: string; payload: string }>(
+    const { rows } = await api.db.query<{ action: string; payload: string }>(
       `SELECT action, payload FROM audit_log
        WHERE chain_id = 'global' AND payload::jsonb ->> 'user_id' = $1 ORDER BY seq`,
       [session.userId],
@@ -226,7 +169,7 @@ describe('Authentification (e2e)', () => {
     expect(JSON.parse(rows[1].payload).revoked_device_ids).toEqual([session.deviceId]);
     expect(rows.some((r) => r.payload.includes(GOOD_PIN))).toBe(false);
 
-    const check = await db.query<{ broken: string | null }>(
+    const check = await api.db.query<{ broken: string | null }>(
       `SELECT audit_verify_chain('global') AS broken`,
     );
     expect(check.rows[0].broken).toBeNull();

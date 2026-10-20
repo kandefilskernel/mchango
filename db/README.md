@@ -6,6 +6,7 @@
 | `002_roles.sql` | Rôle applicatif `mchango_app` (pas de DELETE, journal en lecture/ajout) |
 | `003_cash_witness.sql` | Cash : le receveur **et** un témoin désigné doivent confirmer |
 | `004_auth.sql` | Verrouillage du PIN, un seul appareil actif par compte |
+| `005_group_invitations.sql` | Codes d'invitation à partager (durée, nombre d'utilisations), taille maximale d'un groupe |
 | `tests/001_checks.sql` | Double regard, anti-fraude, journal en ajout seul, détection de falsification |
 | `tests/002_cash_witness.sql` | Règles du témoin (à lancer **après** `001_checks.sql`, sur la même base) |
 

@@ -17,7 +17,10 @@ export interface Actor {
   deviceId?: string;
 }
 
-export type Queryable = Pick<pg.PoolClient, 'query'>;
+/** Ce que partagent Db et le client d'une transaction : une requête paramétrée. */
+export interface Queryable {
+  query<R extends pg.QueryResultRow>(text: string, params?: unknown[]): Promise<pg.QueryResult<R>>;
+}
 
 @Injectable()
 export class Db implements OnModuleDestroy {

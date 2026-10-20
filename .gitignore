@@ -1,0 +1,26 @@
+# Dépendances et builds
+node_modules/
+dist/
+.next/
+out/
+coverage/
+build/
+.dart_tool/
+
+# Environnement et secrets : jamais dans le dépôt
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.jks
+*.keystore
+key.properties
+
+# Éditeurs et système
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+~$*

@@ -1,0 +1,587 @@
+{
+  "format": "mchango-v1",
+  "genesis_prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "chains": [
+    {
+      "chain_id": "global",
+      "events": [
+        {
+          "chain_id": "global",
+          "seq": 1,
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "actor_type": "staff",
+          "actor_id": "55555555-5555-4555-8555-555555555555",
+          "device_id": null,
+          "action": "staff.login",
+          "created_at": "2026-10-20T21:57:08.203Z",
+          "payload": "{\"ip\":\"203.0.113.7\"}",
+          "signature": null,
+          "hash": "947aa1b2f115ea377b3d202c25a5099745cd11946d1acd595756479013ed2671"
+        }
+      ]
+    },
+    {
+      "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "events": [
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 1,
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "actor_type": "system",
+          "actor_id": null,
+          "device_id": null,
+          "action": "groups.insert",
+          "created_at": "2026-10-20T21:57:08.152Z",
+          "payload": "{\"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\", \"name\": \"Likelemba Kenya\", \"type\": \"informel\", \"status\": \"draft\", \"currency\": \"CDF\", \"frequency\": \"weekly\", \"created_at\": \"2026-10-20T21:57:08.144544+00:00\", \"created_by\": \"11111111-1111-4111-8111-111111111111\", \"start_date\": \"2026-11-02\", \"payout_mode\": \"direct_to_beneficiary\", \"late_penalty_rule\": null, \"contribution_amount_minor\": 20000}",
+          "signature": null,
+          "hash": "a46bf6231df3e1ba4ea9d7349d5c1950048a96f70accb8cd3fa65755af785e9d"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 2,
+          "prev_hash": "a46bf6231df3e1ba4ea9d7349d5c1950048a96f70accb8cd3fa65755af785e9d",
+          "actor_type": "user",
+          "actor_id": "22222222-2222-4222-8222-222222222222",
+          "device_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "action": "test.unicode",
+          "created_at": "2026-10-20T21:57:08.183Z",
+          "payload": "{\"note\":\"Cotisation reçue — asante sana, matondo 🙏\",\"montant\":20000}",
+          "signature": null,
+          "hash": "aeaa9141288a8a11c5ede22287992d0b2e2d25f8bd4101c5ac454750748d8f00"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 3,
+          "prev_hash": "aeaa9141288a8a11c5ede22287992d0b2e2d25f8bd4101c5ac454750748d8f00",
+          "actor_type": "user",
+          "actor_id": "22222222-2222-4222-8222-222222222222",
+          "device_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "action": "test.signature",
+          "created_at": "2026-10-20T21:57:08.184Z",
+          "payload": "{\"tx\":\"RK45TX9QPL\"}",
+          "signature": "c2lnbmF0dXJlLWVkMjU1MTk=",
+          "hash": "cad0dc6612db1f1d5142557880c80fae3f8d0981c0e0d2e114ea11267d6fa54d"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 4,
+          "prev_hash": "cad0dc6612db1f1d5142557880c80fae3f8d0981c0e0d2e114ea11267d6fa54d",
+          "actor_type": "staff",
+          "actor_id": "55555555-5555-4555-8555-555555555555",
+          "device_id": null,
+          "action": "test.echappements",
+          "created_at": "2026-10-20T21:57:08.185Z",
+          "payload": "{\"q\":\"guillemet \\\" barre \\\\ tab \\t fin\", \"espaces\" :  [1, 2]}",
+          "signature": null,
+          "hash": "3b3bf74551c8cf0cc5ba5c9baeda0b313a5cd03964927c7578f76694c23ec57e"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 5,
+          "prev_hash": "3b3bf74551c8cf0cc5ba5c9baeda0b313a5cd03964927c7578f76694c23ec57e",
+          "actor_type": "system",
+          "actor_id": null,
+          "device_id": null,
+          "action": "test.payload_vide",
+          "created_at": "2026-10-20T21:57:08.186Z",
+          "payload": "{}",
+          "signature": null,
+          "hash": "885ad98d4b056ee11545161a8604ecdfbaa8dc59c6dc51c55a75a7df870fa6d8"
+        }
+      ]
+    }
+  ],
+  "invalid_cases": [
+    {
+      "description": "montant modifié dans le payload",
+      "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "events": [
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 1,
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "actor_type": "system",
+          "actor_id": null,
+          "device_id": null,
+          "action": "groups.insert",
+          "created_at": "2026-10-20T21:57:08.152Z",
+          "payload": "{\"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\", \"name\": \"Likelemba Kenya\", \"type\": \"informel\", \"status\": \"draft\", \"currency\": \"CDF\", \"frequency\": \"weekly\", \"created_at\": \"2026-10-20T21:57:08.144544+00:00\", \"created_by\": \"11111111-1111-4111-8111-111111111111\", \"start_date\": \"2026-11-02\", \"payout_mode\": \"direct_to_beneficiary\", \"late_penalty_rule\": null, \"contribution_amount_minor\": 20000}",
+          "signature": null,
+          "hash": "a46bf6231df3e1ba4ea9d7349d5c1950048a96f70accb8cd3fa65755af785e9d"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 2,
+          "prev_hash": "a46bf6231df3e1ba4ea9d7349d5c1950048a96f70accb8cd3fa65755af785e9d",
+          "actor_type": "user",
+          "actor_id": "22222222-2222-4222-8222-222222222222",
+          "device_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "action": "test.unicode",
+          "created_at": "2026-10-20T21:57:08.183Z",
+          "payload": "{\"note\":\"Cotisation reçue — asante sana, matondo 🙏\",\"montant\":2000}",
+          "signature": null,
+          "hash": "aeaa9141288a8a11c5ede22287992d0b2e2d25f8bd4101c5ac454750748d8f00"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 3,
+          "prev_hash": "aeaa9141288a8a11c5ede22287992d0b2e2d25f8bd4101c5ac454750748d8f00",
+          "actor_type": "user",
+          "actor_id": "22222222-2222-4222-8222-222222222222",
+          "device_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "action": "test.signature",
+          "created_at": "2026-10-20T21:57:08.184Z",
+          "payload": "{\"tx\":\"RK45TX9QPL\"}",
+          "signature": "c2lnbmF0dXJlLWVkMjU1MTk=",
+          "hash": "cad0dc6612db1f1d5142557880c80fae3f8d0981c0e0d2e114ea11267d6fa54d"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 4,
+          "prev_hash": "cad0dc6612db1f1d5142557880c80fae3f8d0981c0e0d2e114ea11267d6fa54d",
+          "actor_type": "staff",
+          "actor_id": "55555555-5555-4555-8555-555555555555",
+          "device_id": null,
+          "action": "test.echappements",
+          "created_at": "2026-10-20T21:57:08.185Z",
+          "payload": "{\"q\":\"guillemet \\\" barre \\\\ tab \\t fin\", \"espaces\" :  [1, 2]}",
+          "signature": null,
+          "hash": "3b3bf74551c8cf0cc5ba5c9baeda0b313a5cd03964927c7578f76694c23ec57e"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 5,
+          "prev_hash": "3b3bf74551c8cf0cc5ba5c9baeda0b313a5cd03964927c7578f76694c23ec57e",
+          "actor_type": "system",
+          "actor_id": null,
+          "device_id": null,
+          "action": "test.payload_vide",
+          "created_at": "2026-10-20T21:57:08.186Z",
+          "payload": "{}",
+          "signature": null,
+          "hash": "885ad98d4b056ee11545161a8604ecdfbaa8dc59c6dc51c55a75a7df870fa6d8"
+        }
+      ],
+      "first_invalid_seq": 2
+    },
+    {
+      "description": "événement supprimé (trou dans seq)",
+      "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "events": [
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 1,
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "actor_type": "system",
+          "actor_id": null,
+          "device_id": null,
+          "action": "groups.insert",
+          "created_at": "2026-10-20T21:57:08.152Z",
+          "payload": "{\"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\", \"name\": \"Likelemba Kenya\", \"type\": \"informel\", \"status\": \"draft\", \"currency\": \"CDF\", \"frequency\": \"weekly\", \"created_at\": \"2026-10-20T21:57:08.144544+00:00\", \"created_by\": \"11111111-1111-4111-8111-111111111111\", \"start_date\": \"2026-11-02\", \"payout_mode\": \"direct_to_beneficiary\", \"late_penalty_rule\": null, \"contribution_amount_minor\": 20000}",
+          "signature": null,
+          "hash": "a46bf6231df3e1ba4ea9d7349d5c1950048a96f70accb8cd3fa65755af785e9d"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 2,
+          "prev_hash": "a46bf6231df3e1ba4ea9d7349d5c1950048a96f70accb8cd3fa65755af785e9d",
+          "actor_type": "user",
+          "actor_id": "22222222-2222-4222-8222-222222222222",
+          "device_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "action": "test.unicode",
+          "created_at": "2026-10-20T21:57:08.183Z",
+          "payload": "{\"note\":\"Cotisation reçue — asante sana, matondo 🙏\",\"montant\":20000}",
+          "signature": null,
+          "hash": "aeaa9141288a8a11c5ede22287992d0b2e2d25f8bd4101c5ac454750748d8f00"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 4,
+          "prev_hash": "cad0dc6612db1f1d5142557880c80fae3f8d0981c0e0d2e114ea11267d6fa54d",
+          "actor_type": "staff",
+          "actor_id": "55555555-5555-4555-8555-555555555555",
+          "device_id": null,
+          "action": "test.echappements",
+          "created_at": "2026-10-20T21:57:08.185Z",
+          "payload": "{\"q\":\"guillemet \\\" barre \\\\ tab \\t fin\", \"espaces\" :  [1, 2]}",
+          "signature": null,
+          "hash": "3b3bf74551c8cf0cc5ba5c9baeda0b313a5cd03964927c7578f76694c23ec57e"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 5,
+          "prev_hash": "3b3bf74551c8cf0cc5ba5c9baeda0b313a5cd03964927c7578f76694c23ec57e",
+          "actor_type": "system",
+          "actor_id": null,
+          "device_id": null,
+          "action": "test.payload_vide",
+          "created_at": "2026-10-20T21:57:08.186Z",
+          "payload": "{}",
+          "signature": null,
+          "hash": "885ad98d4b056ee11545161a8604ecdfbaa8dc59c6dc51c55a75a7df870fa6d8"
+        }
+      ],
+      "first_invalid_seq": 3
+    },
+    {
+      "description": "deux événements inversés",
+      "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "events": [
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 1,
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "actor_type": "system",
+          "actor_id": null,
+          "device_id": null,
+          "action": "groups.insert",
+          "created_at": "2026-10-20T21:57:08.152Z",
+          "payload": "{\"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\", \"name\": \"Likelemba Kenya\", \"type\": \"informel\", \"status\": \"draft\", \"currency\": \"CDF\", \"frequency\": \"weekly\", \"created_at\": \"2026-10-20T21:57:08.144544+00:00\", \"created_by\": \"11111111-1111-4111-8111-111111111111\", \"start_date\": \"2026-11-02\", \"payout_mode\": \"direct_to_beneficiary\", \"late_penalty_rule\": null, \"contribution_amount_minor\": 20000}",
+          "signature": null,
+          "hash": "a46bf6231df3e1ba4ea9d7349d5c1950048a96f70accb8cd3fa65755af785e9d"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 3,
+          "prev_hash": "aeaa9141288a8a11c5ede22287992d0b2e2d25f8bd4101c5ac454750748d8f00",
+          "actor_type": "user",
+          "actor_id": "22222222-2222-4222-8222-222222222222",
+          "device_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "action": "test.signature",
+          "created_at": "2026-10-20T21:57:08.184Z",
+          "payload": "{\"tx\":\"RK45TX9QPL\"}",
+          "signature": "c2lnbmF0dXJlLWVkMjU1MTk=",
+          "hash": "cad0dc6612db1f1d5142557880c80fae3f8d0981c0e0d2e114ea11267d6fa54d"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 2,
+          "prev_hash": "a46bf6231df3e1ba4ea9d7349d5c1950048a96f70accb8cd3fa65755af785e9d",
+          "actor_type": "user",
+          "actor_id": "22222222-2222-4222-8222-222222222222",
+          "device_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "action": "test.unicode",
+          "created_at": "2026-10-20T21:57:08.183Z",
+          "payload": "{\"note\":\"Cotisation reçue — asante sana, matondo 🙏\",\"montant\":20000}",
+          "signature": null,
+          "hash": "aeaa9141288a8a11c5ede22287992d0b2e2d25f8bd4101c5ac454750748d8f00"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 4,
+          "prev_hash": "cad0dc6612db1f1d5142557880c80fae3f8d0981c0e0d2e114ea11267d6fa54d",
+          "actor_type": "staff",
+          "actor_id": "55555555-5555-4555-8555-555555555555",
+          "device_id": null,
+          "action": "test.echappements",
+          "created_at": "2026-10-20T21:57:08.185Z",
+          "payload": "{\"q\":\"guillemet \\\" barre \\\\ tab \\t fin\", \"espaces\" :  [1, 2]}",
+          "signature": null,
+          "hash": "3b3bf74551c8cf0cc5ba5c9baeda0b313a5cd03964927c7578f76694c23ec57e"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 5,
+          "prev_hash": "3b3bf74551c8cf0cc5ba5c9baeda0b313a5cd03964927c7578f76694c23ec57e",
+          "actor_type": "system",
+          "actor_id": null,
+          "device_id": null,
+          "action": "test.payload_vide",
+          "created_at": "2026-10-20T21:57:08.186Z",
+          "payload": "{}",
+          "signature": null,
+          "hash": "885ad98d4b056ee11545161a8604ecdfbaa8dc59c6dc51c55a75a7df870fa6d8"
+        }
+      ],
+      "first_invalid_seq": 2
+    },
+    {
+      "description": "payload modifié et son hash recalculé",
+      "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "events": [
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 1,
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "actor_type": "system",
+          "actor_id": null,
+          "device_id": null,
+          "action": "groups.insert",
+          "created_at": "2026-10-20T21:57:08.152Z",
+          "payload": "{\"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\", \"name\": \"Likelemba Kenya\", \"type\": \"informel\", \"status\": \"draft\", \"currency\": \"CDF\", \"frequency\": \"weekly\", \"created_at\": \"2026-10-20T21:57:08.144544+00:00\", \"created_by\": \"11111111-1111-4111-8111-111111111111\", \"start_date\": \"2026-11-02\", \"payout_mode\": \"direct_to_beneficiary\", \"late_penalty_rule\": null, \"contribution_amount_minor\": 20000}",
+          "signature": null,
+          "hash": "a46bf6231df3e1ba4ea9d7349d5c1950048a96f70accb8cd3fa65755af785e9d"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 2,
+          "prev_hash": "a46bf6231df3e1ba4ea9d7349d5c1950048a96f70accb8cd3fa65755af785e9d",
+          "actor_type": "user",
+          "actor_id": "22222222-2222-4222-8222-222222222222",
+          "device_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "action": "test.unicode",
+          "created_at": "2026-10-20T21:57:08.183Z",
+          "payload": "{\"note\":\"Cotisation reçue — asante sana, matondo 🙏\",\"montant\":2000}",
+          "signature": null,
+          "hash": "b530711b4525adc478543a15f550b1c8cc85d2254d31f017ebe974b0c33f1084"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 3,
+          "prev_hash": "aeaa9141288a8a11c5ede22287992d0b2e2d25f8bd4101c5ac454750748d8f00",
+          "actor_type": "user",
+          "actor_id": "22222222-2222-4222-8222-222222222222",
+          "device_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "action": "test.signature",
+          "created_at": "2026-10-20T21:57:08.184Z",
+          "payload": "{\"tx\":\"RK45TX9QPL\"}",
+          "signature": "c2lnbmF0dXJlLWVkMjU1MTk=",
+          "hash": "cad0dc6612db1f1d5142557880c80fae3f8d0981c0e0d2e114ea11267d6fa54d"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 4,
+          "prev_hash": "cad0dc6612db1f1d5142557880c80fae3f8d0981c0e0d2e114ea11267d6fa54d",
+          "actor_type": "staff",
+          "actor_id": "55555555-5555-4555-8555-555555555555",
+          "device_id": null,
+          "action": "test.echappements",
+          "created_at": "2026-10-20T21:57:08.185Z",
+          "payload": "{\"q\":\"guillemet \\\" barre \\\\ tab \\t fin\", \"espaces\" :  [1, 2]}",
+          "signature": null,
+          "hash": "3b3bf74551c8cf0cc5ba5c9baeda0b313a5cd03964927c7578f76694c23ec57e"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 5,
+          "prev_hash": "3b3bf74551c8cf0cc5ba5c9baeda0b313a5cd03964927c7578f76694c23ec57e",
+          "actor_type": "system",
+          "actor_id": null,
+          "device_id": null,
+          "action": "test.payload_vide",
+          "created_at": "2026-10-20T21:57:08.186Z",
+          "payload": "{}",
+          "signature": null,
+          "hash": "885ad98d4b056ee11545161a8604ecdfbaa8dc59c6dc51c55a75a7df870fa6d8"
+        }
+      ],
+      "first_invalid_seq": 3
+    },
+    {
+      "description": "auteur changé",
+      "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "events": [
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 1,
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "actor_type": "system",
+          "actor_id": null,
+          "device_id": null,
+          "action": "groups.insert",
+          "created_at": "2026-10-20T21:57:08.152Z",
+          "payload": "{\"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\", \"name\": \"Likelemba Kenya\", \"type\": \"informel\", \"status\": \"draft\", \"currency\": \"CDF\", \"frequency\": \"weekly\", \"created_at\": \"2026-10-20T21:57:08.144544+00:00\", \"created_by\": \"11111111-1111-4111-8111-111111111111\", \"start_date\": \"2026-11-02\", \"payout_mode\": \"direct_to_beneficiary\", \"late_penalty_rule\": null, \"contribution_amount_minor\": 20000}",
+          "signature": null,
+          "hash": "a46bf6231df3e1ba4ea9d7349d5c1950048a96f70accb8cd3fa65755af785e9d"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 2,
+          "prev_hash": "a46bf6231df3e1ba4ea9d7349d5c1950048a96f70accb8cd3fa65755af785e9d",
+          "actor_type": "user",
+          "actor_id": "22222222-2222-4222-8222-222222222222",
+          "device_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "action": "test.unicode",
+          "created_at": "2026-10-20T21:57:08.183Z",
+          "payload": "{\"note\":\"Cotisation reçue — asante sana, matondo 🙏\",\"montant\":20000}",
+          "signature": null,
+          "hash": "aeaa9141288a8a11c5ede22287992d0b2e2d25f8bd4101c5ac454750748d8f00"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 3,
+          "prev_hash": "aeaa9141288a8a11c5ede22287992d0b2e2d25f8bd4101c5ac454750748d8f00",
+          "actor_type": "user",
+          "actor_id": "11111111-1111-4111-8111-111111111111",
+          "device_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "action": "test.signature",
+          "created_at": "2026-10-20T21:57:08.184Z",
+          "payload": "{\"tx\":\"RK45TX9QPL\"}",
+          "signature": "c2lnbmF0dXJlLWVkMjU1MTk=",
+          "hash": "cad0dc6612db1f1d5142557880c80fae3f8d0981c0e0d2e114ea11267d6fa54d"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 4,
+          "prev_hash": "cad0dc6612db1f1d5142557880c80fae3f8d0981c0e0d2e114ea11267d6fa54d",
+          "actor_type": "staff",
+          "actor_id": "55555555-5555-4555-8555-555555555555",
+          "device_id": null,
+          "action": "test.echappements",
+          "created_at": "2026-10-20T21:57:08.185Z",
+          "payload": "{\"q\":\"guillemet \\\" barre \\\\ tab \\t fin\", \"espaces\" :  [1, 2]}",
+          "signature": null,
+          "hash": "3b3bf74551c8cf0cc5ba5c9baeda0b313a5cd03964927c7578f76694c23ec57e"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 5,
+          "prev_hash": "3b3bf74551c8cf0cc5ba5c9baeda0b313a5cd03964927c7578f76694c23ec57e",
+          "actor_type": "system",
+          "actor_id": null,
+          "device_id": null,
+          "action": "test.payload_vide",
+          "created_at": "2026-10-20T21:57:08.186Z",
+          "payload": "{}",
+          "signature": null,
+          "hash": "885ad98d4b056ee11545161a8604ecdfbaa8dc59c6dc51c55a75a7df870fa6d8"
+        }
+      ],
+      "first_invalid_seq": 3
+    },
+    {
+      "description": "horodatage changé",
+      "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "events": [
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 1,
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "actor_type": "system",
+          "actor_id": null,
+          "device_id": null,
+          "action": "groups.insert",
+          "created_at": "2026-10-20T21:57:08.152Z",
+          "payload": "{\"id\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\", \"name\": \"Likelemba Kenya\", \"type\": \"informel\", \"status\": \"draft\", \"currency\": \"CDF\", \"frequency\": \"weekly\", \"created_at\": \"2026-10-20T21:57:08.144544+00:00\", \"created_by\": \"11111111-1111-4111-8111-111111111111\", \"start_date\": \"2026-11-02\", \"payout_mode\": \"direct_to_beneficiary\", \"late_penalty_rule\": null, \"contribution_amount_minor\": 20000}",
+          "signature": null,
+          "hash": "a46bf6231df3e1ba4ea9d7349d5c1950048a96f70accb8cd3fa65755af785e9d"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 2,
+          "prev_hash": "a46bf6231df3e1ba4ea9d7349d5c1950048a96f70accb8cd3fa65755af785e9d",
+          "actor_type": "user",
+          "actor_id": "22222222-2222-4222-8222-222222222222",
+          "device_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "action": "test.unicode",
+          "created_at": "2026-10-20T21:57:08.183Z",
+          "payload": "{\"note\":\"Cotisation reçue — asante sana, matondo 🙏\",\"montant\":20000}",
+          "signature": null,
+          "hash": "aeaa9141288a8a11c5ede22287992d0b2e2d25f8bd4101c5ac454750748d8f00"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 3,
+          "prev_hash": "aeaa9141288a8a11c5ede22287992d0b2e2d25f8bd4101c5ac454750748d8f00",
+          "actor_type": "user",
+          "actor_id": "22222222-2222-4222-8222-222222222222",
+          "device_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "action": "test.signature",
+          "created_at": "2026-10-20T21:57:08.184Z",
+          "payload": "{\"tx\":\"RK45TX9QPL\"}",
+          "signature": "c2lnbmF0dXJlLWVkMjU1MTk=",
+          "hash": "cad0dc6612db1f1d5142557880c80fae3f8d0981c0e0d2e114ea11267d6fa54d"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 4,
+          "prev_hash": "cad0dc6612db1f1d5142557880c80fae3f8d0981c0e0d2e114ea11267d6fa54d",
+          "actor_type": "staff",
+          "actor_id": "55555555-5555-4555-8555-555555555555",
+          "device_id": null,
+          "action": "test.echappements",
+          "created_at": "2026-10-20T21:57:08999Z",
+          "payload": "{\"q\":\"guillemet \\\" barre \\\\ tab \\t fin\", \"espaces\" :  [1, 2]}",
+          "signature": null,
+          "hash": "3b3bf74551c8cf0cc5ba5c9baeda0b313a5cd03964927c7578f76694c23ec57e"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 5,
+          "prev_hash": "3b3bf74551c8cf0cc5ba5c9baeda0b313a5cd03964927c7578f76694c23ec57e",
+          "actor_type": "system",
+          "actor_id": null,
+          "device_id": null,
+          "action": "test.payload_vide",
+          "created_at": "2026-10-20T21:57:08.186Z",
+          "payload": "{}",
+          "signature": null,
+          "hash": "885ad98d4b056ee11545161a8604ecdfbaa8dc59c6dc51c55a75a7df870fa6d8"
+        }
+      ],
+      "first_invalid_seq": 4
+    },
+    {
+      "description": "payload re-sérialisé (même JSON, autres octets)",
+      "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "events": [
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 1,
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "actor_type": "system",
+          "actor_id": null,
+          "device_id": null,
+          "action": "groups.insert",
+          "created_at": "2026-10-20T21:57:08.152Z",
+          "payload": "{\"id\":\"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\",\"name\":\"Likelemba Kenya\",\"type\":\"informel\",\"status\":\"draft\",\"currency\":\"CDF\",\"frequency\":\"weekly\",\"created_at\":\"2026-10-20T21:57:08.144544+00:00\",\"created_by\":\"11111111-1111-4111-8111-111111111111\",\"start_date\":\"2026-11-02\",\"payout_mode\":\"direct_to_beneficiary\",\"late_penalty_rule\":null,\"contribution_amount_minor\":20000}",
+          "signature": null,
+          "hash": "a46bf6231df3e1ba4ea9d7349d5c1950048a96f70accb8cd3fa65755af785e9d"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 2,
+          "prev_hash": "a46bf6231df3e1ba4ea9d7349d5c1950048a96f70accb8cd3fa65755af785e9d",
+          "actor_type": "user",
+          "actor_id": "22222222-2222-4222-8222-222222222222",
+          "device_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "action": "test.unicode",
+          "created_at": "2026-10-20T21:57:08.183Z",
+          "payload": "{\"note\":\"Cotisation reçue — asante sana, matondo 🙏\",\"montant\":20000}",
+          "signature": null,
+          "hash": "aeaa9141288a8a11c5ede22287992d0b2e2d25f8bd4101c5ac454750748d8f00"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 3,
+          "prev_hash": "aeaa9141288a8a11c5ede22287992d0b2e2d25f8bd4101c5ac454750748d8f00",
+          "actor_type": "user",
+          "actor_id": "22222222-2222-4222-8222-222222222222",
+          "device_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "action": "test.signature",
+          "created_at": "2026-10-20T21:57:08.184Z",
+          "payload": "{\"tx\":\"RK45TX9QPL\"}",
+          "signature": "c2lnbmF0dXJlLWVkMjU1MTk=",
+          "hash": "cad0dc6612db1f1d5142557880c80fae3f8d0981c0e0d2e114ea11267d6fa54d"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 4,
+          "prev_hash": "cad0dc6612db1f1d5142557880c80fae3f8d0981c0e0d2e114ea11267d6fa54d",
+          "actor_type": "staff",
+          "actor_id": "55555555-5555-4555-8555-555555555555",
+          "device_id": null,
+          "action": "test.echappements",
+          "created_at": "2026-10-20T21:57:08.185Z",
+          "payload": "{\"q\":\"guillemet \\\" barre \\\\ tab \\t fin\", \"espaces\" :  [1, 2]}",
+          "signature": null,
+          "hash": "3b3bf74551c8cf0cc5ba5c9baeda0b313a5cd03964927c7578f76694c23ec57e"
+        },
+        {
+          "chain_id": "group:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "seq": 5,
+          "prev_hash": "3b3bf74551c8cf0cc5ba5c9baeda0b313a5cd03964927c7578f76694c23ec57e",
+          "actor_type": "system",
+          "actor_id": null,
+          "device_id": null,
+          "action": "test.payload_vide",
+          "created_at": "2026-10-20T21:57:08.186Z",
+          "payload": "{}",
+          "signature": null,
+          "hash": "885ad98d4b056ee11545161a8604ecdfbaa8dc59c6dc51c55a75a7df870fa6d8"
+        }
+      ],
+      "first_invalid_seq": 1
+    }
+  ]
+}

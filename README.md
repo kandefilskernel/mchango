@@ -64,3 +64,5 @@ Tests de la base : voir [`db/README.md`](db/README.md).
 - [Format du hash du journal](spec/audit-hash.md)
 - [Authentification : contrat de l'API](spec/auth.md)
 - [Groupes et invitations : contrat de l'API](spec/groups.md)
+- [Tours, cycles et cotisations : contrat de l'API](spec/cycles.md)
+- [Tirage vérifiable de l'ordre des tours](spec/draw.md)

@@ -1,27 +1,59 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { z } from 'zod';
 import { AccessGuard, CurrentAuth } from '../auth/access.guard.js';
 import type { AccessTokenClaims } from '../auth/auth.service.js';
 import { parseBody } from '../common/parse-body.js';
 import { GroupsService } from './groups.service.js';
+import { GroupLifecycleService } from './lifecycle.service.js';
 
 /** Date du jour à Lubumbashi (UTC+2), au format AAAA-MM-JJ. */
 function todayInDrc(): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Lubumbashi' }).format(new Date());
 }
 
+const name = z.string().trim().min(2).max(150);
+// Unités mineures : francs pour CDF, cents pour USD
+const amountMinor = z.number().int().positive().max(1_000_000_000_000);
+const frequency = z.enum(['daily', 'weekly', 'monthly']);
+const startDate = z.iso
+  .date()
+  .refine((d) => d >= todayInDrc(), 'La date de début ne peut pas être dans le passé.');
+const maxMembers = z.number().int().min(2).max(100);
+
 const CreateGroup = z.object({
-  name: z.string().trim().min(2).max(150),
+  name,
   type: z.enum(['formel', 'informel']).default('informel'),
   currency: z.enum(['CDF', 'USD']),
-  // Unités mineures : francs pour CDF, cents pour USD
-  contributionAmountMinor: z.number().int().positive().max(1_000_000_000_000),
-  frequency: z.enum(['daily', 'weekly', 'monthly']),
-  startDate: z.iso
-    .date()
-    .refine((d) => d >= todayInDrc(), 'La date de début ne peut pas être dans le passé.'),
-  maxMembers: z.number().int().min(2).max(100).default(30),
+  contributionAmountMinor: amountMinor,
+  frequency,
+  startDate,
+  maxMembers: maxMembers.default(30),
 });
+
+// La devise et le type ne changent pas : ce serait un autre groupe
+const UpdateGroup = z
+  .object({
+    name,
+    contributionAmountMinor: amountMinor,
+    frequency,
+    startDate,
+    maxMembers,
+  })
+  .partial()
+  .refine((v) => Object.keys(v).length > 0, 'Aucune modification demandée.');
+
+const ChosenOrder = z.object({ membershipIds: z.array(z.uuid()).min(2).max(100) });
 
 const CreateInvitation = z.object({
   validHours: z.number().int().min(1).max(24 * 14).default(72),
@@ -38,7 +70,10 @@ const actorOf = (auth: AccessTokenClaims) => ({ type: 'user' as const, id: auth.
 @Controller('groups')
 @UseGuards(AccessGuard)
 export class GroupsController {
-  constructor(private readonly groups: GroupsService) {}
+  constructor(
+    private readonly groups: GroupsService,
+    private readonly lifecycle: GroupLifecycleService,
+  ) {}
 
   @Post()
   create(@CurrentAuth() auth: AccessTokenClaims, @Body() body: unknown) {
@@ -60,6 +95,36 @@ export class GroupsController {
   @Get(':id')
   get(@CurrentAuth() auth: AccessTokenClaims, @Param('id', ParseUUIDPipe) id: string) {
     return this.groups.getForMember(auth.sub, id);
+  }
+
+  @Patch(':id')
+  update(
+    @CurrentAuth() auth: AccessTokenClaims,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    return this.lifecycle.update(actorOf(auth), id, parseBody(UpdateGroup, body));
+  }
+
+  @Put(':id/turn-order')
+  setChosenOrder(
+    @CurrentAuth() auth: AccessTokenClaims,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: unknown,
+  ) {
+    return this.lifecycle.setChosenOrder(actorOf(auth), id, parseBody(ChosenOrder, body).membershipIds);
+  }
+
+  @Post(':id/turn-order/draw')
+  @HttpCode(200)
+  draw(@CurrentAuth() auth: AccessTokenClaims, @Param('id', ParseUUIDPipe) id: string) {
+    return this.lifecycle.draw(actorOf(auth), id);
+  }
+
+  @Post(':id/start')
+  @HttpCode(200)
+  start(@CurrentAuth() auth: AccessTokenClaims, @Param('id', ParseUUIDPipe) id: string) {
+    return this.lifecycle.start(actorOf(auth), id);
   }
 
   @Post(':id/invitations')

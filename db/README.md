@@ -7,8 +7,10 @@
 | `003_cash_witness.sql` | Cash : le receveur **et** un témoin désigné doivent confirmer |
 | `004_auth.sql` | Verrouillage du PIN, un seul appareil actif par compte |
 | `005_group_invitations.sql` | Codes d'invitation à partager (durée, nombre d'utilisations), taille maximale d'un groupe |
+| `006_turns_cycles.sql` | Mode d'ordre et graine du tirage, ordre figé après démarrage, receveur = bénéficiaire du tour |
 | `tests/001_checks.sql` | Double regard, anti-fraude, journal en ajout seul, détection de falsification |
 | `tests/002_cash_witness.sql` | Règles du témoin (à lancer **après** `001_checks.sql`, sur la même base) |
+| `tests/003_turns_cycles.sql` | Ordre figé, bénéficiaire unique, receveur imposé (après `002`) |
 
 Les choix sont expliqués dans [`docs/revue-schema.md`](../docs/revue-schema.md).
 
@@ -34,6 +36,10 @@ docker compose exec -T postgres psql -U postgres -d mchango -q -f /db/tests/001_
 
 ```bash
 docker compose exec -T postgres psql -U postgres -d mchango -q -f /db/tests/002_cash_witness.sql
+```
+
+```bash
+docker compose exec -T postgres psql -U postgres -d mchango -q -f /db/tests/003_turns_cycles.sql
 ```
 
 Chaque vérification affiche `OK` ; le script s'arrête au premier `ÉCHEC`.

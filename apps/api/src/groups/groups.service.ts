@@ -13,6 +13,7 @@ import { APP_CONFIG, type AppConfig } from '../config.js';
 import { appendAudit, Db, type Actor, type Queryable } from '../infra/database.js';
 import { REDIS } from '../infra/redis.js';
 import { generateInviteCode, inviteCodeHash, normalizeInviteCode } from './invite-code.js';
+import { activeMembership } from './membership.js';
 
 /** Essais de code d'invitation par utilisateur et par heure (contre le devinage). */
 const JOIN_ATTEMPTS_PER_HOUR = 10;
@@ -27,7 +28,7 @@ export interface CreateGroupInput {
   maxMembers: number;
 }
 
-interface GroupRow {
+export interface GroupRow {
   id: string;
   name: string;
   type: string;
@@ -38,13 +39,17 @@ interface GroupRow {
   start_date: string;
   status: string;
   max_members: number;
+  turn_order_mode: string | null;
+  draw_seed: string | null;
+  started_at: Date | null;
   created_at: Date;
 }
 
-const GROUP_COLUMNS = `g.id, g.name, g.type, g.currency, g.contribution_amount_minor, g.frequency,
-  g.payout_mode, g.start_date::text AS start_date, g.status, g.max_members, g.created_at`;
+export const GROUP_COLUMNS = `g.id, g.name, g.type, g.currency, g.contribution_amount_minor,
+  g.frequency, g.payout_mode, g.start_date::text AS start_date, g.status, g.max_members,
+  g.turn_order_mode, g.draw_seed, g.started_at, g.created_at`;
 
-function toGroup(row: GroupRow) {
+export function toGroup(row: GroupRow) {
   return {
     id: row.id,
     name: row.name,
@@ -57,6 +62,10 @@ function toGroup(row: GroupRow) {
     startDate: row.start_date,
     status: row.status,
     maxMembers: row.max_members,
+    turnOrderMode: row.turn_order_mode,
+    // Publiée pour que chaque membre puisse refaire le tirage (spec/draw.md)
+    drawSeed: row.draw_seed,
+    startedAt: row.started_at?.toISOString() ?? null,
     createdAt: row.created_at.toISOString(),
   };
 }
@@ -131,7 +140,7 @@ export class GroupsService {
               m.turn_order, m.joined_at
        FROM memberships m JOIN users u ON u.id = m.user_id
        WHERE m.group_id = $1 AND m.status = 'active'
-       ORDER BY m.joined_at`,
+       ORDER BY m.turn_order NULLS LAST, m.joined_at`,
       [groupId],
     );
     return {
@@ -276,11 +285,7 @@ export class GroupsService {
   }
 
   private async activeRole(q: Queryable, userId: string, groupId: string): Promise<string | null> {
-    const { rows } = await q.query<{ role: string }>(
-      `SELECT role FROM memberships WHERE group_id = $1 AND user_id = $2 AND status = 'active'`,
-      [groupId, userId],
-    );
-    return rows[0]?.role ?? null;
+    return (await activeMembership(q, userId, groupId))?.role ?? null;
   }
 
   private async limitJoinAttempts(userId: string) {

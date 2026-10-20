@@ -1,0 +1,34 @@
+import { z } from 'zod';
+
+export const APP_CONFIG = Symbol('APP_CONFIG');
+
+const schema = z.object({
+  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  PORT: z.coerce.number().int().positive().default(3000),
+  DATABASE_URL: z.string().min(1),
+  REDIS_URL: z.string().min(1),
+  JWT_SECRET: z.string().min(32, 'au moins 32 caractères'),
+  OTP_PEPPER: z.string().min(32, 'au moins 32 caractères'),
+  SMS_DRIVER: z.enum(['console']).default('console'),
+  // Les opérateurs mobiles en RDC partagent souvent une même IP publique entre
+  // beaucoup d'abonnés (CGNAT) : une limite par IP trop basse bloquerait des
+  // utilisateurs légitimes. La vraie protection est la limite par numéro.
+  OTP_MAX_PER_IP_PER_HOUR: z.coerce.number().int().positive().default(200),
+  TRUST_PROXY: z.enum(['0', '1']).default('0'),
+});
+
+export type AppConfig = z.infer<typeof schema>;
+
+export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
+  const parsed = schema.safeParse(env);
+  if (!parsed.success) {
+    const details = parsed.error.issues
+      .map((i) => `${i.path.join('.')} : ${i.message}`)
+      .join(' ; ');
+    throw new Error(`Configuration invalide — ${details}`);
+  }
+  if (parsed.data.NODE_ENV === 'production' && parsed.data.SMS_DRIVER === 'console') {
+    throw new Error('SMS_DRIVER=console est interdit en production (les codes seraient dans les logs)');
+  }
+  return parsed.data;
+}

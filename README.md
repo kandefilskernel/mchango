@@ -14,6 +14,20 @@ Tontine digitale (likelemba / muziki) pour la RDC. Chaque cotisation est déclar
 | `spec` | Format du hash du journal et vecteurs de test communs | |
 | `docs` | Cadrage, architecture, revue du schéma | |
 
+## Démarrer en local
+
+PostgreSQL et Redis (Docker Desktop), migrations appliquées au premier démarrage :
+
+```bash
+docker compose up -d --wait
+```
+
+API (copier d'abord `apps/api/.env.example` en `apps/api/.env`) ; les codes SMS s'affichent dans la console :
+
+```bash
+cd apps/api && npm install && npm run start:dev
+```
+
 ## Vérifier que tout fonctionne
 
 ```bash
@@ -25,7 +39,13 @@ cd apps/mobile && flutter test
 ```
 
 ```bash
-cd apps/api && npm install && npm test
+cd apps/api && npm test
+```
+
+Tests de bout en bout de l'API (contre la base et Redis de `docker compose`) :
+
+```bash
+cd apps/api && npm run test:e2e
 ```
 
 ```bash
@@ -42,3 +62,4 @@ Tests de la base : voir [`db/README.md`](db/README.md).
 - [Architecture et arbitrages](docs/architecture.md)
 - [Revue du schéma de base de données](docs/revue-schema.md)
 - [Format du hash du journal](spec/audit-hash.md)
+- [Authentification : contrat de l'API](spec/auth.md)

@@ -24,3 +24,4 @@ key.properties
 .DS_Store
 Thumbs.db
 ~$*
+*.tsbuildinfo

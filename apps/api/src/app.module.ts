@@ -1,10 +1,32 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller.js';
-import { AppService } from './app.service.js';
+import { Controller, Get, Module } from '@nestjs/common';
+import { AuthModule } from './auth/auth.module.js';
+import { APP_CONFIG, loadConfig } from './config.js';
+import { DatabaseModule } from './infra/database.js';
+import { RedisModule } from './infra/redis.js';
+import { SmsModule } from './infra/sms.js';
+
+@Controller()
+class HealthController {
+  @Get('health')
+  health() {
+    return { status: 'ok' };
+  }
+}
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  providers: [{ provide: APP_CONFIG, useFactory: () => loadConfig() }],
+  exports: [APP_CONFIG],
+})
+class ConfigModule {}
+
+@Module({
+  imports: [
+    { module: ConfigModule, global: true },
+    DatabaseModule,
+    RedisModule,
+    SmsModule,
+    AuthModule,
+  ],
+  controllers: [HealthController],
 })
 export class AppModule {}

@@ -17,6 +17,8 @@ async function bootstrap() {
   // à n'activer que si le proxy est de confiance, sinon l'IP est falsifiable.
   if (config.TRUST_PROXY === '1') app.set('trust proxy', 1);
   app.disable('x-powered-by');
+  const origins = config.CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean);
+  if (origins.length > 0) app.enableCors({ origin: origins });
   app.enableShutdownHooks();
   await app.listen(config.PORT);
 }

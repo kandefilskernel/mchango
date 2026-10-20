@@ -66,3 +66,5 @@ Tests de la base : voir [`db/README.md`](db/README.md).
 - [Groupes et invitations : contrat de l'API](spec/groups.md)
 - [Tours, cycles et cotisations : contrat de l'API](spec/cycles.md)
 - [Tirage vérifiable de l'ordre des tours](spec/draw.md)
+- [Reçus, historique et aperçu d'un groupe : contrat de l'API](spec/receipts.md)
+- [App mobile : écrans, sécurité sur le téléphone, tests](apps/mobile/README.md)

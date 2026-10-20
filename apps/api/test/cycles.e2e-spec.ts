@@ -294,6 +294,85 @@ describe('Tours, cycles et cotisations (e2e)', () => {
       expect(declared.body.isLate).toBe(true);
     });
 
+    it("reçu : numéro unique et QR qui renvoie à l'événement de confirmation du journal", async () => {
+      const g = await startedGroup(3);
+      const [beneficiary, payer, other] = g.members;
+      const tx = txRef();
+      const d = await declare(g.groupId, 1, payer, { method: 'airtel', txReference: tx }).expect(201);
+      await http().get(`/contributions/${d.body.id}/receipt`).set(auth(payer.session)).expect(409);
+      await decide(d.body.id, beneficiary, 'confirm').expect(200);
+
+      const r = await http().get(`/contributions/${d.body.id}/receipt`).set(auth(other.session)).expect(200);
+      expect(r.body).toMatchObject({
+        groupName: 'Likelemba Kenya',
+        cycleNumber: 1,
+        currency: 'CDF',
+        amountMinor: AMOUNT,
+        method: 'airtel',
+        txReference: tx,
+        payer: { fullName: 'Papa Jean' },
+        beneficiary: { fullName: 'Mama Furaha' },
+        witness: null,
+      });
+      expect(r.body.receiptNumber).toMatch(/^MCH-\d{8}$/);
+      expect(r.body.qrPayload).toBe(
+        `MCHANGO1|${r.body.receiptNumber}|${d.body.id}|${g.groupId}|${r.body.audit.seq}|${r.body.audit.hash}`,
+      );
+
+      const event = await api.db.query<{ action: string; payload: string }>(
+        'SELECT action, payload FROM audit_log WHERE chain_id = $1 AND seq = $2 AND hash = $3',
+        [`group:${g.groupId}`, r.body.audit.seq, r.body.audit.hash],
+      );
+      expect(event.rows[0].action).toBe('contributions.update');
+      expect(JSON.parse(event.rows[0].payload)).toMatchObject({ id: d.body.id, status: 'confirmed' });
+
+      const d2 = await declare(g.groupId, 1, other, { method: 'mpesa', txReference: txRef() }).expect(201);
+      await decide(d2.body.id, beneficiary, 'confirm').expect(200);
+      const r2 = await http().get(`/contributions/${d2.body.id}/receipt`).set(auth(other.session)).expect(200);
+      expect(r2.body.receiptNumber).not.toBe(r.body.receiptNumber);
+
+      const outsider = (await api.signUp()).session;
+      await http().get(`/contributions/${d.body.id}/receipt`).set(auth(outsider)).expect(404);
+    });
+
+    it("historique : les événements de la chaîne du groupe, dans l'ordre, avec les noms", async () => {
+      const g = await startedGroup(2);
+      const page = await http().get(`/groups/${g.groupId}/history`).set(auth(g.members[1].session)).expect(200);
+      const events = page.body.events as { seq: number; action: string; actor_name: string; created_at: string }[];
+      expect(events.map((e) => e.seq)).toEqual(events.map((_, i) => i + 1));
+      expect(events[0]).toMatchObject({ action: 'groups.insert', actor_name: 'Mama Furaha' });
+      expect(events[0].created_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+
+      const next = await http()
+        .get(`/groups/${g.groupId}/history?afterSeq=${events.length - 1}`)
+        .set(auth(g.president.session))
+        .expect(200);
+      expect(next.body.events.map((e: { seq: number }) => e.seq)).toEqual([events.length]);
+
+      const outsider = (await api.signUp()).session;
+      await http().get(`/groups/${g.groupId}/history`).set(auth(outsider)).expect(404);
+    });
+
+    it("aperçu d'un code : on voit les règles avant d'accepter", async () => {
+      const g = await draftGroup(2);
+      const newcomer = (await api.signUp()).session;
+      const preview = await http().post('/groups/preview').set(auth(newcomer)).send({ code: g.code }).expect(200);
+      expect(preview.body).toEqual({
+        name: 'Likelemba Kenya',
+        type: 'informel',
+        currency: 'CDF',
+        contributionAmountMinor: AMOUNT,
+        frequency: 'weekly',
+        payoutMode: 'direct_to_beneficiary',
+        startDate: inDays(1),
+        status: 'draft',
+        maxMembers: 30,
+        memberCount: 2,
+        presidentName: 'Mama Furaha',
+      });
+      await http().post('/groups/preview').set(auth(newcomer)).send({ code: 'ZZZZ-ZZZZ' }).expect(404);
+    });
+
     it("rotation complète : chaque tour se clôt, le suivant s'ouvre, puis le groupe est terminé", async () => {
       const g = await startedGroup(3);
       for (let cycle = 1; cycle <= 3; cycle++) {

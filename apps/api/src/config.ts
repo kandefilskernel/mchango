@@ -15,6 +15,9 @@ const schema = z.object({
   // utilisateurs légitimes. La vraie protection est la limite par numéro.
   OTP_MAX_PER_IP_PER_HOUR: z.coerce.number().int().positive().default(200),
   TRUST_PROXY: z.enum(['0', '1']).default('0'),
+  // Origines autorisées pour un client web (séparées par des virgules). Vide = CORS désactivé.
+  // L'app Android n'en a pas besoin ; sert à lancer l'app Flutter dans Chrome en développement.
+  CORS_ORIGINS: z.string().default(''),
 });
 
 export type AppConfig = z.infer<typeof schema>;

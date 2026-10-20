@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Appels à l'API Mchango (sans elle, la version publiée n'a pas de réseau) -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="mchango"
+        android:label="Mchango"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

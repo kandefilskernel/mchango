@@ -59,6 +59,11 @@ export class ContributionsController {
     return this.contributions.declare(actorOf(auth), groupId, cycleNumber, parseBody(Declare, body));
   }
 
+  @Get('contributions/:id/receipt')
+  receipt(@CurrentAuth() auth: AccessTokenClaims, @Param('id', ParseUUIDPipe) contributionId: string) {
+    return this.contributions.receipt(auth.sub, contributionId);
+  }
+
   @Post('contributions/:id/decisions')
   @HttpCode(200)
   decide(

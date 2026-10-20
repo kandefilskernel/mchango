@@ -332,7 +332,13 @@ export class ContributionsService {
         );
       }
       if (status !== c.status) {
-        await q.query('UPDATE contributions SET status = $2 WHERE id = $1', [c.id, status]);
+        // Le numéro de reçu naît avec la confirmation, dans la même écriture (donc journalisé)
+        await q.query(
+          `UPDATE contributions SET status = $2::contribution_status,
+             receipt_number = CASE WHEN $2 = 'confirmed' THEN nextval('receipt_number_seq') END
+           WHERE id = $1`,
+          [c.id, status],
+        );
       }
       const cycleStatus = status === 'confirmed' ? await this.closeCycleIfComplete(q, c.cycle_id) : null;
       return { ...toContribution({ ...c, status }), cycleStatus };
@@ -377,6 +383,91 @@ export class ContributionsService {
       }
     }
     return 'completed';
+  }
+
+  /**
+   * Reçu d'une cotisation confirmée. Il renvoie à l'événement du journal qui l'a confirmée
+   * (seq + hash) : le QR code permet de retrouver et de vérifier cet événement.
+   */
+  async receipt(userId: string, contributionId: string) {
+    const found = await this.db.query<{
+      id: string;
+      group_id: string;
+      status: string;
+      receipt_number: string | null;
+      group_name: string;
+      currency: string;
+      amount_minor: string;
+      method: PayMethod;
+      tx_reference: string | null;
+      is_late: boolean;
+      declared_at: Date;
+      cycle_number: number;
+      due_date: string;
+      payer_name: string;
+      payer_phone: string;
+      beneficiary_name: string;
+      beneficiary_phone: string;
+      witness_name: string | null;
+      confirmed_at: Date | null;
+    }>(
+      `SELECT k.id, k.group_id, k.status, k.receipt_number, g.name AS group_name, g.currency,
+              k.amount_minor, k.method, k.tx_reference, k.is_late, k.declared_at,
+              c.cycle_number, c.due_date::text AS due_date,
+              pu.full_name AS payer_name, pu.phone AS payer_phone,
+              ru.full_name AS beneficiary_name, ru.phone AS beneficiary_phone,
+              wu.full_name AS witness_name,
+              (SELECT max(f.confirmed_at) FROM confirmations f
+               WHERE f.contribution_id = k.id AND f.decision IN ('confirm', 'witness')) AS confirmed_at
+       FROM contributions k
+       JOIN groups g ON g.id = k.group_id
+       JOIN cycles c ON c.id = k.cycle_id
+       JOIN memberships pm ON pm.id = k.payer_membership_id JOIN users pu ON pu.id = pm.user_id
+       JOIN memberships rm ON rm.id = k.receiver_membership_id JOIN users ru ON ru.id = rm.user_id
+       LEFT JOIN memberships wm ON wm.id = k.witness_membership_id
+       LEFT JOIN users wu ON wu.id = wm.user_id
+       WHERE k.id = $1`,
+      [contributionId],
+    );
+    const r = found.rows[0];
+    if (!r || !(await activeMembership(this.db, userId, r.group_id))) {
+      throw new NotFoundException('Cotisation introuvable.');
+    }
+    if (r.status !== 'confirmed' || !r.receipt_number) {
+      throw new ConflictException("Pas encore de reçu : la cotisation n'est pas confirmée.");
+    }
+
+    const chainId = `group:${r.group_id}`;
+    const event = await this.db.query<{ seq: string; hash: string }>(
+      `SELECT seq, hash FROM audit_log
+       WHERE chain_id = $1 AND action = 'contributions.update'
+         AND payload::jsonb ->> 'id' = $2 AND payload::jsonb ->> 'status' = 'confirmed'
+       ORDER BY seq LIMIT 1`,
+      [chainId, r.id],
+    );
+    const receiptNumber = `MCH-${r.receipt_number.padStart(8, '0')}`;
+    const audit = { chainId, seq: Number(event.rows[0].seq), hash: event.rows[0].hash };
+    return {
+      receiptNumber,
+      contributionId: r.id,
+      groupId: r.group_id,
+      groupName: r.group_name,
+      cycleNumber: r.cycle_number,
+      dueDate: r.due_date,
+      currency: r.currency,
+      amountMinor: Number(r.amount_minor),
+      method: r.method,
+      txReference: r.tx_reference,
+      isLate: r.is_late,
+      payer: { fullName: r.payer_name, phone: r.payer_phone },
+      beneficiary: { fullName: r.beneficiary_name, phone: r.beneficiary_phone },
+      witness: r.witness_name ? { fullName: r.witness_name } : null,
+      declaredAt: r.declared_at.toISOString(),
+      confirmedAt: r.confirmed_at!.toISOString(),
+      audit,
+      // Contenu du QR code (format documenté dans spec/receipts.md)
+      qrPayload: `MCHANGO1|${receiptNumber}|${r.id}|${r.group_id}|${audit.seq}|${audit.hash}`,
+    };
   }
 
   private async requireMember(q: Queryable, userId: string, groupId: string) {

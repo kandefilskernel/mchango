@@ -8,6 +8,7 @@
 | `004_auth.sql` | Verrouillage du PIN, un seul appareil actif par compte |
 | `005_group_invitations.sql` | Codes d'invitation à partager (durée, nombre d'utilisations), taille maximale d'un groupe |
 | `006_turns_cycles.sql` | Mode d'ordre et graine du tirage, ordre figé après démarrage, receveur = bénéficiaire du tour |
+| `007_receipts.sql` | Numéro de reçu unique, attribué à la confirmation |
 | `tests/001_checks.sql` | Double regard, anti-fraude, journal en ajout seul, détection de falsification |
 | `tests/002_cash_witness.sql` | Règles du témoin (à lancer **après** `001_checks.sql`, sur la même base) |
 | `tests/003_turns_cycles.sql` | Ordre figé, bénéficiaire unique, receveur imposé (après `002`) |

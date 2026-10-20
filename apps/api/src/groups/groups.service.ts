@@ -224,6 +224,45 @@ export class GroupsService {
   }
 
   /** Rejoindre un groupe avec un code, en acceptant son règlement. */
+  /**
+   * Ce que le code d'invitation donne à voir avant de rejoindre : les règles à accepter.
+   * Compte dans la limite d'essais de code, comme join().
+   */
+  async preview(userId: string, rawCode: string) {
+    await this.limitJoinAttempts(userId);
+    const code = normalizeInviteCode(rawCode);
+    const { rows } = await this.db.query<
+      GroupRow & { president_name: string; member_count: number }
+    >(
+      `SELECT ${GROUP_COLUMNS},
+              (SELECT u.full_name FROM memberships m JOIN users u ON u.id = m.user_id
+               WHERE m.group_id = g.id AND m.role = 'president' AND m.status = 'active'
+               LIMIT 1) AS president_name,
+              (SELECT count(*)::int FROM memberships m
+               WHERE m.group_id = g.id AND m.status = 'active') AS member_count
+       FROM invitations i JOIN groups g ON g.id = i.group_id
+       WHERE i.token_hash = $1 AND i.revoked_at IS NULL AND i.expires_at > now()
+         AND (i.max_uses IS NULL OR i.uses < i.max_uses)`,
+      [code ? inviteCodeHash(code, this.config.OTP_PEPPER) : ''],
+    );
+    const r = rows[0];
+    if (!r) throw new NotFoundException("Code d'invitation invalide ou expiré.");
+    const g = toGroup(r);
+    return {
+      name: g.name,
+      type: g.type,
+      currency: g.currency,
+      contributionAmountMinor: g.contributionAmountMinor,
+      frequency: g.frequency,
+      payoutMode: g.payoutMode,
+      startDate: g.startDate,
+      status: g.status,
+      maxMembers: g.maxMembers,
+      memberCount: r.member_count,
+      presidentName: r.president_name,
+    };
+  }
+
   async join(actor: Actor & { id: string }, input: { code: string; acceptRules: boolean }) {
     await this.limitJoinAttempts(actor.id);
     if (!input.acceptRules) {

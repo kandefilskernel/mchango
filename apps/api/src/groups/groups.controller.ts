@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { z } from 'zod';
@@ -15,6 +16,7 @@ import { AccessGuard, CurrentAuth } from '../auth/access.guard.js';
 import type { AccessTokenClaims } from '../auth/auth.service.js';
 import { parseBody } from '../common/parse-body.js';
 import { GroupsService } from './groups.service.js';
+import { HistoryService } from './history.service.js';
 import { GroupLifecycleService } from './lifecycle.service.js';
 
 /** Date du jour à Lubumbashi (UTC+2), au format AAAA-MM-JJ. */
@@ -60,6 +62,13 @@ const CreateInvitation = z.object({
   maxUses: z.number().int().min(1).max(100).nullable().default(null),
 });
 
+const PreviewGroup = z.object({ code: z.string().max(20) });
+
+const HistoryQuery = z.object({
+  afterSeq: z.coerce.number().int().min(0).default(0),
+  limit: z.coerce.number().int().min(1).max(500).default(500),
+});
+
 const JoinGroup = z.object({
   code: z.string().max(20),
   acceptRules: z.boolean(),
@@ -73,6 +82,7 @@ export class GroupsController {
   constructor(
     private readonly groups: GroupsService,
     private readonly lifecycle: GroupLifecycleService,
+    private readonly historyService: HistoryService,
   ) {}
 
   @Post()
@@ -83,6 +93,22 @@ export class GroupsController {
   @Get()
   listMine(@CurrentAuth() auth: AccessTokenClaims) {
     return this.groups.listMine(auth.sub);
+  }
+
+  @Post('preview')
+  @HttpCode(200)
+  preview(@CurrentAuth() auth: AccessTokenClaims, @Body() body: unknown) {
+    return this.groups.preview(auth.sub, parseBody(PreviewGroup, body).code);
+  }
+
+  @Get(':id/history')
+  history(
+    @CurrentAuth() auth: AccessTokenClaims,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: unknown,
+  ) {
+    const { afterSeq, limit } = parseBody(HistoryQuery, query);
+    return this.historyService.history(auth.sub, id, afterSeq, limit);
   }
 
   /** Déclaré avant ':id' pour que « join » ne soit pas pris pour un identifiant. */

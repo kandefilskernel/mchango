@@ -584,8 +584,12 @@ textarea {
   width: 100%;
   max-width: 400px;
   height: auto;
-  margin: 14px auto 6px;
+  /* l'image rapetisse sur les écrans peu hauts : la page tient sans défiler */
+  max-height: calc(100dvh - 330px);
+  min-height: 140px;
+  margin: 10px auto 6px;
 }
+
 
 .login-hero h1 {
   color: #fff;
@@ -703,6 +707,39 @@ textarea {
   }
   .login-panel {
     padding: 26px 22px 24px;
+  }
+}
+
+/* Écrans d'ordinateur portable peu hauts : tout se resserre */
+@media (min-width: 821px) and (max-height: 760px) {
+  .login {
+    padding: 16px 20px;
+  }
+  .login-hero {
+    padding: 22px 28px;
+  }
+  .login-hero h1 {
+    font-size: 24px;
+  }
+  .hero-points {
+    display: none;
+  }
+  .login-panel {
+    padding: 26px 40px 22px;
+  }
+  .login-panel h2 {
+    font-size: 24px;
+    margin-top: 6px;
+  }
+  .login-panel > p.muted {
+    margin-bottom: 14px;
+  }
+  .login-panel .form {
+    gap: 10px;
+  }
+  .login-foot {
+    margin-top: 14px;
+    padding-top: 12px;
   }
 }
 

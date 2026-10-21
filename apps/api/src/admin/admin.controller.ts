@@ -1,4 +1,5 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, Res, UseGuards } from '@nestjs/common';
+import type { Response } from 'express';
 import { z } from 'zod';
 import { PinResetService } from '../auth/pin-reset.service.js';
 import { parseBody } from '../common/parse-body.js';
@@ -19,6 +20,15 @@ const UpdateStaff = z
   .partial()
   .refine((v) => Object.keys(v).length > 0, 'Aucune modification demandée.');
 const IdentityCheck = z.object({ note: z.string().max(1000) });
+const Note = z.object({
+  body: z.string().max(2000),
+  followUp: z.boolean().default(false),
+  closes: z.uuid().nullable().default(null),
+});
+const ExportQuery = z.object({
+  kind: z.enum(['disputes', 'late', 'audit']),
+  chain: z.string().regex(/^(global|group:[0-9a-f-]{36})$/, 'Chaîne inconnue.').default('global'),
+});
 const ChangePassword = z.object({ current: z.string().max(200), next: z.string().max(200) });
 const Search = z.object({ q: z.string().max(100).default(''), status: z.string().max(20).default('') });
 const AuditQuery = z.object({
@@ -86,6 +96,40 @@ export class AdminController {
   @Roles(...CAN.verifyIdentity)
   approvePinReset(@CurrentStaff() staff: StaffMember, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
     return this.pinResets.approveByStaff(staff.id, id, parseBody(IdentityCheck, body).note);
+  }
+
+  @Post('users/:id/notes')
+  @UseGuards(StaffGuard)
+  @Roles(...CAN.supportMembers)
+  addNote(@CurrentStaff() staff: StaffMember, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    const input = parseBody(Note, body);
+    return this.admin.addNote(staff, id, input.body, input.followUp, input.closes);
+  }
+
+  @Post('notifications/:id/resend')
+  @HttpCode(200)
+  @UseGuards(StaffGuard)
+  @Roles(...CAN.supportMembers)
+  resendSms(@CurrentStaff() staff: StaffMember, @Param('id', ParseUUIDPipe) id: string) {
+    return this.admin.resendSms(staff, id);
+  }
+
+  @Get('alerts')
+  @UseGuards(StaffGuard)
+  alerts(@CurrentStaff() staff: StaffMember) {
+    return this.admin.alerts(staff);
+  }
+
+  @Get('export')
+  @UseGuards(StaffGuard)
+  @Roles(...CAN.exportData)
+  async export(@CurrentStaff() staff: StaffMember, @Query() query: unknown, @Res({ passthrough: true }) res: Response) {
+    const { kind, chain } = parseBody(ExportQuery, query);
+    const { filename, csv } = await this.admin.exportCsv(staff, kind, chain);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Cache-Control', 'no-store');
+    return csv;
   }
 
   // ---------- Utilisateurs ----------

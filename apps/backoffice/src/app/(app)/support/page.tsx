@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { approvePinReset, unlockPin } from "../../actions";
+import { approvePinReset, resendSms, unlockPin } from "../../actions";
 import { ActionForm } from "@/components/action-form";
 import { CAN, currentStaff, inbox } from "@/lib/api";
 import { dateTime } from "@/lib/format";
@@ -22,6 +22,7 @@ export default async function SupportPage() {
   const [todo, staff] = await Promise.all([inbox(), currentStaff()]);
   const canUnlock = CAN.unlockPins.includes(staff.role);
   const canVerify = CAN.verifyIdentity.includes(staff.role);
+  const canSupport = CAN.supportMembers.includes(staff.role);
   return (
     <>
       <div className="page-head">
@@ -35,6 +36,29 @@ export default async function SupportPage() {
           {todo.counts.total === 0 ? "Tout est à jour" : `${todo.counts.total} cas en attente`}
         </span>
       </div>
+
+      <Section
+        title="Suivis en cours"
+        count={todo.counts.followUps}
+        hint="Notes « à suivre » de l'équipe. Clôturez-les depuis la fiche du membre une fois le problème réglé."
+      >
+        {todo.followUps.map((f) => (
+          <div className="case" key={f.noteId}>
+            <div>
+              <Link href={`/users/${f.userId}`}>
+                <strong>{f.fullName}</strong>
+              </Link>
+              <div>{f.body}</div>
+              <div className="muted">
+                {f.staff} · {dateTime(f.createdAt)}
+              </div>
+            </div>
+            <Link className="btn btn-secondary" href={`/users/${f.userId}`}>
+              Ouvrir la fiche
+            </Link>
+          </div>
+        ))}
+      </Section>
 
       <Section
         title="« PIN oublié » en attente"
@@ -117,7 +141,7 @@ export default async function SupportPage() {
       <Section
         title="SMS en échec (7 derniers jours)"
         count={todo.counts.smsFailed}
-        hint="Codes de connexion ou rappels qui ne sont pas partis : la personne ne les a pas reçus."
+        hint="Rappels qui ne sont pas partis. Un rappel se renvoie une fois (3 renvois par membre et par jour au plus), seulement si le paiement n'est pas encore déclaré."
       >
         <table>
           <tbody>
@@ -131,6 +155,17 @@ export default async function SupportPage() {
                 <td>{s.template === "contribution_reminder" ? "Rappel de cotisation" : s.template}</td>
                 <td className="muted">{s.error ?? "—"}</td>
                 <td>{dateTime(s.createdAt)}</td>
+                <td>
+                  {canSupport && s.template === "contribution_reminder" && (
+                    <ActionForm
+                      inline
+                      tone="secondary"
+                      submitLabel="Renvoyer"
+                      confirm="Renvoyer ce rappel ? Un SMS est facturé à chaque envoi."
+                      action={resendSms.bind(null, s.id)}
+                    />
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

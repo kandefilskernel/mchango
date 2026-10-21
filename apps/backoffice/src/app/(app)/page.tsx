@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { api, inbox } from "@/lib/api";
+import { api, CAN, currentStaff, inbox } from "@/lib/api";
 
 interface Dashboard {
   users_total: number;
@@ -28,9 +28,10 @@ function Stat({ label, value, tone }: { label: string; value: string | number; t
 }
 
 export default async function DashboardPage() {
-  const [d, todo] = await Promise.all([api<Dashboard>("/admin/dashboard"), inbox()]);
+  const [d, todo, staff] = await Promise.all([api<Dashboard>("/admin/dashboard"), inbox(), currentStaff()]);
   const c = todo.counts;
   const cases = [
+    { label: "Suivis en cours", n: c.followUps, href: "/support" },
     { label: "« PIN oublié » en attente", n: c.pinResetsPending, href: "/support" },
     { label: "PIN bloqués", n: c.pinLocked, href: "/support" },
     { label: "Litiges ouverts", n: c.disputesOpen, href: "/disputes" },
@@ -83,7 +84,14 @@ export default async function DashboardPage() {
         <Stat label="Terminées" value={d.groups_closed} />
       </div>
 
-      <h2>Retards (30 derniers jours)</h2>
+      <div className="page-head" style={{ marginBottom: 10, alignItems: "center" }}>
+        <h2 style={{ margin: 0 }}>Retards (30 derniers jours)</h2>
+        {CAN.exportData.includes(staff.role) && (
+          <a className="btn btn-secondary" href="/export?kind=late" download>
+            Liste des retards (CSV)
+          </a>
+        )}
+      </div>
       <div className="grid">
         <Stat
           label="Taux de paiements en retard"

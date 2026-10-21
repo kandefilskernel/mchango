@@ -26,6 +26,10 @@ export const CAN = {
   unlockPins: ['super_admin', 'support', 'compliance'] as StaffRole[],
   /** Valider un « PIN oublié » sans garant, après vérification d'identité : risque de prise de compte. */
   verifyIdentity: ['super_admin', 'compliance'] as StaffRole[],
+  /** Notes de suivi et renvoi d'un rappel SMS en échec (coûte un SMS). */
+  supportMembers: ['super_admin', 'support', 'compliance'] as StaffRole[],
+  /** Exports CSV : données personnelles hors de l'outil, chaque export est journalisé. */
+  exportData: ['super_admin', 'compliance', 'finance'] as StaffRole[],
 };
 
 /** Rôles qui voient les numéros de téléphone en entier (les autres les voient masqués). */

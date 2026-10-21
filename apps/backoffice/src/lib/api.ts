@@ -81,10 +81,13 @@ export const CAN = {
   manageStaff: ["super_admin"] as StaffRole[],
   unlockPins: ["super_admin", "support", "compliance"] as StaffRole[],
   verifyIdentity: ["super_admin", "compliance"] as StaffRole[],
+  supportMembers: ["super_admin", "support", "compliance"] as StaffRole[],
+  exportData: ["super_admin", "compliance", "finance"] as StaffRole[],
 };
 
 export interface Inbox {
   counts: {
+    followUps: number;
     disputesOpen: number;
     pinLocked: number;
     pinResetsPending: number;
@@ -104,6 +107,7 @@ export interface Inbox {
   }[];
   smsFailed: { id: string; userId: string; fullName: string; phone: string; template: string; error: string | null; createdAt: string }[];
   groupsSuspended: { id: string; name: string; reason: string | null }[];
+  followUps: { noteId: string; userId: string; fullName: string; body: string; staff: string; createdAt: string }[];
 }
 
 export const inbox = () => api<Inbox>("/admin/inbox");

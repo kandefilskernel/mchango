@@ -547,3 +547,33 @@ textarea {
   max-width: 400px;
   padding: 28px;
 }
+
+/* ---------- Notes de suivi ---------- */
+
+.note {
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.note-open {
+  background: var(--amber-bg);
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.note .form {
+  margin-top: 8px;
+}
+
+label.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+label.check input {
+  width: auto;
+}

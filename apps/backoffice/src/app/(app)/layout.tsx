@@ -13,6 +13,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     { href: "/users", label: "Utilisateurs", icon: "users" },
     { href: "/groups", label: "Tontines", icon: "groups" },
     { href: "/disputes", label: "Litiges", icon: "disputes", badge: todo.counts.disputesOpen },
+    { href: "/alerts", label: "Alertes", icon: "alert" },
     { href: "/audit", label: "Audit", icon: "audit" },
     ...(CAN.manageStaff.includes(staff.role) ? [{ href: "/staff", label: "Équipe", icon: "team" } as NavItem] : []),
     { href: "/account", label: "Mon compte", icon: "account" },

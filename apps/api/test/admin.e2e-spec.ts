@@ -279,6 +279,117 @@ describe('Back-office (e2e)', () => {
     });
   });
 
+  describe('suivi des membres, SMS, alertes, exports', () => {
+    it('notes de suivi : « à suivre » apparaît à traiter, se clôture une seule fois ; lecture seule refusée', async () => {
+      const support = await staff('support');
+      const ro = await staff('read_only');
+      const member = await api.signUp();
+      const id = member.session.userId;
+      const note = (who: Staff, body: object) => http().post(`/admin/users/${id}/notes`).set(asStaff(who)).send(body);
+
+      await note(ro, { body: 'Essai' }).expect(403);
+      await note(support, { body: '  ' }).expect(400);
+      const open = await note(support, { body: 'Appelé à 14 h, rappeler demain', followUp: true }).expect(201);
+      const inbox = await http().get('/admin/inbox').set(asStaff(support)).expect(200);
+      expect(inbox.body.followUps.map((f: { noteId: string }) => f.noteId)).toContain(open.body.id);
+
+      await note(support, { body: 'Rappelé : problème réglé', closes: open.body.id }).expect(201);
+      await note(support, { body: 'Encore une clôture', closes: open.body.id }).expect(409);
+      const after = await http().get('/admin/inbox').set(asStaff(support)).expect(200);
+      expect(after.body.followUps.map((f: { noteId: string }) => f.noteId)).not.toContain(open.body.id);
+
+      const detail = await http().get(`/admin/users/${id}`).set(asStaff(ro)).expect(200);
+      expect(detail.body.notes).toHaveLength(2);
+      expect(detail.body.notes.find((n: { id: string }) => n.id === open.body.id).closed).toBe(true);
+    });
+
+    it('renvoi d’un rappel en échec : seulement s’il sert encore, une fois, dans la limite du jour', async () => {
+      const support = await staff('support');
+      const compliance = await staff('compliance');
+      const d = await disputedContribution();
+      const { rows } = await api.db.query<{ membership_id: string; cycle_id: string; phone: string }>(
+        `SELECT m.id AS membership_id, c.id AS cycle_id, u.phone FROM memberships m
+         JOIN users u ON u.id = m.user_id JOIN cycles c ON c.group_id = m.group_id AND c.cycle_number = 1
+         WHERE m.group_id = $1 AND m.user_id = $2`,
+        [d.groupId, d.member.userId],
+      );
+      const { membership_id, cycle_id, phone } = rows[0];
+      const failed = async (template = 'contribution_reminder') =>
+        (
+          await api.db.query<{ id: string }>(
+            `INSERT INTO notifications (user_id, channel, template, payload, status, error)
+             VALUES ($1, 'sms', $2, $3, 'failed', 'fournisseur indisponible') RETURNING id`,
+            [d.member.userId, template, JSON.stringify({ cycle_id, membership_id, message: 'Mchango : rappel de test' })],
+          )
+        ).rows[0].id;
+      const resend = (id: string, who = support) => http().post(`/admin/notifications/${id}/resend`).set(asStaff(who));
+
+      const reminder = await failed();
+      await resend(reminder).expect(409); // paiement déjà déclaré (contesté)
+      await resend(await failed('otp_login')).expect(409); // jamais un code de connexion
+
+      await http()
+        .post(`/admin/disputes/${d.disputeId}/decide`)
+        .set(asStaff(compliance))
+        .send({ decision: 'reject', note: 'Aucune trace du paiement chez M-Pesa' })
+        .expect(200);
+      const before = api.sms.sent.length;
+      const ok = await resend(reminder).expect(200);
+      expect(ok.body.status).toBe('sent');
+      expect(api.sms.sent.slice(before)).toEqual([{ phone, message: 'Mchango : rappel de test' }]);
+      await resend(reminder).expect(409);
+
+      const detail = await http().get(`/admin/users/${d.member.userId}`).set(asStaff(support)).expect(200);
+      expect(detail.body.sms.find((s: { id: string }) => s.id === reminder).resendable).toBe(false);
+
+      await resend(await failed()).expect(200);
+      await resend(await failed()).expect(200);
+      await resend(await failed()).expect(429);
+    });
+
+    it('alerte : ID de transaction réutilisé après un rejet', async () => {
+      const compliance = await staff('compliance');
+      const d = await disputedContribution();
+      await http()
+        .post(`/admin/disputes/${d.disputeId}/decide`)
+        .set(asStaff(compliance))
+        .send({ decision: 'reject', note: 'Aucune trace du paiement chez M-Pesa' })
+        .expect(200);
+      await http()
+        .post(`/groups/${d.groupId}/cycles/1/contributions`)
+        .set(asMember(d.member))
+        .send({ method: 'mpesa', txReference: d.tx, amountMinor: 20000, offlineId: randomUUID() })
+        .expect(201);
+      const alerts = await http().get('/admin/alerts').set(asStaff(compliance)).expect(200);
+      const hit = alerts.body.reusedTxReferences.find((a: { txReference: string }) => a.txReference === d.tx);
+      expect(hit).toMatchObject({ method: 'mpesa', count: 2, payers: ['Papa Jean'], groups: ['Kwetu'] });
+    });
+
+    it('export CSV : finance oui (numéros masqués), support non ; chaque export est journalisé', async () => {
+      const finance = await staff('finance');
+      const support = await staff('support');
+      const d = await disputedContribution();
+      await http().get('/admin/export?kind=disputes').set(asStaff(support)).expect(403);
+      await http().get('/admin/export?kind=nope').set(asStaff(finance)).expect(400);
+
+      const res = await http().get('/admin/export?kind=disputes').set(asStaff(finance)).expect(200);
+      expect(res.headers['content-type']).toContain('text/csv');
+      expect(res.headers['content-disposition']).toMatch(/attachment; filename="mchango-disputes-\d{4}-\d{2}-\d{2}\.csv"/);
+      expect(res.text.startsWith('﻿Ouvert le;Statut;Tontine')).toBe(true);
+      const line = res.text.split('\r\n').find((l) => l.includes(d.tx))!;
+      expect(line).toContain('Papa Jean');
+      expect(line).toMatch(/\*\*\*/);
+
+      const audit = await http().get(`/admin/export?kind=audit&chain=group:${d.groupId}`).set(asStaff(finance)).expect(200);
+      expect(audit.text).toContain('contribution');
+      await http().get('/admin/export?kind=late').set(asStaff(finance)).expect(200);
+
+      const actions = await http().get('/admin/audit/staff').set(asStaff(finance)).expect(200);
+      const exports = actions.body.filter((a: { action: string; staff: string }) => a.action === 'staff.data_exported' && a.staff.includes(finance.email));
+      expect(exports).toHaveLength(3);
+    });
+  });
+
   describe('équipe et audit', () => {
     it('super admin : crée un compte, change un rôle, désactive (effet immédiat)', async () => {
       const admin = await staff('super_admin');

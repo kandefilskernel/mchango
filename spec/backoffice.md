@@ -28,13 +28,13 @@ Périmètre : les modules **MVP** de la section 8.3 du document de cadrage.
 
 ## Rôles
 
-| Rôle | Lire | Voir les numéros | Bloquer, révoquer un téléphone, débloquer un PIN | Valider un « PIN oublié » | Suspendre une tontine | Trancher un litige | Gérer l'équipe |
-|------|:----:|:----------------:|:------------------------------:|:--:|:---------------------:|:------------------:|:--------------:|
-| Super admin | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Conformité | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
-| Support | ✓ | ✓ | ✓ | | | | |
-| Finance | ✓ | masqués (`+243 99 *** **67`) | | | | | |
-| Lecture seule | ✓ | masqués | | | | | |
+| Rôle | Lire | Voir les numéros | Bloquer, révoquer un téléphone, débloquer un PIN, notes, renvoi SMS | Valider un « PIN oublié » | Suspendre une tontine | Trancher un litige | Exports CSV | Gérer l'équipe |
+|------|:----:|:----------------:|:------------------------------:|:--:|:---------------------:|:------------------:|:--:|:--------------:|
+| Super admin | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Conformité | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| Support | ✓ | ✓ | ✓ | | | | | |
+| Finance | ✓ | masqués (`+243 99 *** **67`) | | | | | ✓ | |
+| Lecture seule | ✓ | masqués | | | | | | |
 
 Les droits sont contrôlés **par l'API**. L'interface ne fait que masquer les boutons inutiles.
 
@@ -57,6 +57,34 @@ Les membres qui ont besoin de l'équipe, en une page. Le menu affiche le nombre 
 | Litiges ouverts | Lien vers la file des litiges. |
 | SMS en échec (7 jours) | Lecture : la personne n'a pas reçu son code ou son rappel. |
 | Tontines suspendues | Lien vers la tontine pour la réactiver. |
+
+| Suivis en cours | Notes « à suivre » non closes (voir plus bas). |
+
+## Fiche membre : SMS, notes de suivi
+
+- **SMS reçus** : les 30 derniers, avec l'état (envoyé, échec et sa cause). Les codes de connexion ne sont jamais conservés, donc jamais affichés ni renvoyés.
+- **Renvoyer un rappel en échec** (`POST /admin/notifications/:id/resend`, support, conformité, super admin) : seulement un rappel de cotisation, seulement si le paiement n'est pas encore déclaré et le tour pas clos, **une fois** par SMS en échec, **3 renvois au plus** par membre et par jour (`429` au-delà). Journal : `staff.sms_resent`.
+- **Notes de suivi** (`POST /admin/users/:id/notes`, mêmes rôles) : internes, jamais visibles du membre, ni modifiables ni supprimables (`support_notes`, migration 012). « À suivre » fait apparaître la note dans « À traiter » ; une note de clôture (`closes`) l'en retire, une seule fois. Le journal garde l'ajout (`staff.support_note`, `staff.follow_up_closed`) mais pas le texte.
+- **Débloquer le PIN** est aussi possible depuis la fiche.
+
+## Alertes (`GET /admin/alerts`)
+
+Signaux à vérifier, **pas des preuves** : rien n'est bloqué ni gelé automatiquement.
+
+| Signal | Seuil |
+|--------|-------|
+| ID de transaction déclaré plusieurs fois (une déclaration rejetée puis reprise, par exemple) | 2 déclarations |
+| « PIN oublié » répétés (vol de carte SIM ?) | 2 demandes en 30 jours |
+| Nouveaux téléphones liés | 3 en 7 jours |
+| Déclarations rejetées | 2 en 30 jours |
+
+Les seuils sont dans `ALERT_RULES` (`apps/api/src/admin/admin.service.ts`) : à ajuster avec les vrais usages.
+
+## Exports CSV (`GET /admin/export?kind=…`)
+
+`disputes` (tous les litiges), `late` (paiements attendus et non déclarés, 30 derniers jours), `audit` (une chaîne entière avec ses empreintes, `&chain=global` ou `group:<id>`). Réservés à super admin, conformité et finance ; les numéros restent masqués pour la finance. Chaque export est journalisé (`staff.data_exported` : qui, quoi, combien de lignes). Format Excel : séparateur « ; », UTF-8 avec BOM, cellules commençant par `= + - @` neutralisées.
+
+Un export sort des données personnelles de l'outil : ne l'envoyez qu'à qui en a besoin, et vérifiez les règles congolaises de protection des données avant tout partage avec un partenaire ou un régulateur.
 
 Risque à garder en tête : valider un « PIN oublié » à la place d'un garant, c'est donner le compte à celui qui tient le numéro. Un voleur de carte SIM peut aussi appeler le support. Vérifiez par des questions que seul le vrai membre connaît (sa tontine, son tour, le président), jamais par le seul numéro.
 
@@ -81,4 +109,4 @@ Variable du back-office : `MCHANGO_API_URL`, l'adresse de l'API vue par le serve
 
 ## Pas encore fait (V2 dans le document de cadrage)
 
-Tickets de support et réponses types ; exports pour partenaires et régulateur ; règles d'alerte de fraude et gel préventif ; facturation ; SMS ciblés ; espace partenaires. La vérification d'identité du recours « PIN oublié » reste manuelle (appel et questions), sans pièce d'identité numérisée.
+Tickets de support complets et réponses types ; formats d'export imposés par un partenaire ou le régulateur ; gel préventif automatique ; facturation ; SMS ciblés ; espace partenaires. La vérification d'identité du recours « PIN oublié » reste manuelle (appel et questions), sans pièce d'identité numérisée.

@@ -48,6 +48,11 @@ export default async function DisputesPage({ searchParams }: PageProps<"/dispute
             <option value="all">Tous</option>
           </select>
           <button className="btn btn-primary">Filtrer</button>
+          {CAN.exportData.includes(staff.role) && (
+            <a className="btn btn-secondary" href="/export?kind=disputes" download>
+              Exporter tous les litiges (CSV)
+            </a>
+          )}
         </form>
       </div>
 

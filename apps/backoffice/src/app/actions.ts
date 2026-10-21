@@ -87,6 +87,27 @@ export async function approvePinReset(requestId: string, _: ActionState, form: F
   });
 }
 
+export async function addNote(userId: string, closes: string | null, _: ActionState, form: FormData) {
+  return run(async () => {
+    await api(`/admin/users/${userId}/notes`, {
+      method: "POST",
+      body: { body: text(form, "body"), followUp: form.get("followUp") === "on", closes },
+    });
+    return closes ? "Suivi clos." : "Note ajoutée.";
+  });
+}
+
+export async function resendSms(notificationId: string) {
+  return run(async () => {
+    const r = await api<{ status: "sent" | "failed" }>(`/admin/notifications/${notificationId}/resend`, {
+      method: "POST",
+      body: {},
+    });
+    if (r.status === "failed") return { error: "Nouvel échec d'envoi : vérifiez le numéro ou le fournisseur SMS." };
+    return "Rappel renvoyé.";
+  });
+}
+
 export async function suspendGroup(groupId: string, _: ActionState, form: FormData) {
   return run(async () => {
     await api(`/admin/groups/${groupId}/suspend`, { method: "POST", body: { reason: text(form, "reason") } });

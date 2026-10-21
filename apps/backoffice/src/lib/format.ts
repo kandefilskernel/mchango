@@ -53,6 +53,16 @@ export const disputeStatus: Record<string, string> = {
   withdrawn: "Retiré",
 };
 
+export const smsTemplate: Record<string, string> = {
+  contribution_reminder: "Rappel de cotisation",
+};
+
+export const smsStatus: Record<string, string> = {
+  queued: "En attente",
+  sent: "Envoyé",
+  failed: "Échec",
+};
+
 export const memberRole: Record<string, string> = {
   president: "Président(e)",
   treasurer: "Trésorier(e)",

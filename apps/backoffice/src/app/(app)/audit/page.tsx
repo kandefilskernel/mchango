@@ -1,7 +1,7 @@
 import { verifyChain } from "../../actions";
 import { ActionForm } from "@/components/action-form";
 import { EventList, type AuditEventRow } from "@/components/event-list";
-import { api } from "@/lib/api";
+import { api, CAN, currentStaff } from "@/lib/api";
 import { dateTime } from "@/lib/format";
 
 interface StaffAction {
@@ -17,9 +17,10 @@ export default async function AuditPage({ searchParams }: PageProps<"/audit">) {
   const raw = String((await searchParams).chain ?? "global").trim();
   // Accepte « global », « group:<uuid> » ou un simple identifiant de tontine
   const chain = /^[0-9a-f-]{36}$/.test(raw) ? `group:${raw}` : raw;
-  const [events, actions] = await Promise.all([
+  const [events, actions, staff] = await Promise.all([
     api<AuditEventRow[]>(`/admin/audit?chain=${encodeURIComponent(chain)}&limit=100`),
     api<StaffAction[]>("/admin/audit/staff"),
+    currentStaff(),
   ]);
   return (
     <>
@@ -51,6 +52,18 @@ export default async function AuditPage({ searchParams }: PageProps<"/audit">) {
               <input type="hidden" name="chainId" value={chain} />
             </ActionForm>
           </div>
+          {CAN.exportData.includes(staff.role) && (
+            <div className="card">
+              <h2>Exporter la chaîne</h2>
+              <p className="muted">
+                Tous les événements de « {chain} » avec leurs empreintes, pour un contrôle externe. L&apos;export est
+                inscrit au journal.
+              </p>
+              <a className="btn btn-secondary" href={`/export?kind=audit&chain=${encodeURIComponent(chain)}`} download>
+                Télécharger (CSV)
+              </a>
+            </div>
+          )}
           <div className="card">
             <h2>Actions de l&apos;équipe</h2>
             {actions.slice(0, 40).map((a) => (

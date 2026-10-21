@@ -1,8 +1,30 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { appendAudit, Db, type Queryable } from '../infra/database.js';
+import { SMS_SENDER, type SmsSender } from '../infra/sms.js';
 import { TODAY_DRC_SQL } from '../groups/membership.js';
+import { toCsv } from './csv.js';
 import { SEES_PHONE_NUMBERS } from './staff.guard.js';
 import type { StaffMember } from './staff-auth.service.js';
+
+/** Renvois de SMS par l'équipe : au plus 3 par membre et par jour (chaque SMS est payé). */
+export const MAX_RESENDS_PER_DAY = 3;
+
+/** Seuils des alertes de fraude (spec/backoffice.md) : signaux à vérifier, pas des preuves. */
+export const ALERT_RULES = {
+  pinResets: { count: 2, days: 30 },
+  newDevices: { count: 3, days: 7 },
+  rejected: { count: 2, days: 30 },
+};
+
+export type ExportKind = 'disputes' | 'late' | 'audit';
 
 /** +243991234567 → +243 99 *** **67 pour les rôles qui n'ont pas besoin du numéro complet. */
 export function maskPhone(phone: string): string {
@@ -11,6 +33,9 @@ export function maskPhone(phone: string): string {
 
 const iso = (d: Date | null | undefined) => d?.toISOString() ?? null;
 
+/** Montant pour un export : 20000 (FC) ou 20.50 ($). */
+const amount = (minor: number, currency: string) => (currency === 'USD' ? (minor / 100).toFixed(2) : String(minor));
+
 /**
  * Lectures et décisions de l'équipe. Toute décision est journalisée avec l'acteur « staff » ;
  * celles qui concernent un groupe vont dans la chaîne de ce groupe, visible de ses membres.
@@ -18,7 +43,10 @@ const iso = (d: Date | null | undefined) => d?.toISOString() ?? null;
  */
 @Injectable()
 export class AdminService {
-  constructor(private readonly db: Db) {}
+  constructor(
+    private readonly db: Db,
+    @Inject(SMS_SENDER) private readonly sms: SmsSender,
+  ) {}
 
   private phone(staff: StaffMember, phone: string) {
     return SEES_PHONE_NUMBERS.includes(staff.role) ? phone : maskPhone(phone);
@@ -69,7 +97,7 @@ export class AdminService {
 
   /** Tout ce qui attend une personne de l'équipe, du plus urgent au moins urgent. */
   async inbox(staff: StaffMember) {
-    const [disputes, pinLocked, pinResets, smsFailed, suspended] = await Promise.all([
+    const [disputes, pinLocked, pinResets, smsFailed, suspended, followUps] = await Promise.all([
       this.db.query<{ n: number }>(`SELECT count(*)::int AS n FROM disputes WHERE status = 'open'`),
       this.db.query<{ id: string; full_name: string; phone: string; pin_locked_until: Date }>(
         `SELECT id, full_name, phone, pin_locked_until FROM users
@@ -89,8 +117,15 @@ export class AdminService {
       this.db.query<{ id: string; name: string; suspended_reason: string | null }>(
         `SELECT id, name, suspended_reason FROM groups WHERE status = 'suspended' ORDER BY created_at DESC LIMIT 20`,
       ),
+      this.db.query<{ id: string; user_id: string; full_name: string; body: string; staff_name: string; created_at: Date }>(
+        `SELECT n.id, n.user_id, u.full_name, n.body, s.full_name AS staff_name, n.created_at
+         FROM support_notes n JOIN users u ON u.id = n.user_id JOIN staff s ON s.id = n.staff_id
+         WHERE n.follow_up AND NOT EXISTS (SELECT 1 FROM support_notes c WHERE c.closes = n.id)
+         ORDER BY n.created_at LIMIT 20`,
+      ),
     ]);
     const counts = {
+      followUps: followUps.rowCount ?? 0,
       disputesOpen: disputes.rows[0].n,
       pinLocked: pinLocked.rowCount ?? 0,
       pinResetsPending: pinResets.rowCount ?? 0,
@@ -125,7 +160,250 @@ export class AdminService {
         createdAt: iso(r.created_at),
       })),
       groupsSuspended: suspended.rows.map((r) => ({ id: r.id, name: r.name, reason: r.suspended_reason })),
+      followUps: followUps.rows.map((r) => ({
+        noteId: r.id,
+        userId: r.user_id,
+        fullName: r.full_name,
+        body: r.body,
+        staff: r.staff_name,
+        createdAt: iso(r.created_at),
+      })),
     };
+  }
+
+  // ---------- Notes de suivi ----------
+
+  /**
+   * Note interne sur un membre. « À suivre » la fait apparaître dans « À traiter » ;
+   * une note qui en clôture une autre (closes) la retire. Les notes ne se modifient pas.
+   * Le journal garde la trace de l'ajout, pas le texte (qui peut contenir des détails personnels).
+   */
+  async addNote(staff: StaffMember, userId: string, body: string, followUp: boolean, closes: string | null) {
+    const text = body.trim();
+    if (text.length < 3) throw new BadRequestException('Écrivez la note.');
+    return this.db.transaction({ type: 'staff', id: staff.id }, async (q) => {
+      const user = await q.query('SELECT 1 FROM users WHERE id = $1', [userId]);
+      if (user.rowCount !== 1) throw new NotFoundException('Utilisateur introuvable.');
+      if (closes) {
+        const open = await q.query(
+          `SELECT 1 FROM support_notes n WHERE n.id = $1 AND n.user_id = $2 AND n.follow_up
+             AND NOT EXISTS (SELECT 1 FROM support_notes c WHERE c.closes = n.id)`,
+          [closes, userId],
+        );
+        if (open.rowCount !== 1) throw new ConflictException('Ce suivi est déjà clos ou introuvable.');
+      }
+      // Deux clôtures simultanées : l'index unique sur « closes » n'en laisse passer qu'une
+      const { rows } = await q
+        .query<{ id: string; created_at: Date }>(
+          `INSERT INTO support_notes (user_id, staff_id, body, follow_up, closes) VALUES ($1, $2, $3, $4, $5)
+           RETURNING id, created_at`,
+          [userId, staff.id, text, closes ? false : followUp, closes],
+        )
+        .catch((e: { code?: string }) => {
+          if (e.code === '23505') throw new ConflictException('Ce suivi est déjà clos ou introuvable.');
+          throw e;
+        });
+      await appendAudit(q, {
+        groupId: null,
+        actor: { type: 'staff', id: staff.id },
+        action: closes ? 'staff.follow_up_closed' : 'staff.support_note',
+        payload: { user_id: userId, note_id: rows[0].id, closes },
+      });
+      return { id: rows[0].id, createdAt: iso(rows[0].created_at) };
+    });
+  }
+
+  // ---------- SMS ----------
+
+  /**
+   * Renvoie un rappel de cotisation dont l'envoi a échoué. Jamais un code de connexion :
+   * il n'est pas conservé, et la personne en redemande un dans l'app.
+   * Un seul renvoi par SMS en échec, au plus MAX_RESENDS_PER_DAY par membre et par jour.
+   */
+  async resendSms(staff: StaffMember, notificationId: string) {
+    const { rows } = await this.db.query<{
+      user_id: string;
+      phone: string;
+      is_blocked: boolean;
+      template: string;
+      status: string;
+      payload: { cycle_id?: string; membership_id?: string; message?: string } | null;
+    }>(
+      `SELECT n.user_id, u.phone, u.is_blocked, n.template, n.status, n.payload
+       FROM notifications n JOIN users u ON u.id = n.user_id WHERE n.id = $1`,
+      [notificationId],
+    );
+    const n = rows[0];
+    if (!n) throw new NotFoundException('SMS introuvable.');
+    if (n.status !== 'failed') throw new ConflictException("Ce SMS n'est pas en échec.");
+    if (n.template !== 'contribution_reminder' || !n.payload?.message) {
+      throw new ConflictException('Seuls les rappels de cotisation peuvent être renvoyés.');
+    }
+    if (n.is_blocked) throw new ConflictException('Ce compte est bloqué.');
+    const still = await this.db.query(
+      `SELECT 1 FROM cycles c WHERE c.id = $1 AND c.status IN ('open', 'upcoming')
+         AND NOT EXISTS (SELECT 1 FROM contributions k
+                         WHERE k.cycle_id = c.id AND k.payer_membership_id = $2 AND k.status <> 'rejected')`,
+      [n.payload.cycle_id, n.payload.membership_id],
+    );
+    if (still.rowCount !== 1) throw new ConflictException('Ce rappel ne sert plus : le paiement est déclaré ou le tour est clos.');
+    const today = await this.db.query<{ n: number }>(
+      `SELECT count(*)::int AS n FROM notifications
+       WHERE user_id = $1 AND dedupe_key LIKE 'resend:%' AND created_at > now() - interval '1 day'`,
+      [n.user_id],
+    );
+    if (today.rows[0].n >= MAX_RESENDS_PER_DAY) {
+      throw new HttpException(`Déjà ${MAX_RESENDS_PER_DAY} renvois pour ce membre aujourd'hui.`, HttpStatus.TOO_MANY_REQUESTS);
+    }
+
+    const claimed = await this.db.transaction({ type: 'staff', id: staff.id }, async (q) => {
+      const ins = await q.query<{ id: string }>(
+        `INSERT INTO notifications (user_id, channel, template, payload, dedupe_key)
+         VALUES ($1, 'sms', $2, $3, $4) ON CONFLICT (dedupe_key) DO NOTHING RETURNING id`,
+        [n.user_id, n.template, JSON.stringify({ ...n.payload, resend_of: notificationId }), `resend:${notificationId}`],
+      );
+      if (ins.rowCount !== 1) throw new ConflictException('Ce SMS a déjà été renvoyé.');
+      await appendAudit(q, {
+        groupId: null,
+        actor: { type: 'staff', id: staff.id },
+        action: 'staff.sms_resent',
+        payload: { user_id: n.user_id, notification_id: notificationId, resend_id: ins.rows[0].id },
+      });
+      return ins.rows[0].id;
+    });
+    try {
+      await this.sms.send(n.phone, n.payload.message);
+      await this.db.query(`UPDATE notifications SET status = 'sent', sent_at = now() WHERE id = $1`, [claimed]);
+      return { id: claimed, status: 'sent' as const };
+    } catch (e) {
+      await this.db.query(`UPDATE notifications SET status = 'failed', error = $2 WHERE id = $1`, [
+        claimed,
+        String(e).slice(0, 500),
+      ]);
+      return { id: claimed, status: 'failed' as const };
+    }
+  }
+
+  // ---------- Alertes de fraude ----------
+
+  /**
+   * Signaux simples à vérifier par l'équipe (aucune action automatique, aucun gel) :
+   * plusieurs « PIN oublié », beaucoup de nouveaux téléphones, déclarations rejetées à répétition,
+   * ID de transaction déjà utilisé dans une autre déclaration.
+   */
+  async alerts(staff: StaffMember) {
+    const r = ALERT_RULES;
+    const [pinResets, devices, rejected, reused] = await Promise.all([
+      this.db.query<{ user_id: string; full_name: string; phone: string; n: number; last_at: Date }>(
+        `SELECT u.id AS user_id, u.full_name, u.phone, count(*)::int AS n, max(p.created_at) AS last_at
+         FROM pin_reset_requests p JOIN users u ON u.id = p.user_id
+         WHERE p.created_at > now() - make_interval(days => $1)
+         GROUP BY u.id HAVING count(*) >= $2 ORDER BY last_at DESC LIMIT 50`,
+        [r.pinResets.days, r.pinResets.count],
+      ),
+      this.db.query<{ user_id: string; full_name: string; phone: string; n: number; last_at: Date }>(
+        `SELECT u.id AS user_id, u.full_name, u.phone, count(*)::int AS n, max(d.created_at) AS last_at
+         FROM devices d JOIN users u ON u.id = d.user_id
+         WHERE d.created_at > now() - make_interval(days => $1)
+         GROUP BY u.id HAVING count(*) >= $2 ORDER BY last_at DESC LIMIT 50`,
+        [r.newDevices.days, r.newDevices.count],
+      ),
+      this.db.query<{ user_id: string; full_name: string; phone: string; n: number; last_at: Date }>(
+        `SELECT u.id AS user_id, u.full_name, u.phone, count(*)::int AS n, max(k.declared_at) AS last_at
+         FROM contributions k JOIN memberships m ON m.id = k.payer_membership_id JOIN users u ON u.id = m.user_id
+         WHERE k.status = 'rejected' AND k.declared_at > now() - make_interval(days => $1)
+         GROUP BY u.id HAVING count(*) >= $2 ORDER BY last_at DESC LIMIT 50`,
+        [r.rejected.days, r.rejected.count],
+      ),
+      this.db.query<{ method: string; tx_reference: string; n: number; payers: string[]; groups: string[]; last_at: Date }>(
+        `SELECT k.method, k.tx_reference, count(*)::int AS n,
+                array_agg(DISTINCT u.full_name) AS payers, array_agg(DISTINCT g.name) AS groups,
+                max(k.declared_at) AS last_at
+         FROM contributions k
+         JOIN memberships m ON m.id = k.payer_membership_id JOIN users u ON u.id = m.user_id
+         JOIN groups g ON g.id = k.group_id
+         WHERE k.tx_reference IS NOT NULL
+         GROUP BY k.method, k.tx_reference HAVING count(*) >= 2 ORDER BY last_at DESC LIMIT 50`,
+      ),
+    ]);
+    const person = (x: { user_id: string; full_name: string; phone: string; n: number; last_at: Date }) => ({
+      userId: x.user_id,
+      fullName: x.full_name,
+      phone: this.phone(staff, x.phone),
+      count: x.n,
+      lastAt: iso(x.last_at),
+    });
+    return {
+      rules: r,
+      pinResets: pinResets.rows.map(person),
+      newDevices: devices.rows.map(person),
+      rejected: rejected.rows.map(person),
+      reusedTxReferences: reused.rows.map((x) => ({
+        method: x.method,
+        txReference: x.tx_reference,
+        count: x.n,
+        payers: x.payers,
+        groups: x.groups,
+        lastAt: iso(x.last_at),
+      })),
+    };
+  }
+
+  // ---------- Exports ----------
+
+  /** Export CSV, journalisé (qui a sorti quelles données, quand). */
+  async exportCsv(staff: StaffMember, kind: ExportKind, chainId = 'global'): Promise<{ filename: string; csv: string }> {
+    let header: string[];
+    let rows: (string | number | null)[][];
+    if (kind === 'disputes') {
+      const list = await this.disputes(staff, '');
+      header = ['Ouvert le', 'Statut', 'Tontine', 'Tour', 'Payeur', 'Téléphone payeur', 'Bénéficiaire', 'Téléphone bénéficiaire',
+        'Montant', 'Devise', 'Moyen', 'ID de transaction', 'Motif', 'Décision', 'Résolu le'];
+      rows = list.map((d) => [d.openedAt, d.status, d.group.name, d.group.cycleNumber, d.payer.fullName, d.payer.phone,
+        d.receiver.fullName, d.receiver.phone, amount(d.contribution.amountMinor, d.contribution.currency), d.contribution.currency,
+        d.contribution.method, d.contribution.txReference, d.reason, d.resolutionNote, d.resolvedAt]);
+    } else if (kind === 'late') {
+      const { rows: late } = await this.db.query<{
+        group_name: string; cycle_number: number; due_date: string; payer: string; payer_phone: string;
+        beneficiary: string; amount: string; currency: string;
+      }>(
+        `SELECT g.name AS group_name, c.cycle_number, c.due_date::text AS due_date, u.full_name AS payer, u.phone AS payer_phone,
+                bu.full_name AS beneficiary, g.contribution_amount_minor AS amount, g.currency
+         FROM cycles c
+         JOIN groups g ON g.id = c.group_id AND g.status = 'active'
+         JOIN memberships m ON m.group_id = c.group_id AND m.status = 'active' AND m.id <> c.beneficiary_membership_id
+         JOIN users u ON u.id = m.user_id
+         JOIN memberships bm ON bm.id = c.beneficiary_membership_id JOIN users bu ON bu.id = bm.user_id
+         WHERE c.due_date < ${TODAY_DRC_SQL} AND c.due_date >= ${TODAY_DRC_SQL} - 30
+           AND NOT EXISTS (SELECT 1 FROM contributions k
+                           WHERE k.cycle_id = c.id AND k.payer_membership_id = m.id AND k.status <> 'rejected')
+         ORDER BY c.due_date, g.name, u.full_name`,
+      );
+      header = ['Échéance', 'Tontine', 'Tour', 'Payeur', 'Téléphone', 'Bénéficiaire', 'Montant attendu', 'Devise'];
+      rows = late.map((l) => [l.due_date, l.group_name, l.cycle_number, l.payer, this.phone(staff, l.payer_phone),
+        l.beneficiary, amount(Number(l.amount), l.currency), l.currency]);
+    } else {
+      const { rows: events } = await this.db.query<{
+        seq: string; action: string; actor_type: string; actor_id: string | null; payload: string; prev_hash: string; hash: string; created_at: Date;
+      }>(
+        `SELECT seq, action, actor_type, actor_id, payload, prev_hash, hash, created_at FROM audit_log
+         WHERE chain_id = $1 ORDER BY seq LIMIT 50000`,
+        [chainId],
+      );
+      header = ['Séquence', 'Date', 'Action', 'Acteur', 'Identifiant acteur', 'Contenu', 'Empreinte précédente', 'Empreinte'];
+      rows = events.map((e) => [Number(e.seq), iso(e.created_at), e.action, e.actor_type, e.actor_id, e.payload, e.prev_hash, e.hash]);
+    }
+    await this.db.transaction({ type: 'staff', id: staff.id }, (q) =>
+      appendAudit(q, {
+        groupId: null,
+        actor: { type: 'staff', id: staff.id },
+        action: 'staff.data_exported',
+        payload: { kind, chain_id: kind === 'audit' ? chainId : null, rows: rows.length },
+      }),
+    );
+    const day = new Date().toISOString().slice(0, 10);
+    const suffix = kind === 'audit' ? `-${chainId.replace(':', '-')}` : '';
+    return { filename: `mchango-${kind}${suffix}-${day}.csv`, csv: toCsv(header, rows) };
   }
 
   /** PIN bloqué après 5 essais : la personne peut réessayer tout de suite (journalisé). */
@@ -191,7 +469,7 @@ export class AdminService {
       [userId],
     );
     if (!u.rows[0]) throw new NotFoundException('Utilisateur introuvable.');
-    const [devices, memberships, events] = await Promise.all([
+    const [devices, memberships, events, sms, notes] = await Promise.all([
       this.db.query<{ id: string; created_at: Date; last_seen_at: Date | null; revoked_at: Date | null }>(
         'SELECT id, created_at, last_seen_at, revoked_at FROM devices WHERE user_id = $1 ORDER BY created_at DESC',
         [userId],
@@ -204,6 +482,27 @@ export class AdminService {
       this.db.query<{ seq: string; action: string; created_at: Date; actor_type: string }>(
         `SELECT seq, action, created_at, actor_type FROM audit_log
          WHERE chain_id = 'global' AND payload::jsonb ->> 'user_id' = $1 ORDER BY seq DESC LIMIT 30`,
+        [userId],
+      ),
+      this.db.query<{
+        id: string;
+        template: string;
+        status: string;
+        error: string | null;
+        created_at: Date;
+        sent_at: Date | null;
+        resend_of: string | null;
+        resent: boolean;
+      }>(
+        `SELECT n.id, n.template, n.status, n.error, n.created_at, n.sent_at, n.payload ->> 'resend_of' AS resend_of,
+                EXISTS (SELECT 1 FROM notifications r WHERE r.dedupe_key = 'resend:' || n.id) AS resent
+         FROM notifications n WHERE n.user_id = $1 ORDER BY n.created_at DESC LIMIT 30`,
+        [userId],
+      ),
+      this.db.query<{ id: string; body: string; follow_up: boolean; closes: string | null; closed: boolean; staff_name: string; created_at: Date }>(
+        `SELECT n.id, n.body, n.follow_up, n.closes, s.full_name AS staff_name, n.created_at,
+                EXISTS (SELECT 1 FROM support_notes c WHERE c.closes = n.id) AS closed
+         FROM support_notes n JOIN staff s ON s.id = n.staff_id WHERE n.user_id = $1 ORDER BY n.created_at DESC LIMIT 100`,
         [userId],
       ),
     ]);
@@ -231,6 +530,25 @@ export class AdminService {
         status: m.status,
       })),
       events: events.rows.map((e) => ({ seq: Number(e.seq), action: e.action, actorType: e.actor_type, createdAt: iso(e.created_at) })),
+      sms: sms.rows.map((s) => ({
+        id: s.id,
+        template: s.template,
+        status: s.status,
+        error: s.error,
+        createdAt: iso(s.created_at),
+        sentAt: iso(s.sent_at),
+        isResend: s.resend_of !== null,
+        resendable: s.status === 'failed' && s.template === 'contribution_reminder' && !s.resent,
+      })),
+      notes: notes.rows.map((n) => ({
+        id: n.id,
+        body: n.body,
+        followUp: n.follow_up,
+        closes: n.closes,
+        closed: n.closed,
+        staff: n.staff_name,
+        createdAt: iso(n.created_at),
+      })),
     };
   }
 

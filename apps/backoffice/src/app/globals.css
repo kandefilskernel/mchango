@@ -537,15 +537,249 @@ textarea {
 .login {
   min-height: 100vh;
   display: grid;
-  place-items: center;
-  background: linear-gradient(160deg, var(--green), var(--green-light));
-  padding: 20px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(380px, 1fr);
+  background: var(--surface);
 }
 
-.login .card {
+.login-hero {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  padding: 36px 48px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background:
+    radial-gradient(circle at 85% 10%, rgba(242, 179, 61, 0.28), transparent 40%),
+    radial-gradient(circle at 10% 90%, rgba(124, 240, 180, 0.18), transparent 45%),
+    linear-gradient(155deg, #0b4a35 0%, var(--green) 45%, #1f7a52 100%);
+}
+
+/* motif discret, façon tissu wax */
+.login-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1.5px, transparent 1.5px);
+  background-size: 22px 22px;
+  pointer-events: none;
+}
+
+.login-hero > * {
+  position: relative;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 0.01em;
+}
+
+.hero-copy h1 {
+  color: #fff;
+  font-size: clamp(28px, 3.2vw, 42px);
+  line-height: 1.1;
+  margin: 18px 0 10px;
+  max-width: 14ch;
+}
+
+.hero-copy p {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 16px;
+  opacity: 0.88;
+  line-height: 1.5;
+}
+
+.hero-art {
+  width: 100%;
+  max-width: 540px;
+  height: auto;
+  max-height: calc(100vh - 420px);
+  min-height: 260px;
+  align-self: center;
+  margin-top: auto;
+}
+
+.hero-points {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+
+.hero-points li {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 12px 7px 30px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  position: relative;
+}
+
+.hero-points li::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  width: 11px;
+  height: 6px;
+  border-left: 2.5px solid var(--gold);
+  border-bottom: 2.5px solid var(--gold);
+  transform: translateY(-70%) rotate(-45deg);
+}
+
+.login-panel {
+  display: grid;
+  place-items: center;
+  padding: 32px 24px;
+}
+
+.login-card {
   width: 100%;
   max-width: 400px;
-  padding: 28px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 32px 30px 26px;
+  box-shadow: 0 24px 60px -28px rgba(15, 94, 67, 0.45);
+}
+
+.login-card-head h2 {
+  font-size: 26px;
+  margin: 6px 0 6px;
+}
+
+.login-card-head p {
+  margin: 0 0 20px;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--green);
+  background: var(--mint);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.login-card .btn-primary {
+  width: 100%;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  font-size: 15px;
+}
+
+.login-foot {
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+/* animations douces de l'illustration */
+.hero-art .orbit {
+  transform-origin: 260px 232px;
+  animation: orbit 36s linear infinite;
+}
+
+.hero-art .flow {
+  animation: flow 1.6s linear infinite;
+}
+
+.hero-art .pot {
+  transform-origin: 260px 232px;
+  animation: pulse 4s ease-in-out infinite;
+}
+
+.hero-art .float-a {
+  animation: float 6s ease-in-out infinite;
+}
+
+.hero-art .float-b {
+  animation: float 7s ease-in-out -3s infinite;
+}
+
+.hero-art .screen {
+  animation: blink 3s ease-in-out infinite;
+}
+
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes flow {
+  to {
+    stroke-dashoffset: -22;
+  }
+}
+
+@keyframes pulse {
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes float {
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-art * {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .login {
+    grid-template-columns: 1fr;
+  }
+  .login-hero {
+    padding: 22px 20px 26px;
+    gap: 12px;
+  }
+  .hero-copy h1 {
+    margin-top: 8px;
+    max-width: none;
+  }
+  .hero-art {
+    max-width: 280px;
+    max-height: none;
+    min-height: 0;
+  }
+  .hero-copy p {
+    font-size: 14.5px;
+  }
+  .hero-points {
+    display: none;
+  }
+  .login-panel {
+    position: relative;
+    z-index: 1;
+    padding: 0 16px 32px;
+    margin-top: -28px;
+  }
 }
 
 /* ---------- Notes de suivi ---------- */

@@ -27,6 +27,9 @@ const schema = z.object({
   STAFF_SECRET_KEY: z
     .string()
     .refine((v) => Buffer.from(v, 'base64').length === 32, '32 octets encodés en base64'),
+  // DÉVELOPPEMENT SEULEMENT : le code 2FA « 000000 » est accepté au back-office (tests en local sans
+  // application d'authentification). Refusé en production.
+  STAFF_2FA_DEV_BYPASS: z.enum(['0', '1']).default('0'),
 });
 
 export type AppConfig = z.infer<typeof schema>;
@@ -41,6 +44,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   }
   if (parsed.data.NODE_ENV === 'production' && parsed.data.SMS_DRIVER === 'console') {
     throw new Error('SMS_DRIVER=console est interdit en production (les codes seraient dans les logs)');
+  }
+  if (parsed.data.NODE_ENV === 'production' && parsed.data.STAFF_2FA_DEV_BYPASS === '1') {
+    throw new Error('STAFF_2FA_DEV_BYPASS=1 est interdit en production : la double authentification est obligatoire');
   }
   return parsed.data;
 }

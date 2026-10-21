@@ -90,11 +90,13 @@ export class StaffAuthService {
       [email],
     );
     const s = rows[0];
+    // Développement seulement (refusé en production par loadConfig) : « 000000 » remplace le code
+    const devBypass = this.config.STAFF_2FA_DEV_BYPASS === '1' && code === '000000';
     const ok =
       s?.is_active &&
       s.totp_secret_enc &&
       (await verify(s.password_hash, password)) &&
-      verifyTotp(openSecret(s.totp_secret_enc, this.config.STAFF_SECRET_KEY), code);
+      (devBypass || verifyTotp(openSecret(s.totp_secret_enc, this.config.STAFF_SECRET_KEY), code));
     if (!ok) {
       const fails = await this.redis.incr(failKey);
       if (fails === 1) await this.redis.expire(failKey, LOCK_SECONDS);
@@ -107,7 +109,12 @@ export class StaffAuthService {
         `UPDATE staff SET last_login_at = now(), totp_enabled_at = coalesce(totp_enabled_at, now()) WHERE id = $1`,
         [s.id],
       );
-      await appendAudit(q, { groupId: null, actor: { type: 'staff', id: s.id }, action: 'staff.login', payload: { staff_id: s.id } });
+      await appendAudit(q, {
+        groupId: null,
+        actor: { type: 'staff', id: s.id },
+        action: 'staff.login',
+        payload: { staff_id: s.id, ...(devBypass ? { two_factor: 'dev_bypass' } : {}) },
+      });
     });
     const claims: StaffClaims = { typ: 'staff', sub: s.id, role: s.role };
     const token = await this.jwt.signAsync(claims, {

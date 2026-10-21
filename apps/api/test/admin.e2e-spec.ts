@@ -78,6 +78,7 @@ describe('Back-office (e2e)', () => {
       const created = await api.app.get(StaffAuthService).create(null, { email: `x-${randomUUID().slice(0, 6)}@mchango.test`, fullName: 'X', role: 'support' });
       const send = (password: string, code: string) =>
         http().post('/admin/auth/login').send({ email: created.email, password, code });
+      // « 000000 » n'ouvre rien quand le contournement de développement est désactivé (défaut)
       const bad1 = await send(created.temporaryPassword, '000000');
       const bad2 = await send('mauvais-mot-de-passe', totpCode(created.totpSecret));
       expect([bad1.status, bad2.status]).toEqual([401, 401]);

@@ -18,6 +18,9 @@ const schema = z.object({
   // Origines autorisées pour un client web (séparées par des virgules). Vide = CORS désactivé.
   // L'app Android n'en a pas besoin ; sert à lancer l'app Flutter dans Chrome en développement.
   CORS_ORIGINS: z.string().default(''),
+  // Rappels SMS avant échéance : vérification périodique (voir src/reminders/)
+  REMINDERS_ENABLED: z.enum(['0', '1']).default('1'),
+  REMINDERS_INTERVAL_MINUTES: z.coerce.number().int().min(1).max(120).default(15),
 });
 
 export type AppConfig = z.infer<typeof schema>;

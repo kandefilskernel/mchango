@@ -11,6 +11,11 @@ import {
   OTP_TTL_SECONDS,
 } from './auth.constants.js';
 
+/** Texte du SMS : un seul SMS en alphabet GSM-7 (pas de « ê », « ç », guillemets français). */
+export function otpMessage(code: string): string {
+  return `Mchango : votre code est ${code}. Il expire dans 5 minutes. Ne le donnez à personne, y compris l'équipe Mchango.`;
+}
+
 /**
  * Codes SMS à 6 chiffres. Le code n'est jamais stocké en clair : seulement son HMAC
  * (avec un secret serveur), dans Redis, avec expiration.
@@ -33,11 +38,7 @@ export class OtpService {
       .set(this.codeKey(phone), this.digest(phone, code), 'EX', OTP_TTL_SECONDS)
       .del(this.attemptsKey(phone))
       .exec();
-    await this.sms.send(
-      phone,
-      `Mchango : votre code est ${code}. Il expire dans 5 minutes. ` +
-        `Ne le donnez à personne, même pas à l'équipe Mchango.`,
-    );
+    await this.sms.send(phone, otpMessage(code));
   }
 
   /** Vrai si le code est bon. Un code ne sert qu'une fois et brûle après trop d'essais. */

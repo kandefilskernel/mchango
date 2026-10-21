@@ -4,6 +4,7 @@ import { APP_CONFIG, loadConfig } from './config.js';
 import { ContributionsModule } from './contributions/contributions.module.js';
 import { GroupsModule } from './groups/groups.module.js';
 import { DatabaseModule } from './infra/database.js';
+import { RemindersModule } from './reminders/reminders.module.js';
 import { RedisModule } from './infra/redis.js';
 import { SmsModule } from './infra/sms.js';
 
@@ -30,6 +31,7 @@ class ConfigModule {}
     AuthModule,
     GroupsModule,
     ContributionsModule,
+    RemindersModule,
   ],
   controllers: [HealthController],
 })

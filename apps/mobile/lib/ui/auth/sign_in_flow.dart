@@ -6,6 +6,7 @@ import '../../auth/local_pin.dart';
 import '../../services.dart';
 import '../common.dart';
 import '../theme.dart';
+import 'test_server_setting.dart';
 
 enum _Step { phone, code, register, link, forgot }
 
@@ -132,6 +133,8 @@ class _SignInFlowState extends State<SignInFlow> {
     BusyButton(label: 'Recevoir un code par SMS', icon: Icons.sms, onPressed: _sendCode),
     const SizedBox(height: 24),
     Text(noCustodyNotice, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
+    const SizedBox(height: 8),
+    const Center(child: TestServerSetting()),
   ];
 
   List<Widget> _codeStep(BuildContext context) => [

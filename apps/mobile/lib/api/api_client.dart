@@ -19,7 +19,8 @@ class ApiException implements Exception {
 class ApiClient {
   ApiClient(this.baseUrl, {http.Client? client}) : _http = client ?? http.Client();
 
-  final String baseUrl;
+  /// Modifiable seulement par le réglage « Serveur de test » des versions de test.
+  String baseUrl;
   final http.Client _http;
 
   String? accessToken;

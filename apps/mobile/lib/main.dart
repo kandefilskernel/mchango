@@ -10,7 +10,8 @@ import 'storage/key_value_store.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('fr_FR');
-  final services = AppServices(client: ApiClient(apiBaseUrl), store: const SecureKeyValueStore());
+  const store = SecureKeyValueStore();
+  final services = AppServices(client: ApiClient(await resolveApiUrl(store)), store: store);
   await services.auth.load();
   runApp(MchangoApp(services: services));
 }

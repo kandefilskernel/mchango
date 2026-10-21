@@ -80,6 +80,15 @@ class MchangoApi {
   Future<Receipt> receipt(String contributionId) async =>
       Receipt.fromJson(await client.get('/contributions/$contributionId/receipt') as Json);
 
+  /// Demandes de nouveau PIN que je peux confirmer en tant que garant.
+  Future<List<PinResetRequest>> pendingPinResets() async => [
+    for (final r in await client.get('/pin-resets/pending') as List) PinResetRequest.fromJson(r as Json),
+  ];
+
+  Future<void> approvePinReset(String requestId) => client.post('/pin-resets/$requestId/approve');
+
+  Future<void> rejectPinReset(String requestId) => client.post('/pin-resets/$requestId/reject');
+
   /// Tout l'historique du groupe, page par page.
   Future<List<HistoryEvent>> history(String groupId) async {
     final events = <HistoryEvent>[];

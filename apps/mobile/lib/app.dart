@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'auth/auth_repository.dart';
 import 'services.dart';
 import 'ui/auth/sign_in_flow.dart';
+import 'ui/auth/pending_reset_screen.dart';
 import 'ui/auth/unlock_screen.dart';
 import 'ui/groups/home_screen.dart';
 import 'ui/onboarding/onboarding_screen.dart';
@@ -86,6 +87,7 @@ class _MchangoAppState extends State<MchangoApp> with WidgetsBindingObserver {
       AuthStatus.signedOut when !_onboardingDone! => OnboardingScreen(onDone: _finishOnboarding),
       AuthStatus.signedOut => const SignInFlow(),
       AuthStatus.locked => const UnlockScreen(),
+      AuthStatus.recoveryPending => const PendingResetScreen(),
       _ => const HomeScreen(),
     };
   }

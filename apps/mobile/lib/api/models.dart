@@ -277,6 +277,22 @@ class Receipt {
   final String qrPayload;
 }
 
+/// Demande de nouveau PIN qu'un garant peut confirmer.
+class PinResetRequest {
+  PinResetRequest.fromJson(Json j)
+    : requestId = j['requestId'] as String,
+      fullName = j['fullName'] as String,
+      phone = j['phone'] as String,
+      groupName = j['groupName'] as String,
+      createdAt = DateTime.parse(j['createdAt'] as String);
+
+  final String requestId;
+  final String fullName;
+  final String phone;
+  final String groupName;
+  final DateTime createdAt;
+}
+
 /// Un événement du journal : la partie hachée (vérifiable) et le nom de l'auteur (affichage).
 class HistoryEvent {
   HistoryEvent.fromJson(Json j) : audit = AuditEvent.fromJson(j), actorName = j['actor_name'] as String?;

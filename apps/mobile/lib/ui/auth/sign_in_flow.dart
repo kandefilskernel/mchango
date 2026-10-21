@@ -7,7 +7,7 @@ import '../../services.dart';
 import '../common.dart';
 import '../theme.dart';
 
-enum _Step { phone, code, register, link }
+enum _Step { phone, code, register, link, forgot }
 
 /// Inscription ou connexion d'un nouveau téléphone, en un seul écran à étapes :
 /// numéro → code SMS → (nom + PIN) ou (PIN du compte existant).
@@ -61,6 +61,20 @@ class _SignInFlowState extends State<SignInFlow> {
 
   Future<void> _link() => _auth.linkDevice(otpToken: _otpToken!, pin: _pin.text);
 
+  void _startForgot() {
+    _pin.clear();
+    _pin2.clear();
+    setState(() => _step = _Step.forgot);
+  }
+
+  /// Si aucun garant n'est nécessaire, l'utilisateur est connecté ; sinon l'app passe à l'attente.
+  Future<void> _requestReset() async {
+    final weakness = pinWeakness(_pin.text);
+    if (weakness != null) return showInfo(context, weakness);
+    if (_pin.text != _pin2.text) return showInfo(context, 'Les deux PIN ne sont pas identiques.');
+    await _auth.requestPinReset(otpToken: _otpToken!, newPin: _pin.text);
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -81,6 +95,7 @@ class _SignInFlowState extends State<SignInFlow> {
               _Step.code => _codeStep(context),
               _Step.register => _registerStep(context),
               _Step.link => _linkStep(context),
+              _Step.forgot => _forgotStep(context),
             },
           ),
         ),
@@ -170,5 +185,22 @@ class _SignInFlowState extends State<SignInFlow> {
     PinField(key: const Key('pin'), controller: _pin, label: 'PIN', autofocus: true),
     const SizedBox(height: 16),
     BusyButton(label: 'Continuer', onPressed: _link),
+    const SizedBox(height: 8),
+    TextButton(key: const Key('forgot_pin'), onPressed: _startForgot, child: const Text('PIN oublié ?')),
+  ];
+
+  List<Widget> _forgotStep(BuildContext context) => [
+    Text('Choisir un nouveau PIN', style: Theme.of(context).textTheme.headlineSmall),
+    const SizedBox(height: 8),
+    const Text(
+      'Si vous êtes dans une tontine, une personne du groupe (le président, ou un membre si vous '
+      'êtes président) devra confirmer que c\'est bien vous. Elle recevra un SMS.',
+    ),
+    const SizedBox(height: 24),
+    PinField(key: const Key('new_pin'), controller: _pin, label: 'Nouveau PIN (6 chiffres)', autofocus: true),
+    const SizedBox(height: 12),
+    PinField(key: const Key('new_pin2'), controller: _pin2, label: 'Retapez le nouveau PIN'),
+    const SizedBox(height: 16),
+    BusyButton(label: 'Demander un nouveau PIN', onPressed: _requestReset),
   ];
 }

@@ -5,7 +5,9 @@ import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { AppModule } from '../src/app.module.js';
 import { challengeMessage } from '../src/auth/device-key.js';
+import type { Redis } from 'ioredis';
 import { Db } from '../src/infra/database.js';
+import { REDIS } from '../src/infra/redis.js';
 import { ConsoleSmsSender, SMS_SENDER } from '../src/infra/sms.js';
 
 export const GOOD_PIN = '482915';
@@ -53,6 +55,11 @@ export class TestApi {
 
   http() {
     return request(this.app.getHttpServer());
+  }
+
+  /** Remet à zéro la limite de codes SMS d'un numéro (3 en 15 min), pour enchaîner les étapes d'un test. */
+  async clearOtpLimit(phone: string) {
+    await this.app.get<Redis>(REDIS).del(`rl:otp:phone:${phone}`);
   }
 
   lastCode(phone: string): string {

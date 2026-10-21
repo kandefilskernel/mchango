@@ -68,4 +68,5 @@ Tests de la base : voir [`db/README.md`](db/README.md).
 - [Tirage vérifiable de l'ordre des tours](spec/draw.md)
 - [Reçus, historique et aperçu d'un groupe : contrat de l'API](spec/receipts.md)
 - [Rappels SMS avant échéance](spec/reminders.md)
+- [« PIN oublié » avec confirmation d'un garant](spec/pin-reset.md)
 - [App mobile : écrans, sécurité sur le téléphone, tests](apps/mobile/README.md)

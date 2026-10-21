@@ -7,7 +7,24 @@ import '../storage/key_value_store.dart';
 import 'device_identity.dart';
 import 'local_pin.dart';
 
-enum AuthStatus { loading, signedOut, locked, signedIn }
+/// recoveryPending : « PIN oublié » demandé, en attente de la confirmation d'un garant.
+enum AuthStatus { loading, signedOut, locked, signedIn, recoveryPending }
+
+/// Garant qui doit confirmer une demande de nouveau PIN.
+class Guarantor {
+  Guarantor(this.fullName, this.groupName);
+  final String fullName;
+  final String groupName;
+}
+
+/// Où en est une demande de nouveau PIN.
+class PinResetState {
+  PinResetState(this.status, this.guarantors);
+
+  /// pending, completed, rejected, cancelled, expired
+  final String status;
+  final List<Guarantor> guarantors;
+}
 
 /// Résultat de la vérification du code SMS.
 class OtpVerification {
@@ -35,6 +52,10 @@ class AuthRepository extends ChangeNotifier {
   static const _kFullName = 'full_name';
   static const _kPinFailures = 'pin_failures';
   static const _kLockedUntil = 'pin_locked_until';
+  // Demande « PIN oublié » en attente : identifiant, clé du téléphone, empreinte du nouveau PIN
+  static const _kResetId = 'pin_reset_id';
+  static const _kResetSeed = 'pin_reset_seed';
+  static const _kResetPinHash = 'pin_reset_pin_hash';
 
   /// Échecs de PIN avant une pause forcée, et durée de la pause.
   static const maxPinFailures = 5;
@@ -48,9 +69,79 @@ class AuthRepository extends ChangeNotifier {
     final deviceId = await _store.read(_kDeviceId);
     userId = await _store.read(_kUserId);
     fullName = await _store.read(_kFullName);
-    status = deviceId == null ? AuthStatus.signedOut : AuthStatus.locked;
+    status = deviceId != null
+        ? AuthStatus.locked
+        : await _store.read(_kResetId) != null
+        ? AuthStatus.recoveryPending
+        : AuthStatus.signedOut;
     notifyListeners();
   }
+
+  /// « PIN oublié » : code SMS vérifié + nouveau PIN. Sans tontine en cours, c'est immédiat ;
+  /// sinon un garant doit confirmer (le code SMS seul ne suffit pas : vol de carte SIM).
+  Future<PinResetState> requestPinReset({required String otpToken, required String newPin}) async {
+    final identity = await DeviceIdentity.generate();
+    final res = await _api.post('/auth/pin-reset', {
+      'otpToken': otpToken,
+      'newPin': newPin,
+      'devicePublicKey': identity.publicKeyBase64,
+    }) as Map;
+    if (res['status'] == 'completed') {
+      _api.accessToken = res['accessToken'] as String;
+      final me = await _api.get('/me') as Map;
+      await _saveDevice(res, identity, newPin, me['full_name'] as String);
+      return PinResetState('completed', const []);
+    }
+    await _store.write(_kResetId, res['requestId'] as String);
+    await _store.write(_kResetSeed, await identity.seedBase64());
+    await _store.write(_kResetPinHash, await LocalPin.hash(newPin));
+    status = AuthStatus.recoveryPending;
+    notifyListeners();
+    return PinResetState('pending', _guarantors(res));
+  }
+
+  /// Interroge le serveur. Si un garant a confirmé, ce téléphone est lié avec le nouveau PIN.
+  Future<PinResetState> checkPinReset() async {
+    final requestId = await _store.read(_kResetId);
+    if (requestId == null) return PinResetState('cancelled', const []);
+    final res = await _api.get('/auth/pin-reset/$requestId') as Map;
+    final state = res['status'] as String;
+    if (state == 'completed') {
+      await _store.write(_kDeviceId, res['deviceId'] as String);
+      await _store.write(_kSeed, (await _store.read(_kResetSeed))!);
+      await _store.write(_kPinHash, (await _store.read(_kResetPinHash))!);
+      await _clearReset();
+      await _openSession();
+      final me = await _api.get('/me') as Map;
+      await _store.write(_kUserId, me['id'] as String);
+      await _store.write(_kFullName, me['full_name'] as String);
+      userId = me['id'] as String;
+      fullName = me['full_name'] as String;
+      status = AuthStatus.signedIn;
+      notifyListeners();
+    } else if (state != 'pending') {
+      await cancelPinReset();
+    }
+    return PinResetState(state, _guarantors(res));
+  }
+
+  /// Abandonne la demande sur ce téléphone (elle expirera côté serveur).
+  Future<void> cancelPinReset() async {
+    await _clearReset();
+    status = AuthStatus.signedOut;
+    notifyListeners();
+  }
+
+  Future<void> _clearReset() async {
+    for (final k in [_kResetId, _kResetSeed, _kResetPinHash]) {
+      await _store.delete(k);
+    }
+  }
+
+  static List<Guarantor> _guarantors(Map res) => [
+    for (final g in (res['guarantors'] as List? ?? const []))
+      Guarantor((g as Map)['fullName'] as String, g['groupName'] as String),
+  ];
 
   Future<void> requestOtp(String phone) => _api.post('/auth/otp/request', {'phone': phone});
 

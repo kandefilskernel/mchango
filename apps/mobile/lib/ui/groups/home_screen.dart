@@ -7,6 +7,7 @@ import '../common.dart';
 import '../theme.dart';
 import 'create_group_screen.dart';
 import 'group_screen.dart';
+import 'approvals_screen.dart';
 import 'join_group_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -32,17 +33,21 @@ class _HomeScreenState extends State<HomeScreen> {
     final services = Services.of(context);
     final firstName = (services.auth.fullName ?? '').split(' ').first;
     return Scaffold(
-      body: Loader<List<Group>>(
+      body: Loader<(List<Group>, List<PinResetRequest>)>(
         key: ValueKey(_version),
-        load: services.api.myGroups,
-        builder: (context, groups, reload) => RefreshIndicator(
+        load: () async => (
+          await services.api.myGroups(),
+          // Les demandes à confirmer ne doivent pas empêcher d'afficher les tontines
+          await services.api.pendingPinResets().catchError((_) => <PinResetRequest>[]),
+        ),
+        builder: (context, data, reload) => RefreshIndicator(
           onRefresh: reload,
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
                 child: _Header(
                   greeting: firstName.isEmpty ? 'Bonjour' : 'Bonjour $firstName',
-                  groups: groups,
+                  groups: data.$1,
                   onMenu: (v) => v == 'lock' ? services.auth.lock() : services.auth.forgetDevice(),
                 ),
               ),
@@ -50,6 +55,28 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
                 sliver: SliverList.list(
                   children: [
+                    if (data.$2.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: Material(
+                          color: const Color(0xFFFFF3D6),
+                          borderRadius: BorderRadius.circular(18),
+                          child: ListTile(
+                            key: const Key('approvals_banner'),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                            leading: const Icon(Icons.key, color: Brand.goldDark),
+                            title: Text(
+                              data.$2.length == 1
+                                  ? '${data.$2.first.fullName} demande un nouveau PIN'
+                                  : '${data.$2.length} demandes de nouveau PIN',
+                              style: const TextStyle(fontWeight: FontWeight.w800),
+                            ),
+                            subtitle: const Text('Vous êtes garant : confirmez seulement après lui avoir parlé.'),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => _open(context, const ApprovalsScreen()),
+                          ),
+                        ),
+                      ),
                     Row(
                       children: [
                         Expanded(
@@ -74,8 +101,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 24),
                     Text('Mes tontines', style: Theme.of(context).textTheme.titleLarge),
                     const SizedBox(height: 8),
-                    if (groups.isEmpty) const _EmptyState(),
-                    for (final g in groups)
+                    if (data.$1.isEmpty) const _EmptyState(),
+                    for (final g in data.$1)
                       _GroupCard(
                         group: g,
                         onTap: () => _open(context, GroupScreen(groupId: g.id)),

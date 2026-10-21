@@ -110,4 +110,4 @@ Dans la chaîne `global` : `auth.user_registered`, `auth.device_linked` (avec `r
 - Un appareil révoqué garde l'accès jusqu'à l'expiration de son jeton (15 min au plus).
 - Le fournisseur SMS réel n'est pas branché (`SMS_DRIVER=console`, interdit en production).
 - Limite par IP volontairement haute (200/h) : les opérateurs mobiles partagent souvent une IP entre beaucoup d'abonnés (CGNAT). À ajuster avec les chiffres réels du pilote.
-- Récupération d'un compte dont le PIN est oublié : pas encore prévue (passera par le support, avec vérification).
+- PIN oublié : avec la confirmation d'un garant de la tontine, voir [`pin-reset.md`](pin-reset.md). Pas encore de recours par le support si aucun garant ne répond.

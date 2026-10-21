@@ -5,6 +5,8 @@ import { AccessGuard } from './access.guard.js';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 import { OtpService } from './otp.service.js';
+import { PinResetController } from './pin-reset.controller.js';
+import { PinResetService } from './pin-reset.service.js';
 
 @Module({
   imports: [
@@ -16,8 +18,8 @@ import { OtpService } from './otp.service.js';
       }),
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService, OtpService, AccessGuard],
+  controllers: [AuthController, PinResetController],
+  providers: [AuthService, OtpService, PinResetService, AccessGuard],
   exports: [AuthService, AccessGuard],
 })
 export class AuthModule {}

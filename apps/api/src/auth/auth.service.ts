@@ -32,7 +32,7 @@ export interface Session {
   expiresIn: number;
 }
 
-interface OtpTokenClaims {
+export interface OtpTokenClaims {
   typ: 'otp';
   phone: string;
   jti: string;
@@ -249,13 +249,13 @@ export class AuthService {
     return claims;
   }
 
-  private async issueSession(userId: string, deviceId: string): Promise<Session> {
+  async issueSession(userId: string, deviceId: string): Promise<Session> {
     const claims: AccessTokenClaims = { typ: 'access', sub: userId, did: deviceId };
     const accessToken = await this.jwt.signAsync(claims, { expiresIn: ACCESS_TOKEN_TTL_SECONDS });
     return { userId, deviceId, accessToken, expiresIn: ACCESS_TOKEN_TTL_SECONDS };
   }
 
-  private async readOtpToken(token: string): Promise<OtpTokenClaims> {
+  async readOtpToken(token: string): Promise<OtpTokenClaims> {
     const claims = await this.jwt
       .verifyAsync<OtpTokenClaims>(token, { algorithms: ['HS256'] })
       .catch(() => null);
@@ -266,7 +266,7 @@ export class AuthService {
   }
 
   /** À n'appeler qu'une fois toutes les vérifications passées : le jeton ne resservira pas. */
-  private async consumeOtpToken(claims: OtpTokenClaims) {
+  async consumeOtpToken(claims: OtpTokenClaims) {
     const first = await this.redis.set(
       `otp:token-used:${claims.jti}`,
       '1',
@@ -279,18 +279,18 @@ export class AuthService {
     }
   }
 
-  private assertPinAcceptable(pin: string) {
+  assertPinAcceptable(pin: string) {
     const weakness = pinWeakness(pin);
     if (weakness) throw new BadRequestException(weakness);
   }
 
-  private assertPublicKey(publicKey: string) {
+  assertPublicKey(publicKey: string) {
     if (!parseEd25519PublicKey(publicKey)) {
       throw new BadRequestException("Clé publique de l'appareil invalide (Ed25519, 32 octets, base64).");
     }
   }
 
-  private async insertDevice(
+  async insertDevice(
     q: Queryable,
     userId: string,
     publicKey: string,
@@ -302,7 +302,7 @@ export class AuthService {
     return device.rows[0].id;
   }
 
-  private rethrowDeviceConflict(e: unknown): never {
+  rethrowDeviceConflict(e: unknown): never {
     if (isUniqueViolation(e, 'devices_public_key_unique')) {
       throw new ConflictException('Cette clé est déjà liée à un appareil.');
     }

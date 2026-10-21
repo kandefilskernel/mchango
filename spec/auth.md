@@ -13,6 +13,7 @@ Implémentation : [`apps/api/src/auth/`](../apps/api/src/auth/). Tests : [`apps/
 - **Un vol de carte SIM seul ne suffit pas** : lier un nouveau téléphone demande le code SMS **et** le PIN.
 - **Un seul appareil actif par compte** au MVP : lier un nouveau téléphone révoque l'ancien, et c'est journalisé.
 - Le PIN sert aussi à **déverrouiller l'app en local** (semaine 3, côté Flutter) ; il ne transite pas à chaque connexion.
+- **Empreinte** (option, menu de l'accueil) : elle remplace la saisie du PIN pour **ouvrir l'app sur ce téléphone**, rien d'autre. Elle ne lie pas de nouveau téléphone : il faut toujours le code SMS et le PIN. Elle s'active seulement après une empreinte reconnue, et le PIN reste valable à tout moment. Pendant la pause qui suit 5 PIN faux, l'empreinte est refusée aussi. Elle est oubliée avec le téléphone. Limite : **toute** empreinte enregistrée sur le téléphone ouvre l'app, d'où l'avertissement à l'activation. Sur le web, l'option n'apparaît pas.
 - Pas de jeton de rafraîchissement : quand le jeton d'accès (15 min) expire, l'app signe un nouveau défi.
 
 ## Parcours
@@ -110,4 +111,4 @@ Dans la chaîne `global` : `auth.user_registered`, `auth.device_linked` (avec `r
 - Un appareil révoqué garde l'accès jusqu'à l'expiration de son jeton (15 min au plus).
 - Le fournisseur SMS réel n'est pas branché (`SMS_DRIVER=console`, interdit en production).
 - Limite par IP volontairement haute (200/h) : les opérateurs mobiles partagent souvent une IP entre beaucoup d'abonnés (CGNAT). À ajuster avec les chiffres réels du pilote.
-- PIN oublié : avec la confirmation d'un garant de la tontine, voir [`pin-reset.md`](pin-reset.md). Pas encore de recours par le support si aucun garant ne répond.
+- PIN oublié : avec la confirmation d'un garant de la tontine, voir [`pin-reset.md`](pin-reset.md). Si aucun garant ne répond, la conformité peut valider depuis le back-office après vérification d'identité.

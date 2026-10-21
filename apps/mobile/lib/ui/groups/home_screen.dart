@@ -29,6 +29,44 @@ class _HomeScreenState extends State<HomeScreen> {
     _refresh();
   }
 
+  /// Active ou coupe l'ouverture par empreinte. Le PIN reste toujours valable.
+  Future<void> _toggleBiometric(BuildContext context) async {
+    final auth = Services.of(context).auth;
+    if (!await auth.biometricAvailable()) {
+      if (context.mounted) {
+        showInfo(context, 'Pas d\'empreinte sur ce téléphone : enregistrez-en une dans les réglages du téléphone.');
+      }
+      return;
+    }
+    final enabled = await auth.biometricEnabled();
+    if (!context.mounted) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.fingerprint, size: 40),
+        title: Text(enabled ? 'Couper l\'empreinte ?' : 'Ouvrir Mchango avec votre empreinte ?'),
+        content: Text(
+          enabled
+              ? 'Vous ouvrirez Mchango avec votre PIN seulement.'
+              : 'Votre PIN reste valable à tout moment. Attention : toute empreinte enregistrée sur ce téléphone '
+                    'pourra ouvrir Mchango. Ne l\'activez pas si quelqu\'un d\'autre a mis son empreinte.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(enabled ? 'Couper' : 'Activer')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    if (enabled) {
+      await auth.disableBiometric();
+      if (context.mounted) showInfo(context, 'Empreinte coupée : ouverture par PIN.');
+    } else {
+      final done = await auth.enableBiometric();
+      if (context.mounted) showInfo(context, done ? 'Empreinte activée.' : 'Empreinte non reconnue : rien n\'a changé.');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final services = Services.of(context);
@@ -50,7 +88,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: _Header(
                   greeting: firstName.isEmpty ? 'Bonjour' : 'Bonjour $firstName',
                   groups: data.$1,
-                  onMenu: (v) => v == 'lock' ? services.auth.lock() : services.auth.forgetDevice(),
+                  onMenu: (v) => switch (v) {
+                    'lock' => services.auth.lock(),
+                    'biometric' => _toggleBiometric(context),
+                    _ => services.auth.forgetDevice(),
+                  },
                 ),
               ),
               SliverPadding(
@@ -165,6 +207,14 @@ class _Header extends StatelessWidget {
                     icon: const Icon(Icons.more_vert, color: Colors.white),
                     onSelected: onMenu,
                     itemBuilder: (_) => const [
+                      PopupMenuItem(
+                        value: 'biometric',
+                        child: ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(Icons.fingerprint),
+                          title: Text('Ouverture par empreinte'),
+                        ),
+                      ),
                       PopupMenuItem(value: 'lock', child: Text('Verrouiller')),
                       PopupMenuItem(value: 'forget', child: Text('Se déconnecter de ce téléphone')),
                     ],

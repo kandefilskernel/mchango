@@ -14,11 +14,34 @@ class UnlockScreen extends StatefulWidget {
 
 class _UnlockScreenState extends State<UnlockScreen> {
   final _pin = TextEditingController();
+  bool _biometric = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Empreinte activée : la fenêtre s'ouvre d'elle-même, le PIN reste possible dessous
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final auth = Services.of(context).auth;
+      final enabled = await auth.biometricEnabled() && await auth.biometricAvailable();
+      if (!mounted || !enabled) return;
+      setState(() => _biometric = true);
+      await _unlockWithBiometric();
+    });
+  }
 
   @override
   void dispose() {
     _pin.dispose();
     super.dispose();
+  }
+
+  Future<void> _unlockWithBiometric() async {
+    try {
+      final ok = await Services.of(context).auth.unlockWithBiometric();
+      if (!ok && mounted) showInfo(context, 'Empreinte non reconnue. Utilisez votre PIN.');
+    } catch (e) {
+      if (mounted) showError(context, e);
+    }
   }
 
   Future<void> _unlock() async {
@@ -73,6 +96,15 @@ class _UnlockScreenState extends State<UnlockScreen> {
             PinField(key: const Key('unlock_pin'), controller: _pin, label: 'Votre PIN', autofocus: true),
             const SizedBox(height: 16),
             BusyButton(label: 'Ouvrir', onPressed: _unlock),
+            if (_biometric) ...[
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                key: const Key('unlock_biometric'),
+                onPressed: _unlockWithBiometric,
+                icon: const Icon(Icons.fingerprint, size: 28),
+                label: const Text('Utiliser mon empreinte'),
+              ),
+            ],
             const SizedBox(height: 24),
             TextButton(onPressed: _forget, child: const Text('Ce n\'est pas mon compte / PIN oublié')),
           ],

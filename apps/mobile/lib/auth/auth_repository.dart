@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../api/api_client.dart';
 import '../storage/key_value_store.dart';
+import 'biometric.dart';
 import 'device_identity.dart';
 import 'local_pin.dart';
 
@@ -38,12 +39,13 @@ class OtpVerification {
 /// Ce qui reste sur le téléphone (stockage sécurisé) : identifiant de l'appareil, graine de
 /// la clé privée, empreinte du PIN, nom. Le PIN lui-même n'est jamais stocké.
 class AuthRepository extends ChangeNotifier {
-  AuthRepository(this._api, this._store) {
+  AuthRepository(this._api, this._store, this._biometric) {
     _api.onUnauthorized = _refreshSession;
   }
 
   final ApiClient _api;
   final KeyValueStore _store;
+  final BiometricGate _biometric;
 
   static const _kDeviceId = 'device_id';
   static const _kSeed = 'device_seed';
@@ -52,6 +54,8 @@ class AuthRepository extends ChangeNotifier {
   static const _kFullName = 'full_name';
   static const _kPinFailures = 'pin_failures';
   static const _kLockedUntil = 'pin_locked_until';
+  // Déverrouillage par empreinte, activé par la personne depuis l'app (le PIN reste valable)
+  static const _kBiometric = 'biometric_unlock';
   // Demande « PIN oublié » en attente : identifiant, clé du téléphone, empreinte du nouveau PIN
   static const _kResetId = 'pin_reset_id';
   static const _kResetSeed = 'pin_reset_seed';
@@ -205,6 +209,32 @@ class AuthRepository extends ChangeNotifier {
     return true;
   }
 
+  /// Empreinte possible sur ce téléphone (capteur présent, empreinte enregistrée).
+  Future<bool> biometricAvailable() => _biometric.isAvailable();
+
+  Future<bool> biometricEnabled() async => await _store.read(_kBiometric) == '1';
+
+  /// Active l'empreinte après une reconnaissance réussie (la personne prouve que c'est bien la sienne).
+  /// Renvoie false si l'empreinte n'a pas été reconnue.
+  Future<bool> enableBiometric() async {
+    if (!await _biometric.authenticate('Activer l\'ouverture de Mchango par empreinte')) return false;
+    await _store.write(_kBiometric, '1');
+    return true;
+  }
+
+  Future<void> disableBiometric() => _store.delete(_kBiometric);
+
+  /// Ouverture par empreinte, à la place du PIN. Même pause que le PIN après trop d'essais ratés.
+  Future<bool> unlockWithBiometric() async {
+    if (!await biometricEnabled() || await lockRemaining() != null) return false;
+    if (!await _biometric.authenticate('Ouvrir Mchango')) return false;
+    await _store.write(_kPinFailures, '0');
+    await _openSession();
+    status = AuthStatus.signedIn;
+    notifyListeners();
+    return true;
+  }
+
   void lock() {
     _api.accessToken = null;
     status = AuthStatus.locked;
@@ -213,7 +243,7 @@ class AuthRepository extends ChangeNotifier {
 
   /// Oublie ce téléphone (il faudra le code SMS et le PIN pour revenir).
   Future<void> forgetDevice() async {
-    for (final k in [_kDeviceId, _kSeed, _kPinHash, _kUserId, _kFullName, _kPinFailures, _kLockedUntil]) {
+    for (final k in [_kDeviceId, _kSeed, _kPinHash, _kUserId, _kFullName, _kPinFailures, _kLockedUntil, _kBiometric]) {
       await _store.delete(k);
     }
     _api.accessToken = null;

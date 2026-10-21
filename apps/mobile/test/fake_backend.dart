@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:mchango/api/api_client.dart';
+import 'package:mchango/auth/biometric.dart';
 import 'package:mchango/services.dart';
 import 'package:mchango/storage/key_value_store.dart';
 
@@ -34,10 +35,29 @@ class FakeBackend {
     );
   });
 
-  AppServices services([MemoryKeyValueStore? store]) => AppServices(
+  AppServices services([MemoryKeyValueStore? store, BiometricGate? biometric]) => AppServices(
     client: ApiClient('http://api', client: client),
     store: store ?? MemoryKeyValueStore(),
+    biometric: biometric ?? FakeBiometric(available: false),
   );
+}
+
+/// Capteur d'empreinte simulé : disponible ou non, reconnaît ou non.
+class FakeBiometric implements BiometricGate {
+  FakeBiometric({this.available = true, this.recognized = true});
+
+  bool available;
+  bool recognized;
+  final List<String> prompts = [];
+
+  @override
+  Future<bool> isAvailable() async => available;
+
+  @override
+  Future<bool> authenticate(String reason) async {
+    prompts.add(reason);
+    return recognized;
+  }
 }
 
 http.Response error(int status, String message) => http.Response.bytes(

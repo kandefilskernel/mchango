@@ -3,12 +3,13 @@ import 'package:flutter/widgets.dart';
 import 'api/api_client.dart';
 import 'api/mchango_api.dart';
 import 'auth/auth_repository.dart';
+import 'auth/biometric.dart';
 import 'storage/key_value_store.dart';
 
 class AppServices {
-  AppServices({required this.client, required this.store})
+  AppServices({required this.client, required this.store, BiometricGate? biometric})
     : api = MchangoApi(client),
-      auth = AuthRepository(client, store);
+      auth = AuthRepository(client, store, biometric ?? DeviceBiometricGate());
 
   final ApiClient client;
   final KeyValueStore store;

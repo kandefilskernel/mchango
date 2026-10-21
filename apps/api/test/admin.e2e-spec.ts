@@ -244,6 +244,22 @@ describe('Back-office (e2e)', () => {
       await http().post(`/admin/staff/${admin.id}`).set(asStaff(admin)).send({ isActive: false }).expect(400);
     });
 
+    it('nouveaux identifiants (ligne de commande) : les anciens ne marchent plus, les nouveaux oui', async () => {
+      const s = await staff('compliance');
+      const fresh = await api.app.get(StaffAuthService).resetCredentials(s.email.toUpperCase());
+      expect(fresh.temporaryPassword).not.toBe(s.password);
+      await http()
+        .post('/admin/auth/login')
+        .send({ email: s.email, password: s.password, code: totpCode(s.secret) })
+        .expect(401);
+      const ok = await http()
+        .post('/admin/auth/login')
+        .send({ email: s.email, password: fresh.temporaryPassword, code: totpCode(fresh.totpSecret) })
+        .expect(200);
+      expect(ok.body.mustChangePassword).toBe(true);
+      await expect(api.app.get(StaffAuthService).resetCredentials('personne@mchango.test')).rejects.toThrow();
+    });
+
     it('audit : vérification de la chaîne globale et actions de l’équipe', async () => {
       const admin = await staff('super_admin');
       const verify = await http().post('/admin/audit/verify').set(asStaff(admin)).send({ chainId: 'global' }).expect(200);

@@ -169,6 +169,33 @@ export class StaffAuthService {
     return { id: created, email, temporaryPassword: password, totpSecret: secret, otpauthUrl: otpauthUrl(email, secret) };
   }
 
+  /**
+   * Nouveaux identifiants (mot de passe provisoire + secret 2FA) pour un compte existant :
+   * téléphone perdu, identifiants jamais notés. Réservé à la ligne de commande sur le serveur
+   * (accès machine = racine de confiance). Les anciens ne marchent plus ; c'est journalisé.
+   */
+  async resetCredentials(emailInput: string) {
+    const email = emailInput.trim().toLowerCase();
+    const password = temporaryPassword();
+    const secret = newTotpSecret();
+    await this.db.transaction({ type: 'system' }, async (q) => {
+      const { rows } = await q.query<{ id: string }>(
+        `UPDATE staff SET password_hash = $2, totp_secret_enc = $3, totp_enabled_at = NULL, password_changed_at = NULL
+         WHERE lower(email) = $1 RETURNING id`,
+        [email, await hash(password, ARGON2), sealSecret(secret, this.config.STAFF_SECRET_KEY)],
+      );
+      if (!rows[0]) throw new NotFoundException(`Aucun compte d'équipe pour ${email}.`);
+      await appendAudit(q, {
+        groupId: null,
+        actor: { type: 'system' },
+        action: 'staff.credentials_reset',
+        payload: { staff_id: rows[0].id },
+      });
+    });
+    await this.redis.del(`staff:login-fail:${email}`);
+    return { email, temporaryPassword: password, totpSecret: secret, otpauthUrl: otpauthUrl(email, secret) };
+  }
+
   async list() {
     const { rows } = await this.db.query<{
       id: string;

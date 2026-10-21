@@ -30,6 +30,8 @@ const schema = z.object({
   // DÉVELOPPEMENT SEULEMENT : le code 2FA « 000000 » est accepté au back-office (tests en local sans
   // application d'authentification). Refusé en production.
   STAFF_2FA_DEV_BYPASS: z.enum(['0', '1']).default('0'),
+  // Durée d'une session du back-office : une journée de travail (8 h) ; 24 h au plus en développement
+  STAFF_SESSION_HOURS: z.coerce.number().int().min(1).max(24).default(8),
 });
 
 export type AppConfig = z.infer<typeof schema>;
@@ -41,6 +43,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       .map((i) => `${i.path.join('.')} : ${i.message}`)
       .join(' ; ');
     throw new Error(`Configuration invalide — ${details}`);
+  }
+  if (parsed.data.NODE_ENV === 'production' && parsed.data.STAFF_SESSION_HOURS > 12) {
+    throw new Error('STAFF_SESSION_HOURS : 12 h au plus en production (une session volée resterait valable trop longtemps)');
   }
   if (parsed.data.NODE_ENV === 'production' && parsed.data.SMS_DRIVER === 'console') {
     throw new Error('SMS_DRIVER=console est interdit en production (les codes seraient dans les logs)');

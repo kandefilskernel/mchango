@@ -33,8 +33,6 @@ export interface StaffMember {
   role: StaffRole;
 }
 
-/** Session de l'équipe : une journée de travail au plus. */
-const STAFF_TOKEN_TTL_SECONDS = 8 * 60 * 60;
 const MAX_LOGIN_FAILURES = 5;
 const LOCK_SECONDS = 15 * 60;
 const ARGON2 = { memoryCost: 19456, timeCost: 2, parallelism: 1 };
@@ -117,14 +115,16 @@ export class StaffAuthService {
       });
     });
     const claims: StaffClaims = { typ: 'staff', sub: s.id, role: s.role };
+    // Session de l'équipe : une journée de travail (STAFF_SESSION_HOURS, 8 h par défaut)
+    const ttl = this.config.STAFF_SESSION_HOURS * 3600;
     const token = await this.jwt.signAsync(claims, {
       secret: this.config.STAFF_JWT_SECRET,
-      expiresIn: STAFF_TOKEN_TTL_SECONDS,
+      expiresIn: ttl,
       algorithm: 'HS256',
     });
     return {
       token,
-      expiresIn: STAFF_TOKEN_TTL_SECONDS,
+      expiresIn: ttl,
       mustChangePassword: s.must_change,
       staff: { id: s.id, email: s.email, fullName: s.full_name, role: s.role },
     };

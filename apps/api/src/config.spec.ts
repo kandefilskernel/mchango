@@ -25,6 +25,13 @@ describe('configuration', () => {
     expect(() => loadConfig({ ...base, NODE_ENV: 'production', STAFF_2FA_DEV_BYPASS: '1' })).toThrow(/2FA|SMS/);
   });
 
+  it('durée de session du back-office : 8 h par défaut, 24 h au plus, 12 h au plus en production', () => {
+    expect(loadConfig({ ...base, NODE_ENV: 'development' }).STAFF_SESSION_HOURS).toBe(8);
+    expect(loadConfig({ ...base, NODE_ENV: 'development', STAFF_SESSION_HOURS: '24' }).STAFF_SESSION_HOURS).toBe(24);
+    expect(() => loadConfig({ ...base, NODE_ENV: 'development', STAFF_SESSION_HOURS: '48' })).toThrow();
+    expect(() => loadConfig({ ...base, NODE_ENV: 'production', STAFF_SESSION_HOURS: '24' })).toThrow(/STAFF_SESSION_HOURS/);
+  });
+
   it('refuse une clé de chiffrement qui ne fait pas 32 octets', () => {
     expect(() => loadConfig({ ...base, STAFF_SECRET_KEY: 'trop-court' })).toThrow(/STAFF_SECRET_KEY/);
   });

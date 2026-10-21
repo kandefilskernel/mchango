@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../api/models.dart';
 import '../../services.dart';
 import '../../util/format.dart';
+import '../carnet/carnet_screen.dart';
 import '../common.dart';
 import '../theme.dart';
 import 'create_group_screen.dart';
@@ -33,12 +34,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final services = Services.of(context);
     final firstName = (services.auth.fullName ?? '').split(' ').first;
     return Scaffold(
-      body: Loader<(List<Group>, List<PinResetRequest>)>(
+      body: Loader<(List<Group>, List<PinResetRequest>, Carnet?)>(
         key: ValueKey(_version),
         load: () async => (
           await services.api.myGroups(),
-          // Les demandes à confirmer ne doivent pas empêcher d'afficher les tontines
+          // Les demandes à confirmer et le carnet ne doivent pas empêcher d'afficher les tontines
           await services.api.pendingPinResets().catchError((_) => <PinResetRequest>[]),
+          await services.api.carnet().then<Carnet?>((c) => c).catchError((_) => null),
         ),
         builder: (context, data, reload) => RefreshIndicator(
           onRefresh: reload,
@@ -98,6 +100,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ],
                     ),
+                    if (data.$3 != null && data.$3!.groups.isNotEmpty) ...[
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(child: Text('Mon carnet', style: Theme.of(context).textTheme.titleLarge)),
+                          TextButton(
+                            key: const Key('open_carnet'),
+                            onPressed: () => _open(context, const CarnetScreen()),
+                            child: const Text('Tout voir'),
+                          ),
+                        ],
+                      ),
+                      if (data.$3!.upcoming.isNotEmpty) StepTile(step: data.$3!.upcoming.first),
+                      for (final t in data.$3!.totals) TotalsCard(total: t),
+                    ],
                     const SizedBox(height: 24),
                     Text('Mes tontines', style: Theme.of(context).textTheme.titleLarge),
                     const SizedBox(height: 8),

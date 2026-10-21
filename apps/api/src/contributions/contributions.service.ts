@@ -470,6 +470,128 @@ export class ContributionsService {
     };
   }
 
+  /**
+   * Carnet personnel, toutes tontines confondues : ce que j'ai versé et reçu (paiements confirmés),
+   * mes prochains paiements et mon tour. Des montants constatés, pas un solde : Mchango ne détient rien.
+   */
+  async carnet(userId: string) {
+    const groups = await this.db.query<{
+      group_id: string;
+      name: string;
+      status: string;
+      currency: string;
+      amount: string;
+      frequency: string;
+      membership_id: string;
+      my_cycle: number | null;
+      my_due: string | null;
+      my_cycle_status: string | null;
+      expected: number;
+      paid_count: number;
+      paid: string;
+      received: string;
+      received_count: number;
+      pending: number;
+    }>(
+      `SELECT g.id AS group_id, g.name, g.status, g.currency, g.contribution_amount_minor AS amount, g.frequency,
+              m.id AS membership_id,
+              mc.cycle_number AS my_cycle, mc.due_date::text AS my_due, mc.status AS my_cycle_status,
+              (SELECT count(*)::int - 1 FROM memberships x WHERE x.group_id = g.id AND x.status = 'active') AS expected,
+              (SELECT count(*)::int FROM contributions k WHERE k.payer_membership_id = m.id AND k.status = 'confirmed') AS paid_count,
+              (SELECT coalesce(sum(k.amount_minor), 0) FROM contributions k
+                WHERE k.payer_membership_id = m.id AND k.status = 'confirmed') AS paid,
+              (SELECT coalesce(sum(k.amount_minor), 0) FROM contributions k
+                WHERE k.receiver_membership_id = m.id AND k.status = 'confirmed') AS received,
+              (SELECT count(*)::int FROM contributions k
+                WHERE k.receiver_membership_id = m.id AND k.status = 'confirmed') AS received_count,
+              (SELECT count(*)::int FROM contributions k
+                WHERE k.payer_membership_id = m.id AND k.status IN ('declared', 'disputed')) AS pending
+       FROM memberships m
+       JOIN groups g ON g.id = m.group_id
+       LEFT JOIN cycles mc ON mc.group_id = g.id AND mc.beneficiary_membership_id = m.id
+       WHERE m.user_id = $1 AND m.status = 'active'
+       ORDER BY g.created_at DESC`,
+      [userId],
+    );
+    // Prochain paiement à faire dans chaque tontine en cours : le premier tour non payé dont je ne suis pas bénéficiaire
+    const toPay = await this.db.query<{
+      group_id: string;
+      name: string;
+      currency: string;
+      amount: string;
+      cycle_number: number;
+      due_date: string;
+      beneficiary: string;
+      late: boolean;
+    }>(
+      `SELECT DISTINCT ON (g.id) g.id AS group_id, g.name, g.currency, g.contribution_amount_minor AS amount,
+              c.cycle_number, c.due_date::text AS due_date, bu.full_name AS beneficiary,
+              c.due_date < ${TODAY_DRC_SQL} AS late
+       FROM memberships m
+       JOIN groups g ON g.id = m.group_id AND g.status = 'active'
+       JOIN cycles c ON c.group_id = g.id AND c.status IN ('open', 'upcoming') AND c.beneficiary_membership_id <> m.id
+       JOIN memberships bm ON bm.id = c.beneficiary_membership_id JOIN users bu ON bu.id = bm.user_id
+       WHERE m.user_id = $1 AND m.status = 'active'
+         AND NOT EXISTS (SELECT 1 FROM contributions k
+                         WHERE k.cycle_id = c.id AND k.payer_membership_id = m.id AND k.status <> 'rejected')
+       ORDER BY g.id, c.cycle_number`,
+      [userId],
+    );
+
+    const totals = new Map<string, { currency: string; paidMinor: number; receivedMinor: number }>();
+    for (const g of groups.rows) {
+      const t = totals.get(g.currency) ?? { currency: g.currency, paidMinor: 0, receivedMinor: 0 };
+      t.paidMinor += Number(g.paid);
+      t.receivedMinor += Number(g.received);
+      totals.set(g.currency, t);
+    }
+    const upcoming = [
+      ...toPay.rows.map((p) => ({
+        kind: 'pay' as const,
+        groupId: p.group_id,
+        groupName: p.name,
+        cycleNumber: p.cycle_number,
+        dueDate: p.due_date,
+        amountMinor: Number(p.amount),
+        currency: p.currency,
+        counterpart: p.beneficiary,
+        late: p.late,
+      })),
+      ...groups.rows
+        .filter((g) => g.status === 'active' && g.my_cycle !== null && g.my_cycle_status !== 'completed' && g.my_cycle_status !== 'cancelled')
+        .map((g) => ({
+          kind: 'receive' as const,
+          groupId: g.group_id,
+          groupName: g.name,
+          cycleNumber: g.my_cycle!,
+          dueDate: g.my_due!,
+          amountMinor: Number(g.amount) * g.expected,
+          currency: g.currency,
+          counterpart: null,
+          late: false,
+        })),
+    ].sort((a, b) => a.dueDate.localeCompare(b.dueDate) || (a.kind === 'pay' ? -1 : 1));
+
+    return {
+      totals: [...totals.values()],
+      upcoming,
+      groups: groups.rows.map((g) => ({
+        groupId: g.group_id,
+        name: g.name,
+        status: g.status,
+        currency: g.currency,
+        contributionAmountMinor: Number(g.amount),
+        frequency: g.frequency,
+        myTurn: g.my_cycle === null ? null : { cycleNumber: g.my_cycle, dueDate: g.my_due, status: g.my_cycle_status },
+        paidCount: g.paid_count,
+        paidMinor: Number(g.paid),
+        receivedCount: g.received_count,
+        receivedMinor: Number(g.received),
+        pendingCount: g.pending,
+      })),
+    };
+  }
+
   private async requireMember(q: Queryable, userId: string, groupId: string) {
     const me = await activeMembership(q, userId, groupId);
     if (!me) throw new NotFoundException('Groupe introuvable.');

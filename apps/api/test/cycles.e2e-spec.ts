@@ -400,6 +400,40 @@ describe('Tours, cycles et cotisations (e2e)', () => {
       expect(check.rows[0].events).toBeGreaterThan(20);
     });
 
+    it('carnet personnel : versé, reçu, prochains paiements et mon tour, toutes tontines confondues', async () => {
+      const g = await startedGroup(3);
+      const [furaha, jean] = g.members;
+      const d = await declare(g.groupId, 1, jean, { method: 'mpesa', txReference: txRef() }).expect(201);
+      await decide(d.body.id, furaha, 'confirm').expect(200);
+
+      const mine = (await http().get('/me/carnet').set(auth(jean.session)).expect(200)).body;
+      expect(mine.totals).toEqual([{ currency: 'CDF', paidMinor: AMOUNT, receivedMinor: 0 }]);
+      expect(mine.groups[0]).toMatchObject({
+        groupId: g.groupId,
+        myTurn: { cycleNumber: 2, status: 'upcoming' },
+        paidCount: 1,
+        paidMinor: AMOUNT,
+        receivedMinor: 0,
+        pendingCount: 0,
+      });
+      // Tour 2 : c'est mon tour (je reçois de 2 membres) ; tour 3 : je paie Mama Neema
+      expect(mine.upcoming.map((u: { kind: string; cycleNumber: number; amountMinor: number; counterpart: string | null }) => [u.kind, u.cycleNumber, u.amountMinor, u.counterpart])).toEqual([
+        ['receive', 2, 2 * AMOUNT, null],
+        ['pay', 3, AMOUNT, 'Mama Neema'],
+      ]);
+
+      const hers = (await http().get('/me/carnet').set(auth(furaha.session)).expect(200)).body;
+      expect(hers.totals).toEqual([{ currency: 'CDF', paidMinor: 0, receivedMinor: AMOUNT }]);
+      expect(hers.upcoming.map((u: { kind: string; cycleNumber: number }) => [u.kind, u.cycleNumber])).toEqual([
+        ['receive', 1],
+        ['pay', 2],
+      ]);
+
+      const outsider = (await api.signUp()).session;
+      expect((await http().get('/me/carnet').set(auth(outsider)).expect(200)).body).toEqual({ totals: [], upcoming: [], groups: [] });
+      await http().get('/me/carnet').expect(401);
+    });
+
     it("un non-membre ne voit ni le tableau ni les cotisations", async () => {
       const g = await startedGroup(2);
       const d = await declare(g.groupId, 1, g.members[1], { method: 'mpesa', txReference: txRef() }).expect(201);

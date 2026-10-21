@@ -119,6 +119,16 @@ Quand tous les payeurs d'un tour sont confirmés, le tour passe `completed` et l
 
 Erreurs : `403` mauvaise personne, `409` déjà répondu ou cotisation déjà confirmée.
 
+## Mon carnet (`GET /me/carnet`)
+
+Résumé personnel, toutes tontines confondues, pour le membre connecté :
+
+- `totals` : par devise (les francs et les dollars ne s'additionnent pas), le total **versé** et le total **reçu**, en comptant seulement les paiements **confirmés** par le bénéficiaire ;
+- `upcoming` : les prochaines étapes, par date. `pay` est le premier tour non payé de chaque tontine en cours, avec le bénéficiaire et `late` si l'échéance est passée. `receive` est mon tour, avec le montant attendu (cotisation × membres moins un) ;
+- `groups` : par tontine, mon tour, versé et reçu (nombre et montant), déclarations en attente de confirmation.
+
+Ce sont des montants constatés entre membres, pas un solde : Mchango ne détient aucun fonds.
+
 ## Journal (chaîne du groupe)
 
 `groups.update`, `memberships.update` (ordre), `group.turn_order_set` (mode, ordre ; graine et empreinte pour un tirage), `cycles.insert`, `contributions.insert/update`, `confirmations.insert`, `disputes.insert/update`. Chaque événement porte son auteur.

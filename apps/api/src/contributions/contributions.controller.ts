@@ -35,6 +35,11 @@ const actorOf = (auth: AccessTokenClaims) => ({ type: 'user' as const, id: auth.
 export class ContributionsController {
   constructor(private readonly contributions: ContributionsService) {}
 
+  @Get('me/carnet')
+  carnet(@CurrentAuth() auth: AccessTokenClaims) {
+    return this.contributions.carnet(auth.sub);
+  }
+
   @Get('groups/:id/cycles')
   board(@CurrentAuth() auth: AccessTokenClaims, @Param('id', ParseUUIDPipe) groupId: string) {
     return this.contributions.board(auth.sub, groupId);

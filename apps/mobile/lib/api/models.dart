@@ -300,3 +300,122 @@ class HistoryEvent {
   final AuditEvent audit;
   final String? actorName;
 }
+
+/// Carnet personnel (GET /me/carnet) : montants constatés, pas un solde.
+class Carnet {
+  Carnet({required this.totals, required this.upcoming, required this.groups});
+
+  factory Carnet.fromJson(Json j) => Carnet(
+    totals: [for (final t in j['totals'] as List) CarnetTotal.fromJson(t as Json)],
+    upcoming: [for (final u in j['upcoming'] as List) CarnetStep.fromJson(u as Json)],
+    groups: [for (final g in j['groups'] as List) CarnetGroup.fromJson(g as Json)],
+  );
+
+  final List<CarnetTotal> totals;
+  final List<CarnetStep> upcoming;
+  final List<CarnetGroup> groups;
+}
+
+class CarnetTotal {
+  CarnetTotal({required this.currency, required this.paidMinor, required this.receivedMinor});
+
+  factory CarnetTotal.fromJson(Json j) => CarnetTotal(
+    currency: j['currency'] as String,
+    paidMinor: j['paidMinor'] as int,
+    receivedMinor: j['receivedMinor'] as int,
+  );
+
+  final String currency;
+  final int paidMinor;
+  final int receivedMinor;
+}
+
+/// Prochaine étape : un paiement à faire (pay) ou mon tour de recevoir (receive).
+class CarnetStep {
+  CarnetStep({
+    required this.kind,
+    required this.groupId,
+    required this.groupName,
+    required this.cycleNumber,
+    required this.dueDate,
+    required this.amountMinor,
+    required this.currency,
+    required this.counterpart,
+    required this.late,
+  });
+
+  factory CarnetStep.fromJson(Json j) => CarnetStep(
+    kind: j['kind'] as String,
+    groupId: j['groupId'] as String,
+    groupName: j['groupName'] as String,
+    cycleNumber: j['cycleNumber'] as int,
+    dueDate: j['dueDate'] as String,
+    amountMinor: j['amountMinor'] as int,
+    currency: j['currency'] as String,
+    counterpart: j['counterpart'] as String?,
+    late: j['late'] as bool,
+  );
+
+  final String kind;
+  final String groupId;
+  final String groupName;
+  final int cycleNumber;
+  final String dueDate;
+  final int amountMinor;
+  final String currency;
+  final String? counterpart;
+  final bool late;
+
+  bool get isPayment => kind == 'pay';
+}
+
+class CarnetGroup {
+  CarnetGroup({
+    required this.groupId,
+    required this.name,
+    required this.status,
+    required this.currency,
+    required this.contributionAmountMinor,
+    required this.myTurnCycle,
+    required this.myTurnDate,
+    required this.myTurnStatus,
+    required this.paidCount,
+    required this.paidMinor,
+    required this.receivedCount,
+    required this.receivedMinor,
+    required this.pendingCount,
+  });
+
+  factory CarnetGroup.fromJson(Json j) {
+    final turn = j['myTurn'] as Json?;
+    return CarnetGroup(
+      groupId: j['groupId'] as String,
+      name: j['name'] as String,
+      status: j['status'] as String,
+      currency: j['currency'] as String,
+      contributionAmountMinor: j['contributionAmountMinor'] as int,
+      myTurnCycle: turn?['cycleNumber'] as int?,
+      myTurnDate: turn?['dueDate'] as String?,
+      myTurnStatus: turn?['status'] as String?,
+      paidCount: j['paidCount'] as int,
+      paidMinor: j['paidMinor'] as int,
+      receivedCount: j['receivedCount'] as int,
+      receivedMinor: j['receivedMinor'] as int,
+      pendingCount: j['pendingCount'] as int,
+    );
+  }
+
+  final String groupId;
+  final String name;
+  final String status;
+  final String currency;
+  final int contributionAmountMinor;
+  final int? myTurnCycle;
+  final String? myTurnDate;
+  final String? myTurnStatus;
+  final int paidCount;
+  final int paidMinor;
+  final int receivedCount;
+  final int receivedMinor;
+  final int pendingCount;
+}

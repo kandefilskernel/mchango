@@ -42,7 +42,7 @@ cd apps/mobile && flutter test
 cd apps/api && npm test
 ```
 
-Tests de bout en bout de l'API (contre la base et Redis de `docker compose`) :
+Tests de bout en bout de l'API, sur une base et une base Redis **à part** (`mchango_test`, Redis n°1), recréées à chaque lancement : vos données de développement ne sont jamais touchées :
 
 ```bash
 cd apps/api && npm run test:e2e

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { api } from "@/lib/api";
+import { api, inbox } from "@/lib/api";
 
 interface Dashboard {
   users_total: number;
@@ -28,7 +28,15 @@ function Stat({ label, value, tone }: { label: string; value: string | number; t
 }
 
 export default async function DashboardPage() {
-  const d = await api<Dashboard>("/admin/dashboard");
+  const [d, todo] = await Promise.all([api<Dashboard>("/admin/dashboard"), inbox()]);
+  const c = todo.counts;
+  const cases = [
+    { label: "« PIN oublié » en attente", n: c.pinResetsPending, href: "/support" },
+    { label: "PIN bloqués", n: c.pinLocked, href: "/support" },
+    { label: "Litiges ouverts", n: c.disputesOpen, href: "/disputes" },
+    { label: "SMS en échec", n: c.smsFailed, href: "/support" },
+    { label: "Tontines suspendues", n: c.groupsSuspended, href: "/support" },
+  ].filter((x) => x.n > 0);
   return (
     <>
       <div className="page-head">
@@ -37,6 +45,27 @@ export default async function DashboardPage() {
           <div className="muted">Chiffres en direct, heure de Lubumbashi</div>
         </div>
       </div>
+
+      <section className={`card todo ${c.total === 0 ? "clear" : ""}`}>
+        <h2 style={{ margin: 0 }}>
+          {c.total === 0 ? "Rien à traiter : tout le monde avance" : `À traiter : ${c.total} cas`}
+        </h2>
+        {c.total === 0 ? (
+          <p className="muted" style={{ margin: "6px 0 0" }}>
+            Aucun membre bloqué, aucun litige ouvert, aucun SMS en échec.
+          </p>
+        ) : (
+          <ul>
+            {cases.map((x) => (
+              <li key={x.label}>
+                <Link href={x.href}>
+                  {x.label} <span className="badge badge-danger">{x.n}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <h2>Aujourd&apos;hui</h2>
       <div className="grid">

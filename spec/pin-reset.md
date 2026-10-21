@@ -49,5 +49,5 @@ Un utilisateur qui n'est pas garant d'une demande reçoit `404` : il ne voit pas
 ## Limites honnêtes
 
 - **Le garant peut être trompé.** Un voleur de carte SIM peut appeler le président depuis le bon numéro. D'où la consigne « de vive voix », l'avertissement dans l'app, le journal visible de tout le groupe, et la déconnexion de l'ancien téléphone : le vrai titulaire s'en aperçoit.
-- **Si aucun garant ne répond**, la demande expire. Il n'y a pas encore de recours par le support : il faudra une procédure avec vérification d'identité au back-office.
+- **Si aucun garant ne répond**, la conformité peut valider la demande depuis le back-office (page « À traiter »), après vérification d'identité notée et journalisée dans chaque tontine du membre (voir `spec/backoffice.md`). Sans cela, la demande expire.
 - **Une tontine qui démarre** pendant qu'une demande est en attente peut changer la liste des garants. C'est sans risque : les garants sont recalculés à chaque confirmation.

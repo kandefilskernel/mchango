@@ -1,5 +1,6 @@
 import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { z } from 'zod';
+import { PinResetService } from '../auth/pin-reset.service.js';
 import { parseBody } from '../common/parse-body.js';
 import { AdminService } from './admin.service.js';
 import { StaffAuthService, STAFF_ROLES, type StaffMember } from './staff-auth.service.js';
@@ -17,6 +18,7 @@ const UpdateStaff = z
   .object({ role: z.enum(STAFF_ROLES), isActive: z.boolean() })
   .partial()
   .refine((v) => Object.keys(v).length > 0, 'Aucune modification demandée.');
+const IdentityCheck = z.object({ note: z.string().max(1000) });
 const ChangePassword = z.object({ current: z.string().max(200), next: z.string().max(200) });
 const Search = z.object({ q: z.string().max(100).default(''), status: z.string().max(20).default('') });
 const AuditQuery = z.object({
@@ -32,6 +34,7 @@ export class AdminController {
   constructor(
     private readonly auth: StaffAuthService,
     private readonly admin: AdminService,
+    private readonly pinResets: PinResetService,
   ) {}
 
   @Post('auth/login')
@@ -59,6 +62,30 @@ export class AdminController {
   @UseGuards(StaffGuard)
   dashboard() {
     return this.admin.dashboard();
+  }
+
+  // ---------- À traiter (support) ----------
+
+  @Get('inbox')
+  @UseGuards(StaffGuard)
+  inbox(@CurrentStaff() staff: StaffMember) {
+    return this.admin.inbox(staff);
+  }
+
+  @Post('users/:id/unlock-pin')
+  @HttpCode(200)
+  @UseGuards(StaffGuard)
+  @Roles(...CAN.unlockPins)
+  unlockPin(@CurrentStaff() staff: StaffMember, @Param('id', ParseUUIDPipe) id: string) {
+    return this.admin.unlockPin(staff, id);
+  }
+
+  @Post('pin-resets/:id/approve')
+  @HttpCode(200)
+  @UseGuards(StaffGuard)
+  @Roles(...CAN.verifyIdentity)
+  approvePinReset(@CurrentStaff() staff: StaffMember, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    return this.pinResets.approveByStaff(staff.id, id, parseBody(IdentityCheck, body).note);
   }
 
   // ---------- Utilisateurs ----------

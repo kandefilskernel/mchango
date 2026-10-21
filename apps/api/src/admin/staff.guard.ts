@@ -22,6 +22,10 @@ export const CAN = {
   suspendGroups: ['super_admin', 'compliance'] as StaffRole[],
   decideDisputes: ['super_admin', 'compliance'] as StaffRole[],
   manageStaff: ['super_admin'] as StaffRole[],
+  /** Débloquer un PIN bloqué après trop d'essais (après avoir parlé à la personne). */
+  unlockPins: ['super_admin', 'support', 'compliance'] as StaffRole[],
+  /** Valider un « PIN oublié » sans garant, après vérification d'identité : risque de prise de compte. */
+  verifyIdentity: ['super_admin', 'compliance'] as StaffRole[],
 };
 
 /** Rôles qui voient les numéros de téléphone en entier (les autres les voient masqués). */

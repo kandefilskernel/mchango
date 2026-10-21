@@ -79,6 +79,33 @@ export const CAN = {
   suspendGroups: ["super_admin", "compliance"] as StaffRole[],
   decideDisputes: ["super_admin", "compliance"] as StaffRole[],
   manageStaff: ["super_admin"] as StaffRole[],
+  unlockPins: ["super_admin", "support", "compliance"] as StaffRole[],
+  verifyIdentity: ["super_admin", "compliance"] as StaffRole[],
 };
+
+export interface Inbox {
+  counts: {
+    disputesOpen: number;
+    pinLocked: number;
+    pinResetsPending: number;
+    smsFailed: number;
+    groupsSuspended: number;
+    total: number;
+  };
+  pinLocked: { userId: string; fullName: string; phone: string; lockedUntil: string }[];
+  pinResets: {
+    requestId: string;
+    userId: string;
+    fullName: string;
+    phone: string;
+    createdAt: string;
+    expiresAt: string;
+    waitingLong: boolean;
+  }[];
+  smsFailed: { id: string; userId: string; fullName: string; phone: string; template: string; error: string | null; createdAt: string }[];
+  groupsSuspended: { id: string; name: string; reason: string | null }[];
+}
+
+export const inbox = () => api<Inbox>("/admin/inbox");
 
 export const currentStaff = () => api<Staff>("/admin/me");

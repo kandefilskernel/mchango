@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Inject,
@@ -179,7 +180,7 @@ export class PinResetService {
     return this.db
       .transaction({ type: 'user', id: approverId }, async (q) => {
         const { r, guarantor } = await this.lockForGuarantor(q, approverId, requestId);
-        await this.complete(q, r.id, r.user_id, r.new_pin_hash, r.device_public_key, approverId);
+        await this.complete(q, r.id, r.user_id, r.new_pin_hash, r.device_public_key, { type: 'user', id: approverId });
         // Visible de tout le groupe du garant : personne ne change de PIN en cachette
         await appendAudit(q, {
           groupId: guarantor.groupId,
@@ -187,6 +188,47 @@ export class PinResetService {
           action: 'auth.pin_reset_approved',
           payload: { request_id: r.id, user_id: r.user_id },
         });
+        return { status: 'completed' as const };
+      })
+      .catch((e: unknown) => this.auth.rethrowDeviceConflict(e));
+  }
+
+  /**
+   * Recours quand aucun garant ne répond : l'équipe valide APRÈS avoir vérifié l'identité
+   * (appel au numéro + questions sur ses tontines, pièce d'identité…). Le motif décrit la
+   * vérification faite ; il est inscrit au journal. Rôle conformité ou super admin (contrôlé par l'API).
+   */
+  async approveByStaff(staffId: string, requestId: string, note: string) {
+    if (note.trim().length < 15) {
+      throw new BadRequestException("Décrivez la vérification d'identité effectuée (au moins une phrase).");
+    }
+    return this.db
+      .transaction({ type: 'staff', id: staffId }, async (q) => {
+        const found = await q.query<RequestRow>(
+          `SELECT ${REQUEST_COLUMNS} FROM pin_reset_requests WHERE id = $1 FOR UPDATE`,
+          [requestId],
+        );
+        const r = found.rows[0];
+        if (!r) throw new NotFoundException('Demande introuvable.');
+        if (r.status !== 'pending' || r.expired) {
+          throw new ConflictException('Cette demande est déjà traitée ou a expiré.');
+        }
+        await q.query('UPDATE pin_reset_requests SET staff_note = $2 WHERE id = $1', [r.id, note.trim()]);
+        await this.complete(q, r.id, r.user_id, r.new_pin_hash, r.device_public_key, { type: 'staff', id: staffId });
+        // Visible des tontines du demandeur : personne ne change de PIN en cachette, même par l'équipe
+        const groups = await q.query<{ group_id: string }>(
+          `SELECT DISTINCT m.group_id FROM memberships m JOIN groups g ON g.id = m.group_id
+           WHERE m.user_id = $1 AND m.status = 'active' AND g.status IN ('draft', 'active', 'suspended')`,
+          [r.user_id],
+        );
+        for (const g of groups.rows) {
+          await appendAudit(q, {
+            groupId: g.group_id,
+            actor: { type: 'staff', id: staffId },
+            action: 'staff.pin_reset_approved',
+            payload: { request_id: r.id, user_id: r.user_id },
+          });
+        }
         return { status: 'completed' as const };
       })
       .catch((e: unknown) => this.auth.rethrowDeviceConflict(e));
@@ -230,7 +272,7 @@ export class PinResetService {
     userId: string,
     pinHash: string,
     publicKey: string,
-    approverId: string | null,
+    approver: { type: 'user' | 'staff'; id: string } | null,
   ): Promise<string> {
     await q.query(
       'UPDATE users SET pin_hash = $2, pin_failed_attempts = 0, pin_locked_until = NULL WHERE id = $1',
@@ -242,20 +284,21 @@ export class PinResetService {
     );
     const deviceId = await this.auth.insertDevice(q, userId, publicKey);
     await q.query(
-      `UPDATE pin_reset_requests SET status = 'completed', device_id = $2, decided_by = $3, decided_at = now()
+      `UPDATE pin_reset_requests SET status = 'completed', device_id = $2, decided_by = $3, decided_by_staff = $4,
+              decided_at = now()
        WHERE id = $1`,
-      [requestId, deviceId, approverId],
+      [requestId, deviceId, approver?.type === 'user' ? approver.id : null, approver?.type === 'staff' ? approver.id : null],
     );
     await appendAudit(q, {
       groupId: null,
-      actor: approverId ? { type: 'user', id: approverId } : { type: 'user', id: userId },
+      actor: approver ?? { type: 'user', id: userId },
       action: 'auth.pin_reset_completed',
       payload: {
         request_id: requestId,
         user_id: userId,
         device_id: deviceId,
         revoked_device_ids: revoked.rows.map((d) => d.id),
-        approved_by: approverId,
+        approved_by: approver ? `${approver.type}:${approver.id}` : null,
       },
     });
     return deviceId;

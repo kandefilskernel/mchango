@@ -73,6 +73,20 @@ export async function revokeDevice(userId: string, deviceId: string) {
   });
 }
 
+export async function unlockPin(userId: string) {
+  return run(async () => {
+    await api(`/admin/users/${userId}/unlock-pin`, { method: "POST", body: {} });
+    return "PIN débloqué : la personne peut réessayer tout de suite.";
+  });
+}
+
+export async function approvePinReset(requestId: string, _: ActionState, form: FormData) {
+  return run(async () => {
+    await api(`/admin/pin-resets/${requestId}/approve`, { method: "POST", body: { note: text(form, "note") } });
+    return "Nouveau PIN validé : la personne peut se connecter. Ses tontines voient cette validation dans leur journal.";
+  });
+}
+
 export async function suspendGroup(groupId: string, _: ActionState, form: FormData) {
   return run(async () => {
     await api(`/admin/groups/${groupId}/suspend`, { method: "POST", body: { reason: text(form, "reason") } });

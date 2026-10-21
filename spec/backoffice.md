@@ -28,13 +28,13 @@ Périmètre : les modules **MVP** de la section 8.3 du document de cadrage.
 
 ## Rôles
 
-| Rôle | Lire | Voir les numéros | Bloquer, révoquer un téléphone | Suspendre une tontine | Trancher un litige | Gérer l'équipe |
-|------|:----:|:----------------:|:------------------------------:|:---------------------:|:------------------:|:--------------:|
-| Super admin | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Conformité | ✓ | ✓ | ✓ | ✓ | ✓ | |
-| Support | ✓ | ✓ | ✓ | | | |
-| Finance | ✓ | masqués (`+243 99 *** **67`) | | | | |
-| Lecture seule | ✓ | masqués | | | | |
+| Rôle | Lire | Voir les numéros | Bloquer, révoquer un téléphone, débloquer un PIN | Valider un « PIN oublié » | Suspendre une tontine | Trancher un litige | Gérer l'équipe |
+|------|:----:|:----------------:|:------------------------------:|:--:|:---------------------:|:------------------:|:--------------:|
+| Super admin | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Conformité | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| Support | ✓ | ✓ | ✓ | | | | |
+| Finance | ✓ | masqués (`+243 99 *** **67`) | | | | | |
+| Lecture seule | ✓ | masqués | | | | | |
 
 Les droits sont contrôlés **par l'API**. L'interface ne fait que masquer les boutons inutiles.
 
@@ -45,6 +45,20 @@ Les droits sont contrôlés **par l'API**. L'interface ne fait que masquer les b
 - **Litige, avis** : la note est ajoutée, le litige reste ouvert ; les parties s'accordent.
 - L'équipe **ne peut jamais confirmer un paiement** à la place du bénéficiaire : elle ne voit pas l'argent. Elle ne peut pas rejeter un paiement déjà confirmé par le bénéficiaire.
 - **Suspension** : plus de déclarations ni de rappels ; la réactivation rend le statut d'avant (préparation ou en cours).
+
+## Page « À traiter » (`GET /admin/inbox`)
+
+Les membres qui ont besoin de l'équipe, en une page. Le menu affiche le nombre total de cas, et le tableau de bord les reprend en tête.
+
+| Cas | Action possible |
+|-----|-----------------|
+| « PIN oublié » en attente (signalé après 24 h sans réponse d'un garant) | **Valider le nouveau PIN** (`POST /admin/pin-resets/:id/approve`, conformité et super admin) avec une **note de vérification d'identité obligatoire** (15 caractères au moins). La note est conservée (`pin_reset_requests.staff_note`) et la validation entre dans le journal de **chaque tontine** du membre (`staff.pin_reset_approved`) : les membres la voient. |
+| PIN bloqué (5 erreurs, 30 min) | **Débloquer le PIN** (`POST /admin/users/:id/unlock-pin`), après avoir parlé à la personne. Journal : `staff.pin_unlocked`. |
+| Litiges ouverts | Lien vers la file des litiges. |
+| SMS en échec (7 jours) | Lecture : la personne n'a pas reçu son code ou son rappel. |
+| Tontines suspendues | Lien vers la tontine pour la réactiver. |
+
+Risque à garder en tête : valider un « PIN oublié » à la place d'un garant, c'est donner le compte à celui qui tient le numéro. Un voleur de carte SIM peut aussi appeler le support. Vérifiez par des questions que seul le vrai membre connaît (sa tontine, son tour, le président), jamais par le seul numéro.
 
 ## Mise en route (développement)
 
@@ -67,4 +81,4 @@ Variable du back-office : `MCHANGO_API_URL`, l'adresse de l'API vue par le serve
 
 ## Pas encore fait (V2 dans le document de cadrage)
 
-Tickets de support et réponses types ; exports pour partenaires et régulateur ; règles d'alerte de fraude et gel préventif ; facturation ; SMS ciblés ; espace partenaires. Pas encore de recours « PIN oublié » traité par le support.
+Tickets de support et réponses types ; exports pour partenaires et régulateur ; règles d'alerte de fraude et gel préventif ; facturation ; SMS ciblés ; espace partenaires. La vérification d'identité du recours « PIN oublié » reste manuelle (appel et questions), sans pièce d'identité numérisée.

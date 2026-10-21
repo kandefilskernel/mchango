@@ -65,6 +65,87 @@ export class AdminService {
     };
   }
 
+  // ---------- À traiter (support) ----------
+
+  /** Tout ce qui attend une personne de l'équipe, du plus urgent au moins urgent. */
+  async inbox(staff: StaffMember) {
+    const [disputes, pinLocked, pinResets, smsFailed, suspended] = await Promise.all([
+      this.db.query<{ n: number }>(`SELECT count(*)::int AS n FROM disputes WHERE status = 'open'`),
+      this.db.query<{ id: string; full_name: string; phone: string; pin_locked_until: Date }>(
+        `SELECT id, full_name, phone, pin_locked_until FROM users
+         WHERE pin_locked_until > now() ORDER BY pin_locked_until LIMIT 20`,
+      ),
+      this.db.query<{ id: string; user_id: string; full_name: string; phone: string; created_at: Date; expires_at: Date }>(
+        `SELECT r.id, r.user_id, u.full_name, u.phone, r.created_at, r.expires_at
+         FROM pin_reset_requests r JOIN users u ON u.id = r.user_id
+         WHERE r.status = 'pending' AND r.expires_at > now() ORDER BY r.created_at LIMIT 20`,
+      ),
+      this.db.query<{ id: string; user_id: string; full_name: string; phone: string; template: string; error: string | null; created_at: Date }>(
+        `SELECT n.id, n.user_id, u.full_name, u.phone, n.template, n.error, n.created_at
+         FROM notifications n JOIN users u ON u.id = n.user_id
+         WHERE n.status = 'failed' AND n.created_at > now() - interval '7 days'
+         ORDER BY n.created_at DESC LIMIT 20`,
+      ),
+      this.db.query<{ id: string; name: string; suspended_reason: string | null }>(
+        `SELECT id, name, suspended_reason FROM groups WHERE status = 'suspended' ORDER BY created_at DESC LIMIT 20`,
+      ),
+    ]);
+    const counts = {
+      disputesOpen: disputes.rows[0].n,
+      pinLocked: pinLocked.rowCount ?? 0,
+      pinResetsPending: pinResets.rowCount ?? 0,
+      smsFailed: smsFailed.rowCount ?? 0,
+      groupsSuspended: suspended.rowCount ?? 0,
+    };
+    return {
+      counts: { ...counts, total: Object.values(counts).reduce((a, b) => a + b, 0) },
+      pinLocked: pinLocked.rows.map((r) => ({
+        userId: r.id,
+        fullName: r.full_name,
+        phone: this.phone(staff, r.phone),
+        lockedUntil: iso(r.pin_locked_until),
+      })),
+      pinResets: pinResets.rows.map((r) => ({
+        requestId: r.id,
+        userId: r.user_id,
+        fullName: r.full_name,
+        phone: this.phone(staff, r.phone),
+        createdAt: iso(r.created_at),
+        expiresAt: iso(r.expires_at),
+        // Plus de 24 h sans réponse du garant : la personne a sans doute besoin d'aide
+        waitingLong: Date.now() - r.created_at.getTime() > 24 * 3600_000,
+      })),
+      smsFailed: smsFailed.rows.map((r) => ({
+        id: r.id,
+        userId: r.user_id,
+        fullName: r.full_name,
+        phone: this.phone(staff, r.phone),
+        template: r.template,
+        error: r.error,
+        createdAt: iso(r.created_at),
+      })),
+      groupsSuspended: suspended.rows.map((r) => ({ id: r.id, name: r.name, reason: r.suspended_reason })),
+    };
+  }
+
+  /** PIN bloqué après 5 essais : la personne peut réessayer tout de suite (journalisé). */
+  async unlockPin(staff: StaffMember, userId: string) {
+    return this.db.transaction({ type: 'staff', id: staff.id }, async (q) => {
+      const { rowCount } = await q.query(
+        'UPDATE users SET pin_failed_attempts = 0, pin_locked_until = NULL WHERE id = $1 AND pin_locked_until IS NOT NULL',
+        [userId],
+      );
+      if (rowCount !== 1) throw new NotFoundException("Ce compte n'a pas de PIN bloqué.");
+      await appendAudit(q, {
+        groupId: null,
+        actor: { type: 'staff', id: staff.id },
+        action: 'staff.pin_unlocked',
+        payload: { user_id: userId },
+      });
+      return { unlocked: true };
+    });
+  }
+
   // ---------- Utilisateurs ----------
 
   async searchUsers(staff: StaffMember, q: string) {

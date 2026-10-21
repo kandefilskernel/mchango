@@ -20,6 +20,6 @@ import { PinResetService } from './pin-reset.service.js';
   ],
   controllers: [AuthController, PinResetController],
   providers: [AuthService, OtpService, PinResetService, AccessGuard],
-  exports: [AuthService, AccessGuard],
+  exports: [AuthService, AccessGuard, PinResetService],
 })
 export class AuthModule {}

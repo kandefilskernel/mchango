@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { StaffAuthService, type StaffRole } from '../src/admin/staff-auth.service.js';
 import { totpCode } from '../src/admin/totp.js';
-import { TestApi, type TestSession } from './helpers.js';
+import { newDevice, TestApi, type TestSession } from './helpers.js';
 
 interface Staff {
   email: string;
@@ -220,6 +220,62 @@ describe('Back-office (e2e)', () => {
 
       const history = await http().get(`/groups/${d.groupId}/history`).set(asMember(d.president)).expect(200);
       expect(history.body.events.map((e: { action: string }) => e.action)).toContain('staff.dispute_rejected');
+    });
+  });
+
+  describe('support (« À traiter »)', () => {
+    it('PIN bloqué : apparaît à traiter ; le support le débloque, pas la lecture seule', async () => {
+      const support = await staff('support');
+      const ro = await staff('read_only');
+      const member = await api.signUp();
+      await api.db.query(`UPDATE users SET pin_locked_until = now() + interval '30 minutes' WHERE id = $1`, [
+        member.session.userId,
+      ]);
+
+      const inbox = await http().get('/admin/inbox').set(asStaff(support)).expect(200);
+      expect(inbox.body.pinLocked.map((u: { userId: string }) => u.userId)).toContain(member.session.userId);
+      expect(inbox.body.counts.total).toBeGreaterThan(0);
+
+      await http().post(`/admin/users/${member.session.userId}/unlock-pin`).set(asStaff(ro)).expect(403);
+      await http().post(`/admin/users/${member.session.userId}/unlock-pin`).set(asStaff(support)).expect(200);
+      await http().post(`/admin/users/${member.session.userId}/unlock-pin`).set(asStaff(support)).expect(404);
+      const after = await http().get('/admin/inbox').set(asStaff(support)).expect(200);
+      expect(after.body.pinLocked.map((u: { userId: string }) => u.userId)).not.toContain(member.session.userId);
+    });
+
+    it("« PIN oublié » sans réponse du garant : la conformité valide après vérification d'identité", async () => {
+      const support = await staff('support');
+      const compliance = await staff('compliance');
+      const d = await disputedContribution(); // tontine en cours : le code SMS seul ne suffit pas
+      const jean = d.member;
+      const jeanPhone = (await http().get('/me').set(asMember(jean))).body.phone as string;
+
+      const device = newDevice();
+      await api.clearOtpLimit(jeanPhone);
+      const { otpToken } = await api.verifiedOtpToken(jeanPhone);
+      const request = await http()
+        .post('/auth/pin-reset')
+        .send({ otpToken, newPin: '270418', devicePublicKey: device.publicKey })
+        .expect(200);
+      expect(request.body.status).toBe('pending');
+      const requestId = request.body.requestId as string;
+
+      const inbox = await http().get('/admin/inbox').set(asStaff(support)).expect(200);
+      expect(inbox.body.pinResets.map((r: { requestId: string }) => r.requestId)).toContain(requestId);
+
+      const approve = (who: Staff, note: string) =>
+        http().post(`/admin/pin-resets/${requestId}/approve`).set(asStaff(who)).send({ note });
+      await approve(support, "Appel au numéro, questions sur la tontine Kwetu : identité confirmée").expect(403);
+      await approve(compliance, 'ok').expect(400);
+      await approve(compliance, 'Appel au +243, la personne a décrit sa tontine et ses tours : identité confirmée').expect(200);
+      await approve(compliance, 'Deuxième validation de la même demande, refusée').expect(409);
+
+      const done = await http().get(`/auth/pin-reset/${requestId}`).expect(200);
+      expect(done.body.status).toBe('completed');
+      expect((await api.openSession(done.body.deviceId, device)).status).toBe(200);
+
+      const history = await http().get(`/groups/${d.groupId}/history`).set(asMember(d.president)).expect(200);
+      expect(history.body.events.map((e: { action: string }) => e.action)).toContain('staff.pin_reset_approved');
     });
   });
 

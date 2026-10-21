@@ -7,3 +7,5 @@ process.env.OTP_PEPPER ??= 'test-only-pepper-test-only-pepper-000000';
 // Toutes les requêtes de test viennent de 127.0.0.1
 process.env.OTP_MAX_PER_IP_PER_HOUR = '1000000';
 process.env.REMINDERS_ENABLED = '0'; // les tests déclenchent les rappels eux-mêmes
+process.env.STAFF_JWT_SECRET ??= 'test-only-staff-secret-test-only-000000';
+process.env.STAFF_SECRET_KEY ??= Buffer.alloc(32, 7).toString('base64');

@@ -21,6 +21,12 @@ const schema = z.object({
   // Rappels SMS avant échéance : vérification périodique (voir src/reminders/)
   REMINDERS_ENABLED: z.enum(['0', '1']).default('1'),
   REMINDERS_INTERVAL_MINUTES: z.coerce.number().int().min(1).max(120).default(15),
+  // Back-office : secret des jetons de l'équipe (distinct de celui des membres) et clé AES-256
+  // (32 octets en base64) qui chiffre les secrets de double authentification en base.
+  STAFF_JWT_SECRET: z.string().min(32, 'au moins 32 caractères'),
+  STAFF_SECRET_KEY: z
+    .string()
+    .refine((v) => Buffer.from(v, 'base64').length === 32, '32 octets encodés en base64'),
 });
 
 export type AppConfig = z.infer<typeof schema>;

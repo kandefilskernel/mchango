@@ -8,7 +8,7 @@ Tontine digitale (likelemba / muziki) pour la RDC. Chaque cotisation est déclar
 |---------|---------|--------|
 | `apps/mobile` | App Android des membres | Flutter 3.47 |
 | `apps/api` | Backend, monolithe modulaire REST | NestJS 12, Node 22 |
-| `apps/backoffice` | Back-office web de l'équipe (pas développé à l'itération 1) | Next.js 16 |
+| `apps/backoffice` | Back-office web de l'équipe (tableau de bord, utilisateurs, tontines, litiges, audit, équipe) | Next.js 16 |
 | `packages/mchango_audit` | Vérification du journal chaîné côté téléphone | Dart pur |
 | `db` | Schéma PostgreSQL 16 et tests | Docker |
 | `spec` | Format du hash du journal et vecteurs de test communs | |
@@ -69,4 +69,5 @@ Tests de la base : voir [`db/README.md`](db/README.md).
 - [Reçus, historique et aperçu d'un groupe : contrat de l'API](spec/receipts.md)
 - [Rappels SMS avant échéance](spec/reminders.md)
 - [« PIN oublié » avec confirmation d'un garant](spec/pin-reset.md)
+- [Back-office : modules, rôles, sécurité, mise en route](spec/backoffice.md)
 - [App mobile : écrans, sécurité sur le téléphone, tests](apps/mobile/README.md)

@@ -11,6 +11,7 @@
 | `007_receipts.sql` | Numéro de reçu unique, attribué à la confirmation |
 | `008_reminders.sql` | Clé d'unicité des notifications (un rappel par membre et par tour), erreur d'envoi |
 | `009_pin_reset.sql` | Demandes « PIN oublié » (confirmation par un garant, expiration 48 h) |
+| `010_backoffice.sql` | Back-office : motifs de blocage et de suspension, décisions de litige par l'équipe, droits sur `staff` |
 | `tests/001_checks.sql` | Double regard, anti-fraude, journal en ajout seul, détection de falsification |
 | `tests/002_cash_witness.sql` | Règles du témoin (à lancer **après** `001_checks.sql`, sur la même base) |
 | `tests/003_turns_cycles.sql` | Ordre figé, bénéficiaire unique, receveur imposé (après `002`) |

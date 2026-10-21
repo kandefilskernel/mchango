@@ -1,4 +1,5 @@
 import { Controller, Get, Module } from '@nestjs/common';
+import { AdminModule } from './admin/admin.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { APP_CONFIG, loadConfig } from './config.js';
 import { ContributionsModule } from './contributions/contributions.module.js';
@@ -32,6 +33,7 @@ class ConfigModule {}
     GroupsModule,
     ContributionsModule,
     RemindersModule,
+    AdminModule,
   ],
   controllers: [HealthController],
 })

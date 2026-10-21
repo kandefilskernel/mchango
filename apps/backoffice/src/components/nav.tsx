@@ -11,18 +11,28 @@ export interface NavItem {
   badge?: number;
 }
 
-/** Menu latéral : la page courante est mise en évidence, les cas à traiter sont comptés. */
-export function Nav({ items }: { items: NavItem[] }) {
+export interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+/** Menu latéral par sections : la page courante est mise en évidence, les cas à traiter sont comptés. */
+export function Nav({ sections }: { sections: NavSection[] }) {
   const pathname = usePathname();
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
   return (
     <nav className="nav">
-      {items.map((item) => (
-        <Link key={item.href} href={item.href} className={isActive(item.href) ? "active" : undefined}>
-          <Icon name={item.icon} />
-          <span>{item.label}</span>
-          {item.badge ? <span className="nav-badge">{item.badge > 99 ? "99+" : item.badge}</span> : null}
-        </Link>
+      {sections.map((s) => (
+        <div key={s.title} style={{ display: "contents" }}>
+          <div className="nav-section">{s.title}</div>
+          {s.items.map((item) => (
+            <Link key={item.href} href={item.href} className={isActive(item.href) ? "active" : undefined}>
+              <Icon name={item.icon} size={19} />
+              <span>{item.label}</span>
+              {item.badge ? <span className="nav-badge">{item.badge > 99 ? "99+" : item.badge}</span> : null}
+            </Link>
+          ))}
+        </div>
       ))}
     </nav>
   );

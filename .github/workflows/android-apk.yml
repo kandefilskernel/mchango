@@ -1,5 +1,7 @@
 # Compile l'APK Android de l'app Mchango sur les machines de GitHub (rien à installer en local).
-# L'APK se télécharge dans l'onglet « Actions » du dépôt, dans le résumé de l'exécution (« Artifacts »).
+# L'APK de test le plus récent se télécharge sans compte, même depuis le téléphone :
+#   https://github.com/kandefilskernel/mchango/releases/download/apk-test/mchango-test.apk
+# (aussi dans l'onglet « Actions », section « Artifacts », avec un compte GitHub).
 name: APK Android
 
 on:
@@ -16,7 +18,8 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  # write : publier l'APK de test dans la page « Releases »
+  contents: write
 
 jobs:
   apk:
@@ -71,3 +74,21 @@ jobs:
           name: ${{ env.APK_NAME }}
           path: ${{ env.APK_NAME }}.apk
           retention-days: 30
+
+      # Lien de téléchargement fixe : chaque nouvelle compilation remplace l'APK de la release « apk-test »
+      - name: Préparer la release de test
+        run: cp "$APK_NAME.apk" mchango-test.apk
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-test
+          name: APK de test (dernière compilation)
+          prerelease: true
+          make_latest: false
+          body: |
+            APK de **test** de Mchango, compilé automatiquement depuis la branche `${{ github.ref_name }}` (commit ${{ github.sha }}).
+            Version « debug » : appelle l'API à l'adresse `${{ env.API_URL }}`.
+            Avec `http://localhost:3000`, le téléphone doit être branché en USB au PC de développement (`adb reverse tcp:3000 tcp:3000`).
+            Mchango ne détient, ne transfère et ne garantit aucun fonds.
+          files: mchango-test.apk
+          overwrite_files: true

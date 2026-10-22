@@ -107,6 +107,8 @@ Risque à garder en tête : valider un « PIN oublié » à la place d'un garant
 
 Variable du back-office : `MCHANGO_API_URL`, l'adresse de l'API vue par le serveur Next.js (défaut : `http://localhost:3000`).
 
+**Pendant que `npm run dev` tourne, ne lancez pas `npm run build`** : les deux écrivent dans `.next`, et le serveur de développement se met à renvoyer des erreurs (scripts introuvables, actions refusées). Pour vérifier que tout compile, utilisez `npm run build:check` : il écrit dans `.next-check`. Si des erreurs étranges apparaissent quand même, arrêtez `npm run dev`, supprimez le dossier `.next` et relancez.
+
 ## Pas encore fait (V2 dans le document de cadrage)
 
 Tickets de support complets et réponses types ; formats d'export imposés par un partenaire ou le régulateur ; gel préventif automatique ; facturation ; SMS ciblés ; espace partenaires. La vérification d'identité du recours « PIN oublié » reste manuelle (appel et questions), sans pièce d'identité numérisée.

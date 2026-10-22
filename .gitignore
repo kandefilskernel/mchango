@@ -24,3 +24,7 @@ key.properties
 .DS_Store
 Thumbs.db
 ~$*
+*.tsbuildinfo
+
+# Outils locaux (configuration de prévisualisation)
+.claude/

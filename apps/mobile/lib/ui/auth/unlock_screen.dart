@@ -85,6 +85,8 @@ class _UnlockScreenState extends State<UnlockScreen> {
           children: [
             const SizedBox(height: 24),
             const Center(child: BrandMark(size: 40)),
+            const SizedBox(height: 4),
+            const PublisherSignature(),
             const SizedBox(height: 24),
             const Illustration('verifie', height: 150),
             const SizedBox(height: 16),

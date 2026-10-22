@@ -4,6 +4,7 @@ import { Logo } from "@/components/logo";
 import { Nav, type NavSection } from "@/components/nav";
 import { CAN, currentStaff, inbox } from "@/lib/api";
 import { roleLabels } from "@/lib/format";
+import { PUBLISHER } from "@/lib/brand";
 
 const today = () =>
   new Intl.DateTimeFormat("fr-FR", { timeZone: "Africa/Lubumbashi", weekday: "long", day: "numeric", month: "long" }).format(
@@ -53,6 +54,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <div>
             Mchango
             <small>Back-office</small>
+            <span className="by">par {PUBLISHER}</span>
           </div>
         </div>
         <Nav sections={sections} />
@@ -83,7 +85,12 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             </span>
           </div>
         </header>
-        <main className="main">{children}</main>
+        <main className="main">
+          {children}
+          <footer className="app-footer">
+            Mchango · par <strong>{PUBLISHER}</strong> · Mchango ne détient, ne transfère et ne garantit aucun fonds.
+          </footer>
+        </main>
       </div>
     </div>
   );

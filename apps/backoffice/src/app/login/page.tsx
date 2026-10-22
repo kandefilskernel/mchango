@@ -1,6 +1,7 @@
 import { LoginForm } from "./login-form";
 import { LoginHero } from "@/components/login-hero";
 import { Logo } from "@/components/logo";
+import { PUBLISHER } from "@/lib/brand";
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { expired } = await searchParams;
@@ -10,7 +11,10 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <section className="login-hero">
           <div className="login-brand">
             <Logo size={38} />
-            <span>Mchango</span>
+            <span>
+              Mchango
+              <small className="by">par {PUBLISHER}</small>
+            </span>
           </div>
           <LoginHero />
           <h1>Chaque cotisation, vérifiable.</h1>
@@ -31,6 +35,9 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           <p className="login-foot">
             <span aria-hidden="true">🔒</span> Le code vient de votre application d&apos;authentification (Google
             Authenticator, Microsoft Authenticator…). Toute action est inscrite au journal d&apos;audit.
+          </p>
+          <p className="signature">
+            Mchango · par <strong>{PUBLISHER}</strong>
           </p>
         </section>
       </div>

@@ -9,6 +9,7 @@ import '../../api/models.dart';
 import '../../services.dart';
 import '../../util/format.dart';
 import '../common.dart';
+import '../theme.dart';
 import '../../l10n/l10n.dart';
 
 /// Reçu d'une cotisation confirmée, partageable en image (WhatsApp…).
@@ -152,6 +153,8 @@ class ReceiptCard extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: text.bodySmall?.copyWith(color: Colors.black54),
               ),
+              const SizedBox(height: 10),
+              const PublisherSignature(),
             ],
           ),
         ),

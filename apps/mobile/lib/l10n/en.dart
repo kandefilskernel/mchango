@@ -515,6 +515,8 @@ const en = <String, String>{
       'late since {date}',
   'le {date}':
       'on {date}',
+  'par {brand}':
+      'by {brand}',
   'tel que les membres vous connaissent':
       'as the members know you',
   'une tontine':

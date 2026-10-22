@@ -515,6 +515,8 @@ const ln = <String, String>{
       'eumeli banda {date}',
   'le {date}':
       'mokolo {date}',
+  'par {brand}':
+      'epai ya {brand}',
   'tel que les membres vous connaissent':
       'ndenge basangani bayebi yo',
   'une tontine':

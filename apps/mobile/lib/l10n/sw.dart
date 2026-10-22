@@ -515,6 +515,8 @@ const sw = <String, String>{
       'imechelewa tangu {date}',
   'le {date}':
       'tarehe {date}',
+  'par {brand}':
+      'kutoka {brand}',
   'tel que les membres vous connaissent':
       'kama wanachama wanavyokujua',
   'une tontine':

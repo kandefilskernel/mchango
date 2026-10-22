@@ -138,6 +138,8 @@ class _SignInFlowState extends State<SignInFlow> {
     const SizedBox(height: 24),
     Text(noCustodyNotice, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
     const SizedBox(height: 8),
+    const SizedBox(height: 12),
+    const PublisherSignature(),
     const Center(child: TestServerSetting()),
   ];
 

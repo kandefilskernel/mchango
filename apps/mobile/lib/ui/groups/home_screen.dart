@@ -176,6 +176,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         group: g,
                         onTap: () => _open(context, GroupScreen(groupId: g.id)),
                       ),
+                    const SizedBox(height: 32),
+                    const PublisherSignature(),
                   ],
                 ),
               ),

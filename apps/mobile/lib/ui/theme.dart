@@ -142,3 +142,27 @@ class BrandMark extends StatelessWidget {
     ],
   );
 }
+
+/// Entreprise qui édite Mchango. Affichée sur les écrans et les reçus, jamais dans les SMS
+/// (chaque caractère en plus peut faire facturer un SMS de plus).
+const publisher = 'nuru-k';
+
+/// Signature « par nuru-k », discrète, sous le nom de l'app.
+class PublisherSignature extends StatelessWidget {
+  const PublisherSignature({super.key, this.light = false});
+
+  final bool light;
+
+  @override
+  Widget build(BuildContext context) => Text(
+    t('par {brand}', {'brand': publisher}),
+    key: const Key('publisher'),
+    textAlign: TextAlign.center,
+    style: TextStyle(
+      fontSize: 12.5,
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0.4,
+      color: light ? Colors.white.withValues(alpha: 0.75) : Brand.ink.withValues(alpha: 0.5),
+    ),
+  );
+}

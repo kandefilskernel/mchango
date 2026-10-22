@@ -1,56 +1,69 @@
 import 'dart:convert';
 
+import '../../l10n/l10n.dart';
 import '../../util/format.dart';
 
 /// Phrase lisible pour un événement du journal. [actor] : nom de l'auteur, ou « Mchango ».
 String describeEvent(String action, String payloadJson, String actor) {
   final p = _decode(payloadJson);
   String? s(String key) => p[key]?.toString();
+  final a = {'actor': actor};
 
   switch (action) {
     case 'groups.insert':
-      return '$actor a créé la tontine « ${s('name')} »';
+      return t('{actor} a créé la tontine « {name} »', {...a, 'name': s('name')});
     case 'groups.update':
       return switch (s('status')) {
-        'active' => '$actor a démarré la tontine',
-        'closed' => 'La tontine est terminée : tous les tours sont payés',
-        _ => '$actor a modifié la tontine',
+        'active' => t('{actor} a démarré la tontine', a),
+        'closed' => t('La tontine est terminée : tous les tours sont payés'),
+        _ => t('{actor} a modifié la tontine', a),
       };
     case 'memberships.insert':
-      return s('role') == 'president' ? '$actor est président(e)' : '$actor a rejoint la tontine';
+      return s('role') == 'president' ? t('{actor} est président(e)', a) : t('{actor} a rejoint la tontine', a);
     case 'memberships.update':
-      return s('turn_order') == null ? 'Ordre des tours effacé' : 'Un membre reçoit au tour ${s('turn_order')}';
+      return s('turn_order') == null
+          ? t('Ordre des tours effacé')
+          : t('Un membre reçoit au tour {n}', {'n': s('turn_order')});
     case 'group.invitation_created':
-      return "$actor a créé un code d'invitation";
+      return t("{actor} a créé un code d'invitation", a);
     case 'group.turn_order_set':
       return s('mode') == 'draw'
-          ? '$actor a lancé le tirage au sort (graine ${s('seed')?.substring(0, 12)}…)'
-          : "$actor a fixé l'ordre des tours";
+          ? t('{actor} a lancé le tirage au sort (graine {seed}…)', {...a, 'seed': s('seed')?.substring(0, 12)})
+          : t("{actor} a fixé l'ordre des tours", a);
     case 'cycles.insert':
-      return 'Tour ${s('cycle_number')} prévu le ${formatDate(s('due_date') ?? '----')}';
+      return t('Tour {n} prévu le {date}', {'n': s('cycle_number'), 'date': formatDate(s('due_date') ?? '----')});
     case 'cycles.update':
-      return 'Tour ${s('cycle_number')} : ${cycleStatusLabels[s('status')] ?? s('status')}';
+      return t('Tour {n} : {status}', {'n': s('cycle_number'), 'status': cycleStatusLabels[s('status')] ?? s('status')});
     case 'contributions.insert':
-      return '$actor a déclaré un paiement de ${_amount(p)} (${methodLabels[s('method')] ?? s('method')}'
-          '${s('tx_reference') != null ? ', ID ${s('tx_reference')}' : ''})';
+      final method = methodLabels[s('method')] ?? s('method');
+      return s('tx_reference') != null
+          ? t('{actor} a déclaré un paiement de {amount} ({method}, ID {tx})', {
+              ...a,
+              'amount': _amount(p),
+              'method': method,
+              'tx': s('tx_reference'),
+            })
+          : t('{actor} a déclaré un paiement de {amount} ({method})', {...a, 'amount': _amount(p), 'method': method});
     case 'contributions.update':
       return switch (s('status')) {
-        'confirmed' => 'Paiement confirmé (reçu MCH-${(s('receipt_number') ?? '').padLeft(8, '0')})',
-        'disputed' => 'Paiement contesté',
-        'rejected' => 'Paiement rejeté',
-        _ => 'Paiement mis à jour',
+        'confirmed' => t('Paiement confirmé (reçu {number})', {
+          'number': 'MCH-${(s('receipt_number') ?? '').padLeft(8, '0')}',
+        }),
+        'disputed' => t('Paiement contesté'),
+        'rejected' => t('Paiement rejeté'),
+        _ => t('Paiement mis à jour'),
       };
     case 'confirmations.insert':
       return switch (s('decision')) {
-        'confirm' => '$actor a confirmé avoir reçu le paiement',
-        'witness' => '$actor a témoigné de la remise en espèces',
-        'dispute' => '$actor a contesté : « ${s('note')} »',
-        _ => '$actor a répondu à une déclaration',
+        'confirm' => t('{actor} a confirmé avoir reçu le paiement', a),
+        'witness' => t('{actor} a témoigné de la remise en espèces', a),
+        'dispute' => t('{actor} a contesté : « {note} »', {...a, 'note': s('note')}),
+        _ => t('{actor} a répondu à une déclaration', a),
       };
     case 'disputes.insert':
-      return 'Litige ouvert';
+      return t('Litige ouvert');
     case 'disputes.update':
-      return 'Litige clos';
+      return t('Litige clos');
     default:
       return '$actor : $action';
   }

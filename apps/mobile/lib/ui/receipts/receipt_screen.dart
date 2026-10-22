@@ -9,6 +9,7 @@ import '../../api/models.dart';
 import '../../services.dart';
 import '../../util/format.dart';
 import '../common.dart';
+import '../../l10n/l10n.dart';
 
 /// Reçu d'une cotisation confirmée, partageable en image (WhatsApp…).
 class ReceiptScreen extends StatefulWidget {
@@ -23,10 +24,18 @@ class ReceiptScreen extends StatefulWidget {
 class _ReceiptScreenState extends State<ReceiptScreen> {
   final _receiptKey = GlobalKey();
 
-  static String shareText(Receipt r) =>
-      'Reçu Mchango ${r.receiptNumber} : ${r.payerName} a payé '
-      '${formatAmount(r.amountMinor, r.currency)} à ${r.beneficiaryName} '
-      '(${r.groupName}, tour ${r.cycleNumber}), confirmé le ${formatDateTime(r.confirmedAt)}.';
+  static String shareText(Receipt r) => t(
+    'Reçu Mchango {number} : {payer} a payé {amount} à {beneficiary} ({group}, tour {n}), confirmé le {date}.',
+    {
+      'number': r.receiptNumber,
+      'payer': r.payerName,
+      'amount': formatAmount(r.amountMinor, r.currency),
+      'beneficiary': r.beneficiaryName,
+      'group': r.groupName,
+      'n': r.cycleNumber,
+      'date': formatDateTime(r.confirmedAt),
+    },
+  );
 
   Future<void> _share(Receipt r) async {
     final boundary = _receiptKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
@@ -50,7 +59,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Reçu')),
+      appBar: AppBar(title: Text(t('Reçu'))),
       body: Loader<Receipt>(
         load: () => Services.of(context).api.receipt(widget.contributionId),
         builder: (context, r, _) => ListView(
@@ -61,7 +70,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
               child: ReceiptCard(receipt: r),
             ),
             const SizedBox(height: 16),
-            BusyButton(label: 'Partager le reçu', icon: Icons.share, onPressed: () => _share(r)),
+            BusyButton(label: t('Partager le reçu'), icon: Icons.share, onPressed: () => _share(r)),
           ],
         ),
       ),
@@ -97,7 +106,7 @@ class ReceiptCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Reçu Mchango', style: text.titleLarge?.copyWith(color: Colors.black87)),
+                        Text(t('Reçu Mchango'), style: text.titleLarge?.copyWith(color: Colors.black87)),
                         Text(r.receiptNumber, style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
                       ],
                     ),
@@ -112,32 +121,34 @@ class ReceiptCard extends StatelessWidget {
               ),
               Text('${r.payerName}  →  ${r.beneficiaryName}', textAlign: TextAlign.center),
               const SizedBox(height: 12),
-              InfoRow('Tontine', r.groupName),
-              InfoRow('Tour', '${r.cycleNumber}'),
-              InfoRow('Moyen', methodLabels[r.method] ?? r.method),
-              if (r.txReference != null) InfoRow('ID de transaction', r.txReference!),
-              if (r.witnessName != null) InfoRow('Témoin', r.witnessName!),
-              InfoRow('Déclaré le', formatDateTime(r.declaredAt)),
-              InfoRow('Confirmé le', formatDateTime(r.confirmedAt)),
-              if (r.isLate) const InfoRow('Remarque', 'Payé après l\'échéance'),
+              InfoRow(t('Tontine'), r.groupName),
+              InfoRow(t('Tour'), '${r.cycleNumber}'),
+              InfoRow(t('Moyen'), methodLabels[r.method] ?? r.method),
+              if (r.txReference != null) InfoRow(t('ID de transaction'), r.txReference!),
+              if (r.witnessName != null) InfoRow(t('Témoin'), r.witnessName!),
+              InfoRow(t('Déclaré le'), formatDateTime(r.declaredAt)),
+              InfoRow(t('Confirmé le'), formatDateTime(r.confirmedAt)),
+              if (r.isLate) InfoRow(t('Remarque'), t("Payé après l'échéance")),
               const SizedBox(height: 12),
               Center(
                 child: QrImageView(
                   data: r.qrPayload,
                   size: 180,
                   backgroundColor: Colors.white,
-                  semanticsLabel: 'QR code du reçu ${r.receiptNumber}',
+                  semanticsLabel: t('QR code du reçu {n}', {'n': r.receiptNumber}),
                 ),
               ),
               Text(
-                'Journal : événement n°${r.auditSeq} · ${r.auditHash.substring(0, 16)}…',
+                t('Journal : événement n°{n} · {hash}…', {'n': r.auditSeq, 'hash': r.auditHash.substring(0, 16)}),
                 textAlign: TextAlign.center,
                 style: text.bodySmall?.copyWith(color: Colors.black54),
               ),
               const SizedBox(height: 8),
               Text(
-                'Ce reçu atteste que le paiement a été déclaré par le payeur et confirmé par le '
-                'bénéficiaire. $noCustodyNotice',
+                t(
+                  'Ce reçu atteste que le paiement a été déclaré par le payeur et confirmé par le bénéficiaire. {notice}',
+                  {'notice': noCustodyNotice},
+                ),
                 textAlign: TextAlign.center,
                 style: text.bodySmall?.copyWith(color: Colors.black54),
               ),

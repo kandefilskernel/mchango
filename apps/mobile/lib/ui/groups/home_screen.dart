@@ -5,11 +5,13 @@ import '../../services.dart';
 import '../../util/format.dart';
 import '../carnet/carnet_screen.dart';
 import '../common.dart';
+import '../language_picker.dart';
 import '../theme.dart';
 import 'create_group_screen.dart';
 import 'group_screen.dart';
 import 'approvals_screen.dart';
 import 'join_group_screen.dart';
+import '../../l10n/l10n.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final auth = Services.of(context).auth;
     if (!await auth.biometricAvailable()) {
       if (context.mounted) {
-        showInfo(context, 'Pas d\'empreinte sur ce téléphone : enregistrez-en une dans les réglages du téléphone.');
+        showInfo(context, t('Pas d\'empreinte sur ce téléphone : enregistrez-en une dans les réglages du téléphone.'));
       }
       return;
     }
@@ -44,26 +46,29 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         icon: const Icon(Icons.fingerprint, size: 40),
-        title: Text(enabled ? 'Couper l\'empreinte ?' : 'Ouvrir Mchango avec votre empreinte ?'),
+        title: Text(enabled ? t('Couper l\'empreinte ?') : t('Ouvrir Mchango avec votre empreinte ?')),
         content: Text(
           enabled
-              ? 'Vous ouvrirez Mchango avec votre PIN seulement.'
-              : 'Votre PIN reste valable à tout moment. Attention : toute empreinte enregistrée sur ce téléphone '
-                    'pourra ouvrir Mchango. Ne l\'activez pas si quelqu\'un d\'autre a mis son empreinte.',
+              ? t('Vous ouvrirez Mchango avec votre PIN seulement.')
+              : t(
+                  "Votre PIN reste valable à tout moment. Attention : toute empreinte enregistrée sur ce téléphone pourra ouvrir Mchango. Ne l'activez pas si quelqu'un d'autre a mis son empreinte.",
+                ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(enabled ? 'Couper' : 'Activer')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(t('Annuler'))),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(enabled ? t('Couper') : t('Activer'))),
         ],
       ),
     );
     if (ok != true) return;
     if (enabled) {
       await auth.disableBiometric();
-      if (context.mounted) showInfo(context, 'Empreinte coupée : ouverture par PIN.');
+      if (context.mounted) showInfo(context, t('Empreinte coupée : ouverture par PIN.'));
     } else {
       final done = await auth.enableBiometric();
-      if (context.mounted) showInfo(context, done ? 'Empreinte activée.' : 'Empreinte non reconnue : rien n\'a changé.');
+      if (context.mounted) {
+        showInfo(context, done ? t('Empreinte activée.') : t("Empreinte non reconnue : rien n'a changé."));
+      }
     }
   }
 
@@ -86,11 +91,16 @@ class _HomeScreenState extends State<HomeScreen> {
             slivers: [
               SliverToBoxAdapter(
                 child: _Header(
-                  greeting: firstName.isEmpty ? 'Bonjour' : 'Bonjour $firstName',
+                  greeting: firstName.isEmpty ? t('Bonjour') : t('Bonjour {name}', {'name': firstName}),
                   groups: data.$1,
                   onMenu: (v) => switch (v) {
                     'lock' => services.auth.lock(),
                     'biometric' => _toggleBiometric(context),
+                    // Les rappels SMS suivent aussi la langue choisie (enregistrée sur le serveur)
+                    'language' => showLanguageDialog(
+                      context,
+                      onChanged: (l) => services.api.setLanguage(l.code).catchError((_) {}),
+                    ),
                     _ => services.auth.forgetDevice(),
                   },
                 ),
@@ -111,11 +121,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             leading: const Icon(Icons.key, color: Brand.goldDark),
                             title: Text(
                               data.$2.length == 1
-                                  ? '${data.$2.first.fullName} demande un nouveau PIN'
-                                  : '${data.$2.length} demandes de nouveau PIN',
+                                  ? t('{name} demande un nouveau PIN', {'name': data.$2.first.fullName})
+                                  : t('{n} demandes de nouveau PIN', {'n': data.$2.length}),
                               style: const TextStyle(fontWeight: FontWeight.w800),
                             ),
-                            subtitle: const Text('Vous êtes garant : confirmez seulement après lui avoir parlé.'),
+                            subtitle: Text(t('Vous êtes garant : confirmez seulement après lui avoir parlé.')),
                             trailing: const Icon(Icons.chevron_right),
                             onTap: () => _open(context, const ApprovalsScreen()),
                           ),
@@ -126,8 +136,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(
                           child: _ActionTile(
                             icon: Icons.group_add,
-                            label: 'Rejoindre',
-                            caption: 'avec un code',
+                            label: t('Rejoindre'),
+                            caption: t('avec un code'),
                             onTap: () => _open(context, const JoinGroupScreen()),
                           ),
                         ),
@@ -135,8 +145,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(
                           child: _ActionTile(
                             icon: Icons.add_circle_outline,
-                            label: 'Créer',
-                            caption: 'une tontine',
+                            label: t('Créer'),
+                            caption: t('une tontine'),
                             onTap: () => _open(context, const CreateGroupScreen()),
                           ),
                         ),
@@ -146,11 +156,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 24),
                       Row(
                         children: [
-                          Expanded(child: Text('Mon carnet', style: Theme.of(context).textTheme.titleLarge)),
+                          Expanded(child: Text(t('Mon carnet'), style: Theme.of(context).textTheme.titleLarge)),
                           TextButton(
                             key: const Key('open_carnet'),
                             onPressed: () => _open(context, const CarnetScreen()),
-                            child: const Text('Tout voir'),
+                            child: Text(t('Tout voir')),
                           ),
                         ],
                       ),
@@ -158,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       for (final t in data.$3!.totals) TotalsCard(total: t),
                     ],
                     const SizedBox(height: 24),
-                    Text('Mes tontines', style: Theme.of(context).textTheme.titleLarge),
+                    Text(t('Mes tontines'), style: Theme.of(context).textTheme.titleLarge),
                     const SizedBox(height: 8),
                     if (data.$1.isEmpty) const _EmptyState(),
                     for (final g in data.$1)
@@ -206,17 +216,27 @@ class _Header extends StatelessWidget {
                   PopupMenuButton<String>(
                     icon: const Icon(Icons.more_vert, color: Colors.white),
                     onSelected: onMenu,
-                    itemBuilder: (_) => const [
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                        key: const Key('menu_language'),
+                        value: 'language',
+                        child: ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.translate),
+                          title: Text(t('Langue')),
+                          subtitle: Text(Lang.instance.current.label),
+                        ),
+                      ),
                       PopupMenuItem(
                         value: 'biometric',
                         child: ListTile(
                           contentPadding: EdgeInsets.zero,
                           leading: Icon(Icons.fingerprint),
-                          title: Text('Ouverture par empreinte'),
+                          title: Text(t('Ouverture par empreinte')),
                         ),
                       ),
-                      PopupMenuItem(value: 'lock', child: Text('Verrouiller')),
-                      PopupMenuItem(value: 'forget', child: Text('Se déconnecter de ce téléphone')),
+                      PopupMenuItem(value: 'lock', child: Text(t('Verrouiller'))),
+                      PopupMenuItem(value: 'forget', child: Text(t('Se déconnecter de ce téléphone'))),
                     ],
                   ),
                 ],
@@ -229,8 +249,8 @@ class _Header extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 groups.isEmpty
-                    ? 'Rejoignez ou créez votre première tontine.'
-                    : '${groups.length} tontine(s) · $active en cours',
+                    ? t('Rejoignez ou créez votre première tontine.')
+                    : t('{n} tontine(s) · {active} en cours', {'n': groups.length, 'active': active}),
                 style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 15),
               ),
             ],
@@ -334,8 +354,8 @@ class _GroupCard extends StatelessWidget {
                       runSpacing: 6,
                       children: [
                         _Pill(groupStatusLabels[g.status] ?? g.status, color, bg),
-                        _Pill('${g.memberCount} membre(s)', Brand.ink.withValues(alpha: 0.7), const Color(0xFFF0F2F1)),
-                        if (g.isPresident) const _Pill('Président(e)', Brand.goldDark, Color(0xFFFFF3D6)),
+                        _Pill(t('{n} membre(s)', {'n': g.memberCount}), Brand.ink.withValues(alpha: 0.7), const Color(0xFFF0F2F1)),
+                        if (g.isPresident) _Pill(t('Président(e)'), Brand.goldDark, Color(0xFFFFF3D6)),
                       ],
                     ),
                   ],
@@ -379,13 +399,13 @@ class _EmptyState extends StatelessWidget {
         const Illustration('seul', height: 160),
         const SizedBox(height: 12),
         Text(
-          "Vous n'êtes encore dans aucune tontine.",
+          t("Vous n'êtes encore dans aucune tontine."),
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 4),
         Text(
-          'Seul, épargner prend du temps. Ensemble, chacun reçoit à son tour.',
+          t('Seul, épargner prend du temps. Ensemble, chacun reçoit à son tour.'),
           textAlign: TextAlign.center,
           style: TextStyle(color: Brand.ink.withValues(alpha: 0.65)),
         ),

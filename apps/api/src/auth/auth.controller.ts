@@ -1,7 +1,8 @@
-import { Body, Controller, Get, HttpCode, Ip, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Ip, Post, Put, UseGuards } from '@nestjs/common';
 import { z } from 'zod';
 import { parseBody } from '../common/parse-body.js';
 import { Db } from '../infra/database.js';
+import { LANGUAGES } from '../infra/languages.js';
 import { AccessGuard, CurrentAuth } from './access.guard.js';
 import { AuthService, type AccessTokenClaims } from './auth.service.js';
 import { normalizeDrcPhone } from './phone.js';
@@ -26,8 +27,9 @@ const Register = z.object({
   fullName: z.string().trim().min(2).max(150),
   pin: z.string().max(6),
   devicePublicKey: publicKey,
-  language: z.enum(['fr', 'sw', 'ln']).default('fr'),
+  language: z.enum(LANGUAGES).default('fr'),
 });
+const SetLanguage = z.object({ language: z.enum(LANGUAGES) });
 const LinkDevice = z.object({
   otpToken: z.string().max(2048),
   pin: z.string().max(6),
@@ -95,5 +97,14 @@ export class AuthController {
       language: string;
     }>('SELECT id, phone, full_name, language FROM users WHERE id = $1', [auth.sub]);
     return { ...rows[0], deviceId: auth.did };
+  }
+
+  /** Langue de l'app, reprise pour les SMS (code de connexion, rappels). */
+  @Put('me/language')
+  @UseGuards(AccessGuard)
+  async setLanguage(@CurrentAuth() auth: AccessTokenClaims, @Body() body: unknown) {
+    const { language } = parseBody(SetLanguage, body);
+    await this.db.query('UPDATE users SET language = $2 WHERE id = $1', [auth.sub, language]);
+    return { language };
   }
 }

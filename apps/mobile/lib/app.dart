@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'auth/auth_repository.dart';
+import 'l10n/l10n.dart';
 import 'services.dart';
 import 'ui/auth/sign_in_flow.dart';
 import 'ui/auth/pending_reset_screen.dart';
@@ -43,6 +44,7 @@ class _MchangoAppState extends State<MchangoApp> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _auth.addListener(_onAuthChanged);
+    Lang.instance.addListener(_onLanguageChanged);
     _splashTimer = Timer(MchangoApp.splashDuration, () => setState(() => _splashDone = true));
     widget.services.store.read(_kOnboardingDone).then((v) => setState(() => _onboardingDone = v == '1'));
   }
@@ -51,6 +53,7 @@ class _MchangoAppState extends State<MchangoApp> with WidgetsBindingObserver {
   void dispose() {
     _splashTimer?.cancel();
     _auth.removeListener(_onAuthChanged);
+    Lang.instance.removeListener(_onLanguageChanged);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -67,6 +70,9 @@ class _MchangoAppState extends State<MchangoApp> with WidgetsBindingObserver {
     }
     _lastStatus = _auth.status;
   }
+
+  /// Nouvelle langue : on revient à l'écran principal, redessiné dans cette langue.
+  void _onLanguageChanged() => _navigatorKey.currentState?.popUntil((r) => r.isFirst);
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -101,11 +107,15 @@ class _MchangoAppState extends State<MchangoApp> with WidgetsBindingObserver {
         title: 'Mchango',
         debugShowCheckedModeBanner: false,
         theme: buildTheme(),
+        // Changer de langue reconstruit tout l'écran (la clé contient la langue)
         home: ListenableBuilder(
-          listenable: _auth,
+          listenable: Listenable.merge([_auth, Lang.instance]),
           builder: (context, _) => AnimatedSwitcher(
             duration: const Duration(milliseconds: 400),
-            child: KeyedSubtree(key: ValueKey('${_auth.status}-$_splashDone-$_onboardingDone'), child: _home()),
+            child: KeyedSubtree(
+              key: ValueKey('${_auth.status}-$_splashDone-$_onboardingDone-${Lang.instance.current.code}'),
+              child: _home(),
+            ),
           ),
         ),
       ),

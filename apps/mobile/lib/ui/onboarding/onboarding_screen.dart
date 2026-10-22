@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
+import '../../l10n/l10n.dart';
+import '../language_picker.dart';
 
 class _Slide {
   const _Slide(this.image, this.title, this.text);
@@ -11,26 +13,27 @@ class _Slide {
 
 /// L'histoire de la tontine, en quatre images. Le message reste honnête : la tontine ne crée
 /// pas d'argent, elle permet de disposer tôt d'une grosse somme pour réaliser un projet.
-const _slides = [
+// Getter : les textes suivent la langue choisie
+List<_Slide> get _slides => [
   _Slide(
     'seul',
-    'Seul, c\'est long',
-    'Mettre de côté petit à petit, tout seul, peut prendre des années avant de pouvoir lancer son projet.',
+    t('Seul, c\'est long'),
+    t('Mettre de côté petit à petit, tout seul, peut prendre des années avant de pouvoir lancer son projet.'),
   ),
   _Slide(
     'ensemble',
-    'Ensemble, on cotise',
-    'À chaque tour, chaque membre verse le même petit montant, directement au membre dont c\'est le tour.',
+    t('Ensemble, on cotise'),
+    t('À chaque tour, chaque membre verse le même petit montant, directement au membre dont c\'est le tour.'),
   ),
   _Slide(
     'projet',
-    'À chaque tour, un membre reçoit tout',
-    'La somme de tous les membres : de quoi acheter une moto, ouvrir une boutique, payer les études.',
+    t('À chaque tour, un membre reçoit tout'),
+    t('La somme de tous les membres : de quoi acheter une moto, ouvrir une boutique, payer les études.'),
   ),
   _Slide(
     'verifie',
-    'Tout est vérifiable',
-    'Chaque paiement est déclaré, confirmé par celui qui reçoit, et inscrit dans un journal que personne ne peut modifier.',
+    t('Tout est vérifiable'),
+    t('Chaque paiement est déclaré, confirmé par celui qui reçoit, et inscrit dans un journal que personne ne peut modifier.'),
   ),
 ];
 
@@ -73,10 +76,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 children: [
                   const BrandMark(size: 30),
                   const Spacer(),
-                  if (!_last) TextButton(onPressed: widget.onDone, child: const Text('Passer')),
+                  if (!_last) TextButton(onPressed: widget.onDone, child: Text(t('Passer'))),
                 ],
               ),
             ),
+            const Padding(padding: EdgeInsets.only(top: 8), child: LanguagePicker()),
             Expanded(
               child: PageView.builder(
                 controller: _pages,
@@ -125,7 +129,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: FilledButton(
                 key: const Key('onboarding_next'),
                 onPressed: _next,
-                child: Text(_last ? 'Commencer' : 'Suivant'),
+                child: Text(_last ? t('Commencer') : t('Suivant')),
               ),
             ),
           ],
@@ -150,7 +154,7 @@ class SplashScreen extends StatelessWidget {
             const BrandMark(size: 56, light: true),
             const SizedBox(height: 12),
             Text(
-              'Chaque cotisation, vérifiable.',
+              t('Chaque cotisation, vérifiable.'),
               style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 16),
             ),
             const SizedBox(height: 32),
@@ -158,7 +162,7 @@ class SplashScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 32),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(24),
-                child: const Illustration('ensemble', semanticLabel: 'Des membres cotisent ensemble'),
+                child: Illustration('ensemble', semanticLabel: t('Des membres cotisent ensemble')),
               ),
             ),
             const Spacer(),

@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../l10n/l10n.dart';
+
 /// Montant en unités mineures → texte : 20000 CDF → « 20 000 FC », 2050 USD → « 20,50 $ ».
 String formatAmount(int minor, String currency) {
   final grouped = NumberFormat.decimalPattern('fr_FR');
@@ -34,26 +36,36 @@ String formatDate(String isoDate) {
   return '${p[2]}/${p[1]}/${p[0]}';
 }
 
-String formatDateTime(DateTime t) => DateFormat('dd/MM/yyyy HH:mm').format(t.toLocal());
+String formatDateTime(DateTime time) => DateFormat('dd/MM/yyyy HH:mm').format(time.toLocal());
 
-const frequencyLabels = {'daily': 'Chaque jour', 'weekly': 'Chaque semaine', 'monthly': 'Chaque mois'};
+// Libellés en getters : ils suivent la langue choisie
+Map<String, String> get frequencyLabels => {
+  'daily': t('Chaque jour'),
+  'weekly': t('Chaque semaine'),
+  'monthly': t('Chaque mois'),
+};
 
-const methodLabels = {
+Map<String, String> get methodLabels => {
   'mpesa': 'M-Pesa',
   'airtel': 'Airtel Money',
   'orange': 'Orange Money',
-  'cash': 'Espèces',
-  'other': 'Autre',
+  'cash': t('Espèces'),
+  'other': t('Autre'),
 };
 
-const groupStatusLabels = {
-  'draft': 'En préparation',
-  'active': 'En cours',
-  'suspended': 'Suspendu',
-  'closed': 'Terminé',
+Map<String, String> get groupStatusLabels => {
+  'draft': t('En préparation'),
+  'active': t('En cours'),
+  'suspended': t('Suspendu'),
+  'closed': t('Terminé'),
 };
 
-const cycleStatusLabels = {'upcoming': 'À venir', 'open': 'En cours', 'completed': 'Terminé', 'cancelled': 'Annulé'};
+Map<String, String> get cycleStatusLabels => {
+  'upcoming': t('À venir'),
+  'open': t('En cours'),
+  'completed': t('Terminé'),
+  'cancelled': t('Annulé'),
+};
 
 /// Statut d'une cotisation : libellé, couleur, icône (lisible même sans savoir lire).
 class StatusStyle {
@@ -63,12 +75,12 @@ class StatusStyle {
   final IconData icon;
 }
 
-const contributionStatusStyles = {
-  'expected': StatusStyle('Attendue', Colors.blueGrey, Icons.hourglass_empty),
-  'late': StatusStyle('En retard', Colors.deepOrange, Icons.warning_amber_rounded),
-  'declared': StatusStyle('À confirmer', Colors.amber, Icons.pending_outlined),
-  'disputed': StatusStyle('Contestée', Colors.red, Icons.report_gmailerrorred),
-  'confirmed': StatusStyle('Confirmée', Colors.green, Icons.check_circle),
+Map<String, StatusStyle> get contributionStatusStyles => {
+  'expected': StatusStyle(t('Attendue'), Colors.blueGrey, Icons.hourglass_empty),
+  'late': StatusStyle(t('En retard'), Colors.deepOrange, Icons.warning_amber_rounded),
+  'declared': StatusStyle(t('À confirmer'), Colors.amber, Icons.pending_outlined),
+  'disputed': StatusStyle(t('Contestée'), Colors.red, Icons.report_gmailerrorred),
+  'confirmed': StatusStyle(t('Confirmée'), Colors.green, Icons.check_circle),
 };
 
 /// UUID v4 aléatoire (identifiant hors ligne d'une déclaration).

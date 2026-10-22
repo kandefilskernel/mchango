@@ -2,6 +2,8 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
 import type { Redis } from 'ioredis';
 import { APP_CONFIG, type AppConfig } from '../config.js';
+import { Db } from '../infra/database.js';
+import { asLanguage, type Language } from '../infra/languages.js';
 import { REDIS } from '../infra/redis.js';
 import { SMS_SENDER, type SmsSender } from '../infra/sms.js';
 import {
@@ -11,9 +13,21 @@ import {
   OTP_TTL_SECONDS,
 } from './auth.constants.js';
 
-/** Texte du SMS : un seul SMS en alphabet GSM-7 (pas de « ê », « ç », guillemets français). */
-export function otpMessage(code: string): string {
-  return `Mchango : votre code est ${code}. Il expire dans 5 minutes. Ne le donnez à personne, y compris l'équipe Mchango.`;
+/**
+ * Texte du SMS : un seul SMS en alphabet GSM-7 (pas de « ê », « ç », guillemets français).
+ * Dans la langue du compte s'il existe ; sinon en français.
+ */
+export function otpMessage(code: string, language: Language = 'fr'): string {
+  switch (language) {
+    case 'sw':
+      return `Mchango: msimbo wako ni ${code}. Unaisha baada ya dakika 5. Usimpe mtu yeyote, hata timu ya Mchango.`;
+    case 'ln':
+      return `Mchango: kode na yo ezali ${code}. Ekosila na miniti 5. Kopesa yango na moto te, ata na bato ya Mchango te.`;
+    case 'en':
+      return `Mchango: your code is ${code}. It expires in 5 minutes. Do not give it to anyone, not even the Mchango team.`;
+    default:
+      return `Mchango : votre code est ${code}. Il expire dans 5 minutes. Ne le donnez à personne, y compris l'équipe Mchango.`;
+  }
 }
 
 /**
@@ -26,6 +40,7 @@ export class OtpService {
     @Inject(REDIS) private readonly redis: Redis,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
     @Inject(SMS_SENDER) private readonly sms: SmsSender,
+    private readonly db: Db,
   ) {}
 
   async request(phone: string, ip: string): Promise<void> {
@@ -38,7 +53,8 @@ export class OtpService {
       .set(this.codeKey(phone), this.digest(phone, code), 'EX', OTP_TTL_SECONDS)
       .del(this.attemptsKey(phone))
       .exec();
-    await this.sms.send(phone, otpMessage(code));
+    const user = await this.db.query<{ language: string }>('SELECT language FROM users WHERE phone = $1', [phone]);
+    await this.sms.send(phone, otpMessage(code, asLanguage(user.rows[0]?.language)));
   }
 
   /** Vrai si le code est bon. Un code ne sert qu'une fois et brûle après trop d'essais. */

@@ -6,6 +6,7 @@ import '../../util/format.dart';
 import '../common.dart';
 import '../receipts/receipt_screen.dart';
 import 'declare_screen.dart';
+import '../../l10n/l10n.dart';
 
 /// Un tour : qui reçoit, qui a payé, et ce que j'ai à faire (payer, confirmer, témoigner).
 class CycleScreen extends StatefulWidget {
@@ -49,10 +50,10 @@ class _CycleScreenState extends State<CycleScreen> {
     showInfo(context, switch (result.status) {
       'confirmed' =>
         result.cycleStatus == 'completed'
-            ? 'Cotisation confirmée. Tous ont payé : le tour est terminé.'
-            : 'Cotisation confirmée.',
-      'disputed' => 'Contestation enregistrée. Le groupe la voit.',
-      _ => 'Réponse enregistrée. En attente des autres confirmations.',
+            ? t('Cotisation confirmée. Tous ont payé : le tour est terminé.')
+            : t('Cotisation confirmée.'),
+      'disputed' => t('Contestation enregistrée. Le groupe la voit.'),
+      _ => t('Réponse enregistrée. En attente des autres confirmations.'),
     });
     _reload();
   }
@@ -62,20 +63,20 @@ class _CycleScreenState extends State<CycleScreen> {
     return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Contester'),
+        title: Text(t('Contester')),
         content: TextField(
           controller: controller,
           autofocus: true,
           maxLength: 500,
-          decoration: const InputDecoration(hintText: "Ex. : je n'ai rien reçu, montant différent…"),
+          decoration: InputDecoration(hintText: t("Ex. : je n'ai rien reçu, montant différent…")),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(t('Annuler'))),
           FilledButton(
             onPressed: () {
               if (controller.text.trim().isNotEmpty) Navigator.pop(context, controller.text.trim());
             },
-            child: const Text('Contester'),
+            child: Text(t('Contester')),
           ),
         ],
       ),
@@ -85,7 +86,7 @@ class _CycleScreenState extends State<CycleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Tour ${widget.cycleNumber}')),
+      appBar: AppBar(title: Text(t('Tour {n}', {'n': widget.cycleNumber}))),
       body: Loader<CycleDetail>(
         key: ValueKey(_version),
         load: () => Services.of(context).api.cycle(g.id, widget.cycleNumber),
@@ -104,14 +105,14 @@ class _CycleScreenState extends State<CycleScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          cycle.iAmBeneficiary ? 'Vous recevez ce tour' : 'Bénéficiaire : ${beneficiary?.fullName}',
+                          cycle.iAmBeneficiary ? t('Vous recevez ce tour') : t('Bénéficiaire : {name}', {'name': beneficiary?.fullName}),
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 8),
-                        InfoRow('Échéance', formatDate(cycle.dueDate), icon: Icons.event),
-                        InfoRow('Statut', cycleStatusLabels[cycle.status] ?? cycle.status, icon: Icons.flag_outlined),
+                        InfoRow(t('Échéance'), formatDate(cycle.dueDate), icon: Icons.event),
+                        InfoRow(t('Statut'), cycleStatusLabels[cycle.status] ?? cycle.status, icon: Icons.flag_outlined),
                         InfoRow(
-                          'Chaque membre verse',
+                          t('Chaque membre verse'),
                           formatAmount(g.contributionAmountMinor, g.currency),
                           icon: Icons.payments_outlined,
                         ),
@@ -121,7 +122,7 @@ class _CycleScreenState extends State<CycleScreen> {
                 ),
                 if (myRow != null && beneficiary != null) _myPart(context, cycle, myRow, beneficiary),
                 const SizedBox(height: 16),
-                Text('Paiements', style: Theme.of(context).textTheme.titleMedium),
+                Text(t('Paiements'), style: Theme.of(context).textTheme.titleMedium),
                 for (final p in cycle.payers) _payerTile(context, cycle, p),
               ],
             ),
@@ -142,32 +143,32 @@ class _CycleScreenState extends State<CycleScreen> {
           children: switch (me.status) {
             'expected' || 'late' when !closed => [
               Text(
-                'Payez ${formatAmount(g.contributionAmountMinor, g.currency)} à ${beneficiary.fullName}',
+                t('Payez {amount} à {name}', {'amount': formatAmount(g.contributionAmountMinor, g.currency), 'name': beneficiary.fullName}),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              Text('Numéro : ${beneficiary.phone}'),
-              if (me.status == 'late') const Text('⚠ Échéance dépassée'),
+              Text(t('Numéro : {phone}', {'phone': beneficiary.phone})),
+              if (me.status == 'late') Text(t('⚠ Échéance dépassée')),
               const SizedBox(height: 12),
               BusyButton(
-                label: "J'ai payé",
+                label: t("J'ai payé"),
                 icon: Icons.check,
                 onPressed: () =>
                     _push(DeclareScreen(group: g, cycleNumber: cycle.cycleNumber, beneficiary: beneficiary)),
               ),
             ],
-            'declared' => [const Text('Votre paiement est déclaré. En attente de confirmation.')],
-            'disputed' => [const Text('Votre paiement est contesté. Parlez-en avec le bénéficiaire.')],
+            'declared' => [Text(t('Votre paiement est déclaré. En attente de confirmation.'))],
+            'disputed' => [Text(t('Votre paiement est contesté. Parlez-en avec le bénéficiaire.'))],
             'confirmed' => [
-              const Text('Votre paiement est confirmé.'),
+              Text(t('Votre paiement est confirmé.')),
               const SizedBox(height: 8),
               BusyButton(
-                label: 'Voir mon reçu',
+                label: t('Voir mon reçu'),
                 icon: Icons.receipt_long,
                 outlined: true,
                 onPressed: () => _push(ReceiptScreen(contributionId: me.contribution!.id)),
               ),
             ],
-            _ => [const Text('Ce tour est clos.')],
+            _ => [Text(t('Ce tour est clos.'))],
           },
         ),
       ),
@@ -198,11 +199,11 @@ class _CycleScreenState extends State<CycleScreen> {
           children: [
             ListTile(
               leading: Icon(style.icon, color: style.color, size: 32),
-              title: Text(p.membershipId == me ? '${p.fullName} (vous)' : p.fullName),
+              title: Text(p.membershipId == me ? t('{name} (vous)', {'name': p.fullName}) : p.fullName),
               subtitle: Text([style.label, ...details].join(' · ')),
               trailing: p.status == 'confirmed'
                   ? IconButton(
-                      tooltip: 'Reçu',
+                      tooltip: t('Reçu'),
                       icon: const Icon(Icons.receipt_long),
                       onPressed: () => _push(ReceiptScreen(contributionId: c!.id)),
                     )
@@ -218,19 +219,19 @@ class _CycleScreenState extends State<CycleScreen> {
                     if (canConfirm)
                       FilledButton.icon(
                         icon: const Icon(Icons.check),
-                        label: const Text("J'ai reçu"),
+                        label: Text(t("J'ai reçu")),
                         onPressed: () => _guard(() => _decide(c, 'confirm')),
                       ),
                     if (canWitness)
                       FilledButton.icon(
                         icon: const Icon(Icons.visibility),
-                        label: const Text("J'ai vu la remise"),
+                        label: Text(t("J'ai vu la remise")),
                         onPressed: () => _guard(() => _decide(c, 'witness')),
                       ),
                     if (canDispute)
                       OutlinedButton.icon(
                         icon: const Icon(Icons.report_outlined),
-                        label: const Text('Contester'),
+                        label: Text(t('Contester')),
                         onPressed: () => _guard(() => _decide(c!, 'dispute')),
                       ),
                   ],

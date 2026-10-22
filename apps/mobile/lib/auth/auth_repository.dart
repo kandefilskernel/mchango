@@ -7,6 +7,7 @@ import '../storage/key_value_store.dart';
 import 'biometric.dart';
 import 'device_identity.dart';
 import 'local_pin.dart';
+import '../l10n/l10n.dart';
 
 /// recoveryPending : « PIN oublié » demandé, en attente de la confirmation d'un garant.
 enum AuthStatus { loading, signedOut, locked, signedIn, recoveryPending }
@@ -161,7 +162,7 @@ class AuthRepository extends ChangeNotifier {
       'fullName': fullName,
       'pin': pin,
       'devicePublicKey': identity.publicKeyBase64,
-      'language': 'fr',
+      'language': Lang.instance.current.code,
     }) as Map;
     await _saveDevice(session, identity, pin, fullName);
   }
@@ -176,6 +177,10 @@ class AuthRepository extends ChangeNotifier {
     }) as Map;
     _api.accessToken = session['accessToken'] as String;
     final me = await _api.get('/me') as Map;
+    // La langue choisie sur l'écran d'accueil vaut aussi pour les SMS de ce compte
+    if (me['language'] != Lang.instance.current.code) {
+      await _api.put('/me/language', {'language': Lang.instance.current.code}).catchError((_) => null);
+    }
     await _saveDevice(session, identity, pin, me['full_name'] as String);
   }
 

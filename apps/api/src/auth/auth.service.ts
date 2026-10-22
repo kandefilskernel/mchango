@@ -22,6 +22,7 @@ import {
   PIN_MAX_ATTEMPTS,
 } from './auth.constants.js';
 import { challengeMessage, parseEd25519PublicKey, verifyDeviceSignature } from './device-key.js';
+import { type Language } from '../infra/languages.js';
 import { OtpService } from './otp.service.js';
 import { hashPin, pinWeakness, verifyPin } from './pin.js';
 
@@ -73,7 +74,7 @@ export class AuthService {
     fullName: string;
     pin: string;
     devicePublicKey: string;
-    language: 'fr' | 'sw' | 'ln';
+    language: Language;
   }): Promise<Session> {
     const claims = await this.readOtpToken(input.otpToken);
     this.assertPinAcceptable(input.pin);

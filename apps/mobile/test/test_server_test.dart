@@ -35,7 +35,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final setting = find.byKey(const Key('test_server'));
-    await tester.ensureVisible(setting);
+    await tester.scrollUntilVisible(setting, 200, scrollable: find.byType(Scrollable).first);
     await tester.pumpAndSettle();
     await tester.tap(setting);
     await tester.pumpAndSettle();

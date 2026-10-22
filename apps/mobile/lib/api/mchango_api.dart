@@ -14,6 +14,9 @@ class MchangoApi {
   /// Mon carnet : versé, reçu, prochains paiements et mon tour, toutes tontines confondues.
   Future<Carnet> carnet() async => Carnet.fromJson(await client.get('/me/carnet') as Json);
 
+  /// Langue des SMS envoyés à ce membre (rappels).
+  Future<void> setLanguage(String code) => client.put('/me/language', {'language': code});
+
   Future<Group> group(String id) async => Group.fromJson(await client.get('/groups/$id') as Json);
 
   Future<Group> createGroup({

@@ -5,6 +5,7 @@ import '../../services.dart';
 import '../../util/format.dart';
 import '../common.dart';
 import '../theme.dart';
+import '../../l10n/l10n.dart';
 
 /// Le garant confirme (ou refuse) qu'un membre demande bien un nouveau PIN.
 class ApprovalsScreen extends StatefulWidget {
@@ -24,21 +25,24 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(approve ? 'Confirmer pour ${r.fullName} ?' : 'Refuser la demande ?'),
+        title: Text(approve ? t('Confirmer pour {name} ?', {'name': r.fullName}) : t('Refuser la demande ?')),
         content: Text(
           approve
-              ? "Confirmez seulement si vous avez parlé à ${r.fullName} de vive voix (en personne ou en "
-                    "reconnaissant sa voix au téléphone) et qu'elle vous a dit avoir oublié son PIN.\n\n"
-                    "Si quelqu'un d'autre a pris son numéro, confirmer lui donnerait accès à son compte."
-              : "${r.fullName} ne pourra pas changer de PIN avec cette demande. Refusez si vous ne l'avez pas "
-                    'reconnue ou si elle ne vous a rien demandé.',
+              ? t(
+                  "Confirmez seulement si vous avez parlé à {name} de vive voix (en personne ou en reconnaissant sa voix au téléphone) et qu'elle vous a dit avoir oublié son PIN.\n\nSi quelqu'un d'autre a pris son numéro, confirmer lui donnerait accès à son compte.",
+                  {'name': r.fullName},
+                )
+              : t(
+                  "{name} ne pourra pas changer de PIN avec cette demande. Refusez si vous ne l'avez pas reconnue ou si elle ne vous a rien demandé.",
+                  {'name': r.fullName},
+                ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(t('Annuler'))),
           FilledButton(
             style: approve ? null : FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
             onPressed: () => Navigator.pop(context, true),
-            child: Text(approve ? 'Je confirme' : 'Refuser'),
+            child: Text(approve ? t('Je confirme') : t('Refuser')),
           ),
         ],
       ),
@@ -49,7 +53,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
     try {
       await (approve ? api.approvePinReset(r.requestId) : api.rejectPinReset(r.requestId));
       if (!mounted) return;
-      showInfo(context, approve ? '${r.fullName} peut maintenant utiliser son nouveau PIN.' : 'Demande refusée.');
+      showInfo(context, approve ? t('{name} peut maintenant utiliser son nouveau PIN.', {'name': r.fullName}) : t('Demande refusée.'));
       setState(() => _version++);
     } catch (e) {
       if (mounted) showError(context, e);
@@ -61,14 +65,14 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Demandes à confirmer')),
+      appBar: AppBar(title: Text(t('Demandes à confirmer'))),
       body: Loader<List<PinResetRequest>>(
         key: ValueKey(_version),
         load: Services.of(context).api.pendingPinResets,
         builder: (context, requests, reload) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            if (requests.isEmpty) const Padding(padding: EdgeInsets.all(24), child: Text('Aucune demande en attente.')),
+            if (requests.isEmpty) Padding(padding: EdgeInsets.all(24), child: Text(t('Aucune demande en attente.'))),
             for (final r in requests)
               Card(
                 child: Padding(
@@ -88,21 +92,21 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(r.fullName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                                Text('${r.phone} · tontine ${r.groupName}'),
+                                Text(t('{phone} · tontine {group}', {'phone': r.phone, 'group': r.groupName})),
                               ],
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Text('Demande un nouveau PIN · ${formatDateTime(r.createdAt)}'),
+                      Text(t('Demande un nouveau PIN · {date}', {'date': formatDateTime(r.createdAt)})),
                       const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
                             child: OutlinedButton(
                               onPressed: _sending == null ? () => _decide(r, false) : null,
-                              child: const Text('Refuser'),
+                              child: Text(t('Refuser')),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -115,7 +119,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
                                       height: 22,
                                       child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
                                     )
-                                  : const Text('Confirmer'),
+                                  : Text(t('Confirmer')),
                             ),
                           ),
                         ],

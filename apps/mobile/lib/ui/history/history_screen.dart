@@ -7,6 +7,7 @@ import '../../storage/key_value_store.dart';
 import '../../util/format.dart';
 import '../common.dart';
 import 'event_label.dart';
+import '../../l10n/l10n.dart';
 
 /// Résultat de la vérification du journal sur le téléphone.
 class HistoryCheck {
@@ -51,7 +52,7 @@ class HistoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final services = Services.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Historique')),
+      appBar: AppBar(title: Text(t('Historique'))),
       body: Loader<HistoryCheck>(
         load: () async => checkHistory(services.store, groupId, await services.api.history(groupId)),
         builder: (context, check, reload) => RefreshIndicator(
@@ -93,18 +94,18 @@ class _Banner extends StatelessWidget {
   Widget build(BuildContext context) {
     final ok = check.trusted;
     final message = ok
-        ? 'Journal vérifié sur ce téléphone : ${check.events.length} événements, '
-              'aucun n\'a été modifié ni supprimé.'
+        ? t("Journal vérifié sur ce téléphone : {n} événements, aucun n'a été modifié ni supprimé.", {'n': check.events.length})
         : check.rewritten
-        ? "Alerte : l'historique a changé depuis votre dernière vérification. Prévenez le groupe et Mchango."
-        : 'Alerte : le journal est incohérent à partir de l\'événement n°${check.verification.firstInvalidSeq}. '
-              'Prévenez le groupe et Mchango.';
+        ? t("Alerte : l'historique a changé depuis votre dernière vérification. Prévenez le groupe et Mchango.")
+        : t("Alerte : le journal est incohérent à partir de l'événement n°{n}. Prévenez le groupe et Mchango.", {
+            'n': check.verification.firstInvalidSeq,
+          });
     return Card(
       color: ok ? Colors.green.shade50 : Colors.red.shade50,
       child: ListTile(
         leading: Icon(ok ? Icons.verified_user : Icons.gpp_bad, color: ok ? Colors.green : Colors.red, size: 36),
         title: Text(
-          ok ? 'Intact' : 'Problème détecté',
+          ok ? t('Intact') : t('Problème détecté'),
           style: TextStyle(fontWeight: FontWeight.bold, color: ok ? Colors.green.shade900 : Colors.red.shade900),
         ),
         subtitle: Text(message),

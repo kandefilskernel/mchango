@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../config.dart';
 import '../../services.dart';
 import '../common.dart';
+import '../../l10n/l10n.dart';
 
 /// Versions de test seulement : choisir l'adresse de l'API (ex. le PC de développement sur le Wi-Fi).
 class TestServerSetting extends StatefulWidget {
@@ -19,11 +20,11 @@ class _TestServerSettingState extends State<TestServerSetting> {
     final value = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Serveur de test'),
+        title: Text(t('Serveur de test')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("Adresse de l'API sur le PC de développement (même Wi-Fi que ce téléphone)."),
+            Text(t("Adresse de l'API sur le PC de développement (même Wi-Fi que ce téléphone).")),
             const SizedBox(height: 12),
             TextField(
               key: const Key('test_server_field'),
@@ -35,17 +36,17 @@ class _TestServerSettingState extends State<TestServerSetting> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
-          FilledButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Enregistrer')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(t('Annuler'))),
+          FilledButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(t('Enregistrer'))),
         ],
       ),
     );
     if (value == null || !mounted) return;
     final url = normalizeServerUrl(value);
-    if (url == null) return showInfo(context, 'Adresse invalide. Exemple : 10.163.102.131:3000');
+    if (url == null) return showInfo(context, t('Adresse invalide. Exemple : 10.163.102.131:3000'));
     await services.store.write(testServerKey, url);
     setState(() => services.client.baseUrl = url);
-    if (mounted) showInfo(context, 'Serveur de test : $url');
+    if (mounted) showInfo(context, t('Serveur de test : {url}', {'url': url}));
   }
 
   @override
@@ -55,7 +56,7 @@ class _TestServerSettingState extends State<TestServerSetting> {
       key: const Key('test_server'),
       onPressed: _edit,
       icon: const Icon(Icons.dns_outlined, size: 18),
-      label: Text('Serveur de test : ${Services.of(context).client.baseUrl}'),
+      label: Text(t('Serveur de test : {url}', {'url': Services.of(context).client.baseUrl})),
     );
   }
 }

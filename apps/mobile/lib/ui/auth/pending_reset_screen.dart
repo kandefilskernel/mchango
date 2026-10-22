@@ -4,6 +4,7 @@ import '../../auth/auth_repository.dart';
 import '../../services.dart';
 import '../common.dart';
 import '../theme.dart';
+import '../../l10n/l10n.dart';
 
 /// « PIN oublié » en attente : qui doit confirmer, et vérifier si c'est fait.
 class PendingResetScreen extends StatefulWidget {
@@ -28,10 +29,10 @@ class _PendingResetScreenState extends State<PendingResetScreen> {
       if (!mounted) return;
       setState(() => _state = state);
       final message = switch (state.status) {
-        'pending' when !quiet => 'Pas encore confirmé. Réessayez après avoir parlé à votre garant.',
-        'rejected' => 'Votre garant a refusé la demande. Recommencez si besoin.',
-        'expired' => 'La demande a expiré (48 heures). Recommencez.',
-        'cancelled' => 'Demande annulée.',
+        'pending' when !quiet => t('Pas encore confirmé. Réessayez après avoir parlé à votre garant.'),
+        'rejected' => t('Votre garant a refusé la demande. Recommencez si besoin.'),
+        'expired' => t('La demande a expiré (48 heures). Recommencez.'),
+        'cancelled' => t('Demande annulée.'),
         _ => null,
       };
       if (message != null) showInfo(context, message);
@@ -51,11 +52,10 @@ class _PendingResetScreenState extends State<PendingResetScreen> {
         children: [
           const Illustration('ensemble', height: 160),
           const SizedBox(height: 20),
-          Text('Votre garant doit confirmer', style: text.headlineSmall),
+          Text(t('Votre garant doit confirmer'), style: text.headlineSmall),
           const SizedBox(height: 8),
           Text(
-            'Pour protéger votre argent, un code SMS ne suffit pas pour changer de PIN : '
-            "quelqu'un pourrait avoir pris votre numéro. Une personne de votre tontine doit confirmer que c'est bien vous.",
+            t("Pour protéger votre argent, un code SMS ne suffit pas pour changer de PIN : quelqu'un pourrait avoir pris votre numéro. Une personne de votre tontine doit confirmer que c'est bien vous."),
             style: text.bodyLarge?.copyWith(color: Brand.ink.withValues(alpha: 0.75)),
           ),
           const SizedBox(height: 16),
@@ -66,7 +66,7 @@ class _PendingResetScreenState extends State<PendingResetScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Appelez ou allez voir l'une de ces personnes :", style: text.titleSmall),
+                    Text(t("Appelez ou allez voir l'une de ces personnes :"), style: text.titleSmall),
                     const SizedBox(height: 8),
                     for (final g in guarantors)
                       ListTile(
@@ -76,10 +76,10 @@ class _PendingResetScreenState extends State<PendingResetScreen> {
                           child: Icon(Icons.person, color: Brand.green),
                         ),
                         title: Text(g.fullName, style: const TextStyle(fontWeight: FontWeight.w700)),
-                        subtitle: Text('Tontine ${g.groupName}'),
+                        subtitle: Text(t('Tontine {name}', {'name': g.groupName})),
                       ),
                     const SizedBox(height: 4),
-                    const Text('Elle a reçu un SMS et confirmera dans son application.'),
+                    Text(t('Elle a reçu un SMS et confirmera dans son application.')),
                   ],
                 ),
               ),
@@ -87,14 +87,14 @@ class _PendingResetScreenState extends State<PendingResetScreen> {
           const SizedBox(height: 16),
           BusyButton(
             key: const Key('check_reset'),
-            label: "J'ai parlé à mon garant : vérifier",
+            label: t("J'ai parlé à mon garant : vérifier"),
             icon: Icons.refresh,
             onPressed: _check,
           ),
           const SizedBox(height: 12),
           TextButton(
             onPressed: () => Services.of(context).auth.cancelPinReset(),
-            child: const Text('Annuler la demande'),
+            child: Text(t('Annuler la demande')),
           ),
         ],
       ),

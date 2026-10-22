@@ -64,7 +64,8 @@ export class TestApi {
 
   lastCode(phone: string): string {
     const message = this.sms.sent.filter((m) => m.phone === phone).at(-1)?.message ?? '';
-    return /code est (\d{6})/.exec(message)![1];
+    // Le code est le seul nombre de 6 chiffres du SMS, quelle que soit la langue
+    return /\b(\d{6})\b/.exec(message)![1];
   }
 
   async verifiedOtpToken(phone: string) {

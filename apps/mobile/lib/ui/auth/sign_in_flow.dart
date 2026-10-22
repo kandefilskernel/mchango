@@ -7,6 +7,8 @@ import '../../services.dart';
 import '../common.dart';
 import '../theme.dart';
 import 'test_server_setting.dart';
+import '../../l10n/l10n.dart';
+import '../language_picker.dart';
 
 enum _Step { phone, code, register, link, forgot }
 
@@ -54,9 +56,9 @@ class _SignInFlowState extends State<SignInFlow> {
 
   Future<void> _register() async {
     final weakness = pinWeakness(_pin.text);
-    if (_name.text.trim().length < 2) return showInfo(context, 'Entrez votre nom.');
+    if (_name.text.trim().length < 2) return showInfo(context, t('Entrez votre nom.'));
     if (weakness != null) return showInfo(context, weakness);
-    if (_pin.text != _pin2.text) return showInfo(context, 'Les deux PIN ne sont pas identiques.');
+    if (_pin.text != _pin2.text) return showInfo(context, t('Les deux PIN ne sont pas identiques.'));
     await _auth.register(otpToken: _otpToken!, fullName: _name.text.trim(), pin: _pin.text);
   }
 
@@ -72,7 +74,7 @@ class _SignInFlowState extends State<SignInFlow> {
   Future<void> _requestReset() async {
     final weakness = pinWeakness(_pin.text);
     if (weakness != null) return showInfo(context, weakness);
-    if (_pin.text != _pin2.text) return showInfo(context, 'Les deux PIN ne sont pas identiques.');
+    if (_pin.text != _pin2.text) return showInfo(context, t('Les deux PIN ne sont pas identiques.'));
     await _auth.requestPinReset(otpToken: _otpToken!, newPin: _pin.text);
   }
 
@@ -107,13 +109,15 @@ class _SignInFlowState extends State<SignInFlow> {
   List<Widget> _phoneStep(BuildContext context) => [
     ClipRRect(
       borderRadius: BorderRadius.circular(24),
-      child: const Illustration('ensemble', height: 190, semanticLabel: 'Des membres cotisent ensemble'),
+      child: Illustration('ensemble', height: 190, semanticLabel: t('Des membres cotisent ensemble')),
     ),
-    const SizedBox(height: 24),
-    Text('Bienvenue', style: Theme.of(context).textTheme.headlineMedium),
+    const SizedBox(height: 16),
+    const LanguagePicker(),
+    const SizedBox(height: 16),
+    Text(t('Bienvenue'), style: Theme.of(context).textTheme.headlineMedium),
     const SizedBox(height: 8),
     Text(
-      'Chaque cotisation, vérifiable. Entrez votre numéro de téléphone pour commencer.',
+      t('Chaque cotisation, vérifiable. Entrez votre numéro de téléphone pour commencer.'),
       style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Brand.ink.withValues(alpha: 0.7)),
     ),
     const SizedBox(height: 24),
@@ -123,14 +127,14 @@ class _SignInFlowState extends State<SignInFlow> {
       keyboardType: TextInputType.phone,
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]'))],
       autofocus: true,
-      decoration: const InputDecoration(
-        labelText: 'Numéro de téléphone',
+      decoration: InputDecoration(
+        labelText: t('Numéro de téléphone'),
         hintText: '099 123 4567',
         prefixIcon: Icon(Icons.phone),
       ),
     ),
     const SizedBox(height: 16),
-    BusyButton(label: 'Recevoir un code par SMS', icon: Icons.sms, onPressed: _sendCode),
+    BusyButton(label: t('Recevoir un code par SMS'), icon: Icons.sms, onPressed: _sendCode),
     const SizedBox(height: 24),
     Text(noCustodyNotice, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
     const SizedBox(height: 8),
@@ -138,9 +142,9 @@ class _SignInFlowState extends State<SignInFlow> {
   ];
 
   List<Widget> _codeStep(BuildContext context) => [
-    Text('Code reçu par SMS', style: Theme.of(context).textTheme.headlineSmall),
+    Text(t('Code reçu par SMS'), style: Theme.of(context).textTheme.headlineSmall),
     const SizedBox(height: 8),
-    Text('Envoyé au ${_phone.text.trim()}. Il expire dans 5 minutes.'),
+    Text(t('Envoyé au {phone}. Il expire dans 5 minutes.', {'phone': _phone.text.trim()})),
     const SizedBox(height: 24),
     TextField(
       key: const Key('code'),
@@ -153,57 +157,58 @@ class _SignInFlowState extends State<SignInFlow> {
       decoration: const InputDecoration(counterText: ''),
     ),
     const SizedBox(height: 16),
-    BusyButton(label: 'Valider', onPressed: _verifyCode),
-    TextButton(onPressed: _sendCode, child: const Text('Renvoyer un code')),
+    BusyButton(label: t('Valider'), onPressed: _verifyCode),
+    TextButton(onPressed: _sendCode, child: Text(t('Renvoyer un code'))),
   ];
 
   List<Widget> _registerStep(BuildContext context) => [
-    Text('Créer votre compte', style: Theme.of(context).textTheme.headlineSmall),
+    Text(t('Créer votre compte'), style: Theme.of(context).textTheme.headlineSmall),
     const SizedBox(height: 24),
     TextField(
       key: const Key('name'),
       controller: _name,
       textCapitalization: TextCapitalization.words,
-      decoration: const InputDecoration(
-        labelText: 'Votre nom',
-        hintText: 'tel que les membres vous connaissent',
+      decoration: InputDecoration(
+        labelText: t('Votre nom'),
+        hintText: t('tel que les membres vous connaissent'),
         prefixIcon: Icon(Icons.person),
       ),
     ),
     const SizedBox(height: 16),
-    PinField(key: const Key('pin'), controller: _pin, label: 'Choisissez un PIN (6 chiffres)'),
+    PinField(key: const Key('pin'), controller: _pin, label: t('Choisissez un PIN (6 chiffres)')),
     const SizedBox(height: 12),
-    PinField(key: const Key('pin2'), controller: _pin2, label: 'Retapez le PIN'),
+    PinField(key: const Key('pin2'), controller: _pin2, label: t('Retapez le PIN')),
     const SizedBox(height: 8),
-    const Text("N'utilisez pas votre PIN mobile money."),
+    Text(t("N'utilisez pas votre PIN mobile money.")),
     const SizedBox(height: 16),
-    BusyButton(label: 'Créer mon compte', onPressed: _register),
+    BusyButton(label: t('Créer mon compte'), onPressed: _register),
   ];
 
   List<Widget> _linkStep(BuildContext context) => [
-    Text('Vous avez déjà un compte', style: Theme.of(context).textTheme.headlineSmall),
+    Text(t('Vous avez déjà un compte'), style: Theme.of(context).textTheme.headlineSmall),
     const SizedBox(height: 8),
-    const Text('Entrez votre PIN Mchango pour utiliser ce téléphone. Votre ancien téléphone sera déconnecté.'),
+    Text(t('Entrez votre PIN Mchango pour utiliser ce téléphone. Votre ancien téléphone sera déconnecté.')),
     const SizedBox(height: 24),
-    PinField(key: const Key('pin'), controller: _pin, label: 'PIN', autofocus: true),
+    PinField(key: const Key('pin'), controller: _pin, label: t('PIN'), autofocus: true),
     const SizedBox(height: 16),
-    BusyButton(label: 'Continuer', onPressed: _link),
+    BusyButton(label: t('Continuer'), onPressed: _link),
     const SizedBox(height: 8),
-    TextButton(key: const Key('forgot_pin'), onPressed: _startForgot, child: const Text('PIN oublié ?')),
+    TextButton(key: const Key('forgot_pin'), onPressed: _startForgot, child: Text(t('PIN oublié ?'))),
   ];
 
   List<Widget> _forgotStep(BuildContext context) => [
-    Text('Choisir un nouveau PIN', style: Theme.of(context).textTheme.headlineSmall),
+    Text(t('Choisir un nouveau PIN'), style: Theme.of(context).textTheme.headlineSmall),
     const SizedBox(height: 8),
-    const Text(
-      'Si vous êtes dans une tontine, une personne du groupe (le président, ou un membre si vous '
-      'êtes président) devra confirmer que c\'est bien vous. Elle recevra un SMS.',
+    Text(
+      t(
+        "Si vous êtes dans une tontine, une personne du groupe (le président, ou un membre si vous êtes président) devra confirmer que c'est bien vous. Elle recevra un SMS.",
+      ),
     ),
     const SizedBox(height: 24),
-    PinField(key: const Key('new_pin'), controller: _pin, label: 'Nouveau PIN (6 chiffres)', autofocus: true),
+    PinField(key: const Key('new_pin'), controller: _pin, label: t('Nouveau PIN (6 chiffres)'), autofocus: true),
     const SizedBox(height: 12),
-    PinField(key: const Key('new_pin2'), controller: _pin2, label: 'Retapez le nouveau PIN'),
+    PinField(key: const Key('new_pin2'), controller: _pin2, label: t('Retapez le nouveau PIN')),
     const SizedBox(height: 16),
-    BusyButton(label: 'Demander un nouveau PIN', onPressed: _requestReset),
+    BusyButton(label: t('Demander un nouveau PIN'), onPressed: _requestReset),
   ];
 }

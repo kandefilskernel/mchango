@@ -29,6 +29,25 @@ describe('Authentification (e2e)', () => {
     expect(me.body).toMatchObject({ id: session.userId, phone, full_name: 'Mama Furaha', language: 'fr' });
   });
 
+  it('langue : choisie à l\'inscription ou changée ensuite ; le code SMS suit la langue du compte', async () => {
+    const phone = newPhone();
+    const { session } = await signUp(phone);
+    const auth = { Authorization: `Bearer ${session.accessToken}` };
+    await http().put('/me/language').set(auth).send({ language: 'de' }).expect(400);
+    await http().put('/me/language').set(auth).send({ language: 'ln' }).expect(200);
+    expect((await http().get('/me').set(auth)).body.language).toBe('ln');
+    await http().put('/me/language').send({ language: 'en' }).expect(401);
+
+    await api.clearOtpLimit(phone);
+    await http().post('/auth/otp/request').send({ phone }).expect(202);
+    expect(api.sms.sent.filter((m) => m.phone === phone).at(-1)!.message).toMatch(/^Mchango: kode na yo ezali \d{6}\./);
+
+    // Numéro inconnu : en français
+    const stranger = newPhone();
+    await http().post('/auth/otp/request').send({ phone: stranger }).expect(202);
+    expect(api.sms.sent.filter((m) => m.phone === stranger).at(-1)!.message).toContain('votre code est');
+  });
+
   it('accepte le format local 09… et le normalise', async () => {
     const national = `099${randomInt(0, 10_000_000).toString().padStart(7, '0')}`;
     await http().post('/auth/otp/request').send({ phone: national }).expect(202);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../l10n/l10n.dart';
 
 /// Couleurs de la marque (les mêmes que tool/illustrations.py).
 abstract final class Brand {
@@ -130,7 +131,7 @@ class BrandMark extends StatelessWidget {
       SvgPicture.asset('assets/illustrations/logo.svg', height: size, semanticsLabel: 'Mchango'),
       SizedBox(width: size * 0.3),
       Text(
-        'Mchango',
+        t('Mchango'),
         style: TextStyle(
           fontSize: size * 0.62,
           fontWeight: FontWeight.w900,

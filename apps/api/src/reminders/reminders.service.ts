@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Db } from '../infra/database.js';
 import { SMS_SENDER, type SmsSender } from '../infra/sms.js';
+import { asLanguage, type Language } from '../infra/languages.js';
 import { toGsm7 } from '../infra/sms-text.js';
 
 /** Plage d'envoi, heure de Lubumbashi : pas de SMS la nuit. */
@@ -23,22 +24,31 @@ const clip = (s: string, max: number) => (s.length <= max ? s : `${s.slice(0, ma
  * Texte du rappel. Noms tronqués et caractères ramenés à l'alphabet GSM-7 : un seul SMS
  * (160 caractères), quel que soit le nom du groupe ou du bénéficiaire.
  */
-export function reminderMessage(r: {
-  groupName: string;
-  cycleNumber: number;
-  amountMinor: number;
-  currency: string;
-  beneficiaryName: string;
-  beneficiaryPhone: string;
-  dueDate: string;
-  dueToday: boolean;
-}): string {
+export function reminderMessage(
+  r: {
+    groupName: string;
+    cycleNumber: number;
+    amountMinor: number;
+    currency: string;
+    beneficiaryName: string;
+    beneficiaryPhone: string;
+    dueDate: string;
+    dueToday: boolean;
+  },
+  language: Language = 'fr',
+): string {
   const [y, m, d] = r.dueDate.split('-');
-  const when = r.dueToday ? "aujourd'hui" : `d'ici le ${d}/${m}/${y}`;
-  return toGsm7(
-    `Mchango : ${clip(r.groupName, 20)}, tour ${r.cycleNumber}. Payez ${smsAmount(r.amountMinor, r.currency)} ` +
-      `à ${clip(r.beneficiaryName, 18)} (${r.beneficiaryPhone}) ${when}, puis déclarez-le dans l'app.`,
-  );
+  const date = `${d}/${m}/${y}`;
+  const group = clip(r.groupName, 20);
+  const amount = smsAmount(r.amountMinor, r.currency);
+  const to = `${clip(r.beneficiaryName, 18)} (${r.beneficiaryPhone})`;
+  const text = {
+    fr: `Mchango : ${group}, tour ${r.cycleNumber}. Payez ${amount} à ${to} ${r.dueToday ? "aujourd'hui" : `d'ici le ${date}`}, puis déclarez-le dans l'app.`,
+    sw: `Mchango: ${group}, zamu ${r.cycleNumber}. Lipa ${amount} kwa ${to} ${r.dueToday ? 'leo' : `kabla ya ${date}`}, kisha utangaze malipo kwenye app.`,
+    ln: `Mchango: ${group}, tango ${r.cycleNumber}. Futa ${amount} na ${to} ${r.dueToday ? 'lelo' : `liboso ya ${date}`}, sima yebisa lifuti na app.`,
+    en: `Mchango: ${group}, turn ${r.cycleNumber}. Pay ${amount} to ${to} ${r.dueToday ? 'today' : `by ${date}`}, then declare it in the app.`,
+  }[language];
+  return toGsm7(text);
 }
 
 function localParts(now: Date) {
@@ -81,12 +91,13 @@ export class RemindersService {
       membership_id: string;
       user_id: string;
       phone: string;
+      language: string;
       beneficiary_name: string;
       beneficiary_phone: string;
     }>(
       `SELECT c.id AS cycle_id, c.cycle_number, c.due_date::text AS due_date, c.due_date = $1::date AS due_today,
               g.name AS group_name, g.currency, g.contribution_amount_minor AS amount,
-              m.id AS membership_id, u.id AS user_id, u.phone,
+              m.id AS membership_id, u.id AS user_id, u.phone, u.language,
               bu.full_name AS beneficiary_name, bu.phone AS beneficiary_phone
        FROM cycles c
        JOIN groups g ON g.id = c.group_id
@@ -116,7 +127,7 @@ export class RemindersService {
         beneficiaryPhone: r.beneficiary_phone,
         dueDate: r.due_date,
         dueToday: r.due_today,
-      });
+      }, asLanguage(r.language));
       // Réserver avant d'envoyer : si un autre serveur a déjà pris ce rappel, on ne l'envoie pas
       const claimed = await this.db.query<{ id: string }>(
         `INSERT INTO notifications (user_id, channel, template, payload, dedupe_key)

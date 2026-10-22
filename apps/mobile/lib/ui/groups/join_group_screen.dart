@@ -5,6 +5,7 @@ import '../../services.dart';
 import '../../util/format.dart';
 import '../common.dart';
 import 'group_screen.dart';
+import '../../l10n/l10n.dart';
 
 /// Code d'invitation → aperçu du groupe et de ses règles → acceptation → adhésion.
 class JoinGroupScreen extends StatefulWidget {
@@ -43,7 +44,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
   Widget build(BuildContext context) {
     final p = _preview;
     return Scaffold(
-      appBar: AppBar(title: const Text('Rejoindre une tontine')),
+      appBar: AppBar(title: Text(t('Rejoindre une tontine'))),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -52,13 +53,13 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
             controller: _code,
             textCapitalization: TextCapitalization.characters,
             style: const TextStyle(fontSize: 22, letterSpacing: 4),
-            decoration: const InputDecoration(labelText: "Code d'invitation", hintText: 'K7MP-Q2XW'),
+            decoration: InputDecoration(labelText: t("Code d'invitation"), hintText: 'K7MP-Q2XW'),
             onChanged: (_) {
               if (_preview != null) setState(() => _preview = null);
             },
           ),
           const SizedBox(height: 12),
-          if (p == null) BusyButton(label: 'Voir la tontine', onPressed: _lookUp),
+          if (p == null) BusyButton(label: t('Voir la tontine'), onPressed: _lookUp),
           if (p != null) ...[
             Card(
               child: Padding(
@@ -68,17 +69,18 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                   children: [
                     Text(p.name, style: Theme.of(context).textTheme.titleLarge),
                     const SizedBox(height: 8),
-                    Text('Règlement', style: Theme.of(context).textTheme.titleSmall),
-                    InfoRow('Cotisation par tour', formatAmount(p.contributionAmountMinor, p.currency)),
-                    InfoRow('Fréquence', frequencyLabels[p.frequency] ?? p.frequency),
-                    InfoRow('Premier tour', formatDate(p.startDate)),
-                    InfoRow('Membres', '${p.memberCount} / ${p.maxMembers}'),
-                    if (p.presidentName != null) InfoRow('Président(e)', p.presidentName!),
+                    Text(t('Règlement'), style: Theme.of(context).textTheme.titleSmall),
+                    InfoRow(t('Cotisation par tour'), formatAmount(p.contributionAmountMinor, p.currency)),
+                    InfoRow(t('Fréquence'), frequencyLabels[p.frequency] ?? p.frequency),
+                    InfoRow(t('Premier tour'), formatDate(p.startDate)),
+                    InfoRow(t('Membres'), '${p.memberCount} / ${p.maxMembers}'),
+                    if (p.presidentName != null) InfoRow(t('Président(e)'), p.presidentName!),
                     const SizedBox(height: 8),
-                    const Text(
-                      'À chaque tour, chaque membre paie directement le bénéficiaire, puis déclare '
-                      'son paiement dans Mchango. Le bénéficiaire confirme. Un paiement en espèces '
-                      'est aussi confirmé par un témoin. $noCustodyNotice',
+                    Text(
+                      t(
+                        'À chaque tour, chaque membre paie directement le bénéficiaire, puis déclare son paiement dans Mchango. Le bénéficiaire confirme. Un paiement en espèces est aussi confirmé par un témoin. {notice}',
+                        {'notice': noCustodyNotice},
+                      ),
                     ),
                   ],
                 ),
@@ -88,10 +90,10 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
               key: const Key('accept_rules'),
               value: _accepted,
               onChanged: (v) => setState(() => _accepted = v ?? false),
-              title: const Text("J'accepte ce règlement"),
+              title: Text(t("J'accepte ce règlement")),
               controlAffinity: ListTileControlAffinity.leading,
             ),
-            BusyButton(label: 'Rejoindre', onPressed: _accepted ? _join : null),
+            BusyButton(label: t('Rejoindre'), onPressed: _accepted ? _join : null),
           ],
         ],
       ),

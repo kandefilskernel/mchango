@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services.dart';
 import '../common.dart';
 import '../theme.dart';
+import '../../l10n/l10n.dart';
 
 /// Ouverture de l'app : PIN vérifié sur le téléphone, puis session signée par la clé de l'appareil.
 class UnlockScreen extends StatefulWidget {
@@ -38,7 +39,7 @@ class _UnlockScreenState extends State<UnlockScreen> {
   Future<void> _unlockWithBiometric() async {
     try {
       final ok = await Services.of(context).auth.unlockWithBiometric();
-      if (!ok && mounted) showInfo(context, 'Empreinte non reconnue. Utilisez votre PIN.');
+      if (!ok && mounted) showInfo(context, t('Empreinte non reconnue. Utilisez votre PIN.'));
     } catch (e) {
       if (mounted) showError(context, e);
     }
@@ -49,11 +50,11 @@ class _UnlockScreenState extends State<UnlockScreen> {
     final wait = await auth.lockRemaining();
     if (!mounted) return;
     if (wait != null) {
-      return showInfo(context, 'Trop d\'essais. Réessayez dans ${wait.inMinutes + 1} minute(s).');
+      return showInfo(context, t('Trop d\'essais. Réessayez dans {n} minute(s).', {'n': wait.inMinutes + 1}));
     }
     if (!await auth.unlock(_pin.text)) {
       _pin.clear();
-      if (mounted) showInfo(context, 'PIN incorrect.');
+      if (mounted) showInfo(context, t('PIN incorrect.'));
     }
   }
 
@@ -61,13 +62,13 @@ class _UnlockScreenState extends State<UnlockScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Oublier ce téléphone ?'),
-        content: const Text(
-          'Pour revenir, il faudra un code SMS et votre PIN. Vos groupes et cotisations ne sont pas effacés.',
+        title: Text(t('Oublier ce téléphone ?')),
+        content: Text(
+          t('Pour revenir, il faudra un code SMS et votre PIN. Vos groupes et cotisations ne sont pas effacés.'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Oublier')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(t('Annuler'))),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(t('Oublier'))),
         ],
       ),
     );
@@ -88,25 +89,25 @@ class _UnlockScreenState extends State<UnlockScreen> {
             const Illustration('verifie', height: 150),
             const SizedBox(height: 16),
             Text(
-              name == null ? 'Mchango' : 'Bonjour $name',
+              name == null ? 'Mchango' : t('Bonjour {name}', {'name': name}),
               style: Theme.of(context).textTheme.headlineSmall,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            PinField(key: const Key('unlock_pin'), controller: _pin, label: 'Votre PIN', autofocus: true),
+            PinField(key: const Key('unlock_pin'), controller: _pin, label: t('Votre PIN'), autofocus: true),
             const SizedBox(height: 16),
-            BusyButton(label: 'Ouvrir', onPressed: _unlock),
+            BusyButton(label: t('Ouvrir'), onPressed: _unlock),
             if (_biometric) ...[
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 key: const Key('unlock_biometric'),
                 onPressed: _unlockWithBiometric,
                 icon: const Icon(Icons.fingerprint, size: 28),
-                label: const Text('Utiliser mon empreinte'),
+                label: Text(t('Utiliser mon empreinte')),
               ),
             ],
             const SizedBox(height: 24),
-            TextButton(onPressed: _forget, child: const Text('Ce n\'est pas mon compte / PIN oublié')),
+            TextButton(onPressed: _forget, child: Text(t('Ce n\'est pas mon compte / PIN oublié'))),
           ],
         ),
       ),

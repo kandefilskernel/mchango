@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../api/models.dart';
 import '../../services.dart';
 import '../common.dart';
+import '../../l10n/l10n.dart';
 
 /// Le président fixe l'ordre des tours : en glissant les membres, ou par tirage au sort vérifiable.
 class TurnOrderScreen extends StatefulWidget {
@@ -27,14 +28,15 @@ class _TurnOrderScreenState extends State<TurnOrderScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Tirer au sort ?'),
-        content: const Text(
-          "Le tirage ne peut être fait qu'une fois pour ces membres. Son résultat et sa graine "
-          'seront visibles par tous dans l\'historique, et chacun pourra le vérifier.',
+        title: Text(t('Tirer au sort ?')),
+        content: Text(
+          t(
+            "Le tirage ne peut être fait qu'une fois pour ces membres. Son résultat et sa graine seront visibles par tous dans l'historique, et chacun pourra le vérifier.",
+          ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Tirer au sort')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(t('Annuler'))),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(t('Tirer au sort'))),
         ],
       ),
     );
@@ -44,17 +46,17 @@ class _TurnOrderScreenState extends State<TurnOrderScreen> {
     await showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Résultat du tirage'),
+        title: Text(t('Résultat du tirage')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (final o in result.order) Text('Tour ${o.turn} : ${o.fullName}'),
+            for (final o in result.order) Text(t('Tour {n} : {name}', {'n': o.turn, 'name': o.fullName})),
             const SizedBox(height: 12),
-            SelectableText('Graine : ${result.seed}', style: Theme.of(context).textTheme.bodySmall),
+            SelectableText(t('Graine : {seed}', {'seed': result.seed}), style: Theme.of(context).textTheme.bodySmall),
           ],
         ),
-        actions: [FilledButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+        actions: [FilledButton(onPressed: () => Navigator.pop(context), child: Text(t('OK')))],
       ),
     );
     if (mounted) Navigator.pop(context);
@@ -63,12 +65,12 @@ class _TurnOrderScreenState extends State<TurnOrderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Ordre des tours')),
+      appBar: AppBar(title: Text(t('Ordre des tours'))),
       body: Column(
         children: [
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(16),
-            child: Text('Glissez les membres pour choisir qui reçoit en premier, ou tirez au sort.'),
+            child: Text(t('Glissez les membres pour choisir qui reçoit en premier, ou tirez au sort.')),
           ),
           Expanded(
             child: ReorderableListView(
@@ -79,7 +81,7 @@ class _TurnOrderScreenState extends State<TurnOrderScreen> {
                     key: ValueKey(m.membershipId),
                     leading: CircleAvatar(child: Text('${i + 1}')),
                     title: Text(m.fullName),
-                    subtitle: Text('Reçoit au tour ${i + 1}'),
+                    subtitle: Text(t('Reçoit au tour {n}', {'n': i + 1})),
                     trailing: const Icon(Icons.drag_handle),
                   ),
               ],
@@ -89,9 +91,9 @@ class _TurnOrderScreenState extends State<TurnOrderScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                BusyButton(label: 'Enregistrer cet ordre', onPressed: _save),
+                BusyButton(label: t('Enregistrer cet ordre'), onPressed: _save),
                 const SizedBox(height: 12),
-                BusyButton(label: 'Tirer au sort', icon: Icons.casino_outlined, outlined: true, onPressed: _draw),
+                BusyButton(label: t('Tirer au sort'), icon: Icons.casino_outlined, outlined: true, onPressed: _draw),
               ],
             ),
           ),

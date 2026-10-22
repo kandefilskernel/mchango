@@ -1,4 +1,5 @@
 import { otpMessage } from '../auth/otp.service.js';
+import { LANGUAGES } from './languages.js';
 import { reminderMessage, smsAmount } from '../reminders/reminders.service.js';
 import { isGsm7, smsSegments, toGsm7 } from './sms-text.js';
 
@@ -25,8 +26,9 @@ describe('encodage des SMS', () => {
     expect(smsSegments('🙏'.repeat(36))).toBe(2);
   });
 
-  it('le code de connexion tient en un seul SMS GSM-7', () => {
-    const m = otpMessage('123456');
+  it.each(LANGUAGES)('le code de connexion tient en un seul SMS GSM-7 (%s)', (lang) => {
+    const m = otpMessage('123456', lang);
+    expect(m).toContain('123456');
     expect(isGsm7(m)).toBe(true);
     expect(smsSegments(m)).toBe(1);
   });
@@ -57,14 +59,22 @@ describe('texte du rappel', () => {
     expect(smsAmount(2050, 'USD')).toBe('20,50 $');
   });
 
-  it("un seul SMS GSM-7 même avec des noms longs et accentués", () => {
+  it('dans la langue du membre', () => {
+    expect(reminderMessage(base, 'sw')).toBe(
+      'Mchango: Kwetu, zamu 3. Lipa 20 000 FC kwa Mama Furaha (+243991234567) kabla ya 02/11/2026, kisha utangaze malipo kwenye app.',
+    );
+    expect(reminderMessage({ ...base, dueToday: true }, 'ln')).toContain('Futa 20 000 FC na Mama Furaha (+243991234567) lelo');
+    expect(reminderMessage(base, 'en')).toContain('Pay 20 000 FC to Mama Furaha (+243991234567) by 02/11/2026');
+  });
+
+  it.each(LANGUAGES)("un seul SMS GSM-7 même avec des noms longs et accentués (%s)", (lang) => {
     const m = reminderMessage({
       ...base,
       groupName: '« Fête des mamans » – coopérative des maraîchères de Kenya-Lubumbashi',
       beneficiaryName: 'Françoise Kabwe Ngoyi wa Mutombo',
       amountMinor: 999_999_999_999,
       cycleNumber: 100,
-    });
+    }, lang);
     expect(isGsm7(m)).toBe(true);
     expect(smsSegments(m)).toBe(1);
   });

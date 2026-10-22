@@ -82,6 +82,17 @@ describe('Rappels avant échéance (e2e)', () => {
     expect(rows).toEqual([{ status: 'sent', n: 2 }]);
   });
 
+  it('chaque payeur reçoit le rappel dans sa langue', async () => {
+    const g = await startedGroup('weekly', plusDays(todayDrc(), 1));
+    const [sw, en] = g.payers;
+    await api.db.query(`UPDATE users SET language = 'sw' WHERE id = $1`, [sw.session.userId]);
+    await api.db.query(`UPDATE users SET language = 'en' WHERE id = $1`, [en.session.userId]);
+    await reminders.runOnce(atDrc(10));
+    const last = (phone: string) => api.sms.sent.filter((m) => m.phone === phone).at(-1)!.message;
+    expect(last(sw.phone)).toContain('Mchango: Kwetu, zamu 1. Lipa 20 000 FC kwa Mama Furaha');
+    expect(last(en.phone)).toContain('Mchango: Kwetu, turn 1. Pay 20 000 FC to Mama Furaha');
+  });
+
   it('pas de rappel à qui a déjà déclaré son paiement', async () => {
     const g = await startedGroup('weekly', plusDays(todayDrc(), 1));
     const [early, late] = g.payers;

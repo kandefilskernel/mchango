@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
+import '../l10n/l10n.dart';
 
-String errorMessage(Object error) => error is ApiException ? error.message : 'Une erreur est survenue. Réessayez.';
+String errorMessage(Object error) => error is ApiException ? error.message : t('Une erreur est survenue. Réessayez.');
 
 void showError(BuildContext context, Object error) {
   ScaffoldMessenger.of(context)
@@ -13,7 +14,7 @@ void showError(BuildContext context, Object error) {
 void showInfo(BuildContext context, String message) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message)));
+    ..showSnackBar(SnackBar(content: Text(t(message))));
 }
 
 /// Gros bouton qui affiche un indicateur pendant l'action et montre l'erreur éventuelle.
@@ -100,7 +101,7 @@ class _LoaderState<T> extends State<Loader<T>> {
                   const SizedBox(height: 12),
                   Text(errorMessage(snapshot.error!), textAlign: TextAlign.center),
                   const SizedBox(height: 12),
-                  OutlinedButton(onPressed: _reload, child: const Text('Réessayer')),
+                  OutlinedButton(onPressed: _reload, child: Text(t('Réessayer'))),
                 ],
               ),
             ),
@@ -163,4 +164,4 @@ class InfoRow extends StatelessWidget {
 }
 
 /// Rappel affiché là où l'on parle d'argent.
-const noCustodyNotice = 'Mchango ne détient, ne transfère et ne garantit aucun fonds.';
+String get noCustodyNotice => t('Mchango ne détient, ne transfère et ne garantit aucun fonds.');

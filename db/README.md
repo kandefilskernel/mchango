@@ -14,6 +14,7 @@
 | `010_backoffice.sql` | Back-office : motifs de blocage et de suspension, décisions de litige par l'équipe, droits sur `staff` |
 | `011_support.sql` | Recours « PIN oublié » validé par l'équipe (`decided_by_staff`, `staff_note`) |
 | `012_support_notes.sql` | Notes de suivi de l'équipe sur un membre (ajout seul), index de l'historique SMS |
+| `013_language_en.sql` | Langue anglaise autorisée pour les comptes (`fr`, `sw`, `ln`, `en`) |
 | `tests/001_checks.sql` | Double regard, anti-fraude, journal en ajout seul, détection de falsification |
 | `tests/002_cash_witness.sql` | Règles du témoin (à lancer **après** `001_checks.sql`, sur la même base) |
 | `tests/003_turns_cycles.sql` | Ordre figé, bénéficiaire unique, receveur imposé (après `002`) |

@@ -6,6 +6,7 @@ import '../../util/format.dart';
 import '../common.dart';
 import '../theme.dart';
 import 'group_screen.dart';
+import '../../l10n/l10n.dart';
 
 class CreateGroupScreen extends StatefulWidget {
   const CreateGroupScreen({super.key});
@@ -60,11 +61,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
     final amount = parseAmount(_amount.text, _currency);
     final max = int.tryParse(_maxMembers.text.trim());
     setState(() {
-      _nameError = _name.text.trim().length < 2 ? 'Donnez un nom à la tontine.' : null;
+      _nameError = _name.text.trim().length < 2 ? t('Donnez un nom à la tontine.') : null;
       _amountError = amount == null || amount <= 0
-          ? 'Entrez un montant en chiffres, par exemple ${_currency == 'USD' ? '20' : '20000'}.'
+          ? t('Entrez un montant en chiffres, par exemple {example}.', {'example': _currency == 'USD' ? '20' : '20000'})
           : null;
-      _membersError = max == null || max < 2 || max > 100 ? 'Entre 2 et 100 membres.' : null;
+      _membersError = max == null || max < 2 || max > 100 ? t('Entre 2 et 100 membres.') : null;
     });
     if (_nameError != null || _amountError != null || _membersError != null) return;
 
@@ -96,18 +97,19 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           Expanded(
             child: Text.rich(
               TextSpan(
+                // Une seule phrase à traduire ; le montant reste mis en valeur là où la langue le place
                 children: [
-                  const TextSpan(text: 'Avec '),
-                  TextSpan(
-                    text: '$max membres',
-                    style: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  const TextSpan(text: ', chaque bénéficiaire recevra '),
-                  TextSpan(
-                    text: formatAmount(amount * (max - 1), _currency),
-                    style: const TextStyle(fontWeight: FontWeight.w800, color: Brand.green),
-                  ),
-                  const TextSpan(text: ' à son tour (les cotisations des autres membres).'),
+                  for (final (i, part) in t(
+                    'Avec {n} membres, chaque bénéficiaire recevra {amount} à son tour (les cotisations des autres membres).',
+                    {'n': max},
+                  ).split('{amount}').indexed) ...[
+                    if (i > 0)
+                      TextSpan(
+                        text: formatAmount(amount * (max - 1), _currency),
+                        style: const TextStyle(fontWeight: FontWeight.w800, color: Brand.green),
+                      ),
+                    TextSpan(text: part),
+                  ],
                 ],
               ),
             ),
@@ -121,33 +123,33 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   Widget build(BuildContext context) {
     final isUsd = _currency == 'USD';
     return Scaffold(
-      appBar: AppBar(title: const Text('Nouvelle tontine')),
+      appBar: AppBar(title: Text(t('Nouvelle tontine'))),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
           _Section(
-            title: 'La tontine',
+            title: t('La tontine'),
             children: [
               TextField(
                 key: const Key('group_name'),
                 controller: _name,
                 textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
-                  labelText: 'Nom de la tontine',
-                  hintText: 'Ex. : Kwetu – achat véhicule',
-                  helperText: "Vous pouvez y mettre l'objectif du groupe.",
+                  labelText: t('Nom de la tontine'),
+                  hintText: t('Ex. : Kwetu – achat véhicule'),
+                  helperText: t("Vous pouvez y mettre l'objectif du groupe."),
                   errorText: _nameError,
                 ),
               ),
             ],
           ),
           _Section(
-            title: 'La cotisation',
+            title: t('La cotisation'),
             children: [
               SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: 'CDF', label: Text('Francs (FC)')),
-                  ButtonSegment(value: 'USD', label: Text('Dollars (\$)')),
+                segments: [
+                  ButtonSegment(value: 'CDF', label: Text(t('Francs (FC)'))),
+                  ButtonSegment(value: 'USD', label: Text(t('Dollars (\$)'))),
                 ],
                 selected: {_currency},
                 onSelectionChanged: (s) => setState(() {
@@ -162,8 +164,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 keyboardType: TextInputType.numberWithOptions(decimal: isUsd),
                 inputFormatters: [FilteringTextInputFormatter.allow(isUsd ? RegExp(r'[0-9.,]') : RegExp(r'[0-9 ]'))],
                 decoration: InputDecoration(
-                  labelText: 'Montant versé par chaque membre à chaque tour',
-                  hintText: isUsd ? 'Ex. : 20' : 'Ex. : 20 000',
+                  labelText: t('Montant versé par chaque membre à chaque tour'),
+                  hintText: isUsd ? t('Ex. : 20') : t('Ex. : 20 000'),
                   suffixText: isUsd ? '\$' : 'FC',
                   errorText: _amountError,
                 ),
@@ -171,14 +173,14 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 initialValue: _frequency,
-                decoration: const InputDecoration(labelText: 'Un tour'),
+                decoration: InputDecoration(labelText: t('Un tour')),
                 items: [for (final e in frequencyLabels.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
                 onChanged: (v) => setState(() => _frequency = v!),
               ),
             ],
           ),
           _Section(
-            title: 'Les membres',
+            title: t('Les membres'),
             children: [
               TextField(
                 key: const Key('group_max_members'),
@@ -186,8 +188,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(3)],
                 decoration: InputDecoration(
-                  labelText: 'Nombre de membres prévu',
-                  helperText: 'Un membre reçoit à chaque tour : autant de tours que de membres.',
+                  labelText: t('Nombre de membres prévu'),
+                  helperText: t('Un membre reçoit à chaque tour : autant de tours que de membres.'),
                   errorText: _membersError,
                 ),
               ),
@@ -200,7 +202,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.event, color: Brand.green),
-                  title: const Text('Premier tour'),
+                  title: Text(t('Premier tour')),
                   subtitle: Text(formatDate(_startIso)),
                   trailing: const Icon(Icons.edit_calendar_outlined),
                   onTap: _pickDate,
@@ -211,11 +213,11 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Chaque membre paie directement le bénéficiaire du tour. $noCustodyNotice',
+            t('Chaque membre paie directement le bénéficiaire du tour. {notice}', {'notice': noCustodyNotice}),
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 16),
-          BusyButton(label: 'Créer la tontine', icon: Icons.check, onPressed: _create),
+          BusyButton(label: t('Créer la tontine'), icon: Icons.check, onPressed: _create),
         ],
       ),
     );

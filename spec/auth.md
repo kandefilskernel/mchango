@@ -102,6 +102,16 @@ Erreurs : `401` défi inconnu/expiré/rejoué, signature fausse ou appareil rév
 
 En-tête `Authorization: Bearer <accessToken>`. Réponse : `{ "id", "phone", "full_name", "language", "deviceId" }`.
 
+### `PUT /me/language` → 200
+
+`{ "language": "fr" | "sw" | "ln" | "en" }`. La langue du compte sert aux SMS : code de connexion (si le numéro a déjà un compte, sinon en français) et rappels de cotisation. Chaque texte tient en un seul SMS GSM-7 dans les quatre langues. L'app l'envoie à l'inscription, à la connexion d'un nouveau téléphone et quand on change de langue dans le menu.
+
+## Langues de l'app
+
+Français, swahili, lingala, anglais. Choix sur le premier écran et dans le menu de l'accueil ; gardé sur le téléphone. Textes : `apps/mobile/lib/l10n/` (la clé est le texte français ; un texte absent d'une table s'affiche en français). Le test `test/l10n_test.dart` vérifie que chaque texte de l'app existe dans les trois langues avec les mêmes variables.
+
+**Les traductions swahili et lingala sont à faire relire par des locuteurs de Lubumbashi et de Kinshasa avant le pilote** : vocabulaire de la tontine (likelemba, muziki), tournures locales. Les messages d'erreur venant de l'API restent en français pour l'instant.
+
 ## Journal
 
 Dans la chaîne `global` : `auth.user_registered`, `auth.device_linked` (avec `revoked_device_ids`), `auth.pin_locked`. Le PIN, son hash et les codes SMS n'y figurent jamais.

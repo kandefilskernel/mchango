@@ -1,7 +1,7 @@
 // Vitrine pour les visuels (affiches, captures) : l'app branchée sur des données d'exemple,
 // sans serveur ni compte réel. Jamais livrée aux membres.
 //   flutter build web -t tool/showcase.dart -o build/showcase
-// puis ouvrir index.html?screen=home|cycle|receipt[&lang=sw|ln|en]
+// puis ouvrir index.html?screen=home|cycle|declare|receipt|carnet[&lang=sw|ln|en]
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -14,7 +14,9 @@ import 'package:mchango/auth/auth_repository.dart';
 import 'package:mchango/l10n/l10n.dart';
 import 'package:mchango/services.dart';
 import 'package:mchango/storage/key_value_store.dart';
+import 'package:mchango/ui/carnet/carnet_screen.dart';
 import 'package:mchango/ui/cycles/cycle_screen.dart';
+import 'package:mchango/ui/cycles/declare_screen.dart';
 import 'package:mchango/ui/groups/home_screen.dart';
 import 'package:mchango/ui/receipts/receipt_screen.dart';
 import 'package:mchango/ui/theme.dart';
@@ -149,6 +151,12 @@ Future<void> main() async {
   final Widget screen = switch (params['screen']) {
     'cycle' => CycleScreen(group: Group.fromJson(_group), cycleNumber: 1),
     'receipt' => const ReceiptScreen(contributionId: 'c-2'),
+    'carnet' => const CarnetScreen(),
+    'declare' => DeclareScreen(
+      group: Group.fromJson(_group),
+      cycleNumber: 1,
+      beneficiary: Group.fromJson(_group).members.first,
+    ),
     _ => const HomeScreen(),
   };
   runApp(

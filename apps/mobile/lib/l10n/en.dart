@@ -21,8 +21,14 @@ const en = <String, String>{
       'Cancelled',
   'Appelez ou allez voir l\'une de ces personnes :':
       'Call or go and see one of these people:',
+  'Appuyez longuement sur le SMS de votre opérateur, copiez-le, puis touchez ce bouton. Le SMS reste sur votre téléphone.':
+      'Press and hold your operator\'s SMS, copy it, then tap this button. The SMS stays on your phone.',
   'Attendue':
       'Expected',
+  'Aucun ID de transaction trouvé. Copiez d\'abord le SMS de confirmation de votre opérateur.':
+      'No transaction ID found. First copy your operator\'s confirmation SMS.',
+  'Aucun ID trouvé. Copiez d\'abord le SMS de l\'argent reçu, puis touchez à nouveau ce bouton.':
+      'No ID found. First copy the SMS for the money received, then tap this button again.',
   'Aucun autre membre ne peut être témoin dans ce groupe : payez par mobile money.':
       'No other member can be a witness in this group: pay by mobile money.',
   'Aucune demande en attente.':
@@ -39,6 +45,10 @@ const en = <String, String>{
       'Hello {name}',
   'Bénéficiaire : {name}':
       'Beneficiary: {name}',
+  'Ce SMS est de l\'argent reçu, pas envoyé. Copiez le SMS de l\'argent envoyé au bénéficiaire.':
+      'This SMS is for money received, not sent. Copy the SMS for the money sent to the beneficiary.',
+  'Ce SMS est un retrait chez un agent, pas un envoi. Copiez le SMS de l\'argent envoyé au bénéficiaire.':
+      'This SMS is a withdrawal at an agent, not a transfer. Copy the SMS for the money sent to the beneficiary.',
   'Ce n\'est pas mon compte / PIN oublié':
       'Not my account / Forgot PIN',
   'Ce reçu atteste que le paiement a été déclaré par le payeur et confirmé par le bénéficiaire. {notice}':
@@ -73,6 +83,8 @@ const en = <String, String>{
       'Invitation code',
   'Code reçu par SMS':
       'Code received by SMS',
+  'Coller le SMS de confirmation':
+      'Paste the confirmation SMS',
   'Commencer':
       'Start',
   'Comment avez-vous payé ?':
@@ -205,6 +217,8 @@ const en = <String, String>{
       'Verified history',
   'ID de transaction':
       'Transaction ID',
+  'ID trouvé : {id}':
+      'ID found: {id}',
   'Intact':
       'Intact',
   'Inviter des membres':
@@ -227,6 +241,12 @@ const en = <String, String>{
       'Log: event no. {n} · {hash}…',
   'Journal vérifié sur ce téléphone : {n} événements, aucun n\'a été modifié ni supprimé.':
       'Log verified on this phone: {n} events, none has been changed or deleted.',
+  'L\'ID correspond, mais pas le montant : vérifiez avant de confirmer.':
+      'The ID matches, but not the amount: check before confirming.',
+  'L\'ID du SMS ({sms}) ne correspond pas à celui déclaré ({declared}). Ne confirmez pas sans vérifier.':
+      'The SMS ID ({sms}) does not match the declared one ({declared}). Do not confirm without checking.',
+  'L\'ID et le montant du SMS correspondent à la déclaration. Vous pouvez confirmer si vous avez bien reçu l\'argent.':
+      'The SMS ID and amount match the declaration. You can confirm if you really received the money.',
   'La cotisation':
       'The contribution',
   'La demande a expiré (48 heures). Recommencez.':
@@ -269,6 +289,10 @@ const en = <String, String>{
       'My turn: {n}, on {date}',
   'Mon tour {n} : reçu':
       'My turn {n}: received',
+  'Montant du SMS : {amount}, comme la cotisation.':
+      'SMS amount: {amount}, same as the contribution.',
+  'Montant du SMS : {amount}. La cotisation est de {expected} : vérifiez.':
+      'SMS amount: {amount}. The contribution is {expected}: please check.',
   'Montant versé par chaque membre à chaque tour':
       'Amount paid by each member at each turn',
   'Montants des paiements confirmés par les bénéficiaires. {notice}':
@@ -509,16 +533,26 @@ const en = <String, String>{
       'You receive this turn',
   'Vous êtes garant : confirmez seulement après lui avoir parlé.':
       'You are a guarantor: only confirm after speaking to them.',
+  'Vérification avec votre SMS':
+      'Check with your SMS',
+  'Vérifier avec mon SMS':
+      'Check with my SMS',
   'avec un code':
       'with a code',
+  'en retard':
+      'late',
   'en retard depuis le {date}':
       'late since {date}',
   'le {date}':
       'on {date}',
+  'montant non trouvé dans le SMS':
+      'amount not found in the SMS',
   'par {brand}':
       'by {brand}',
   'tel que les membres vous connaissent':
       'as the members know you',
+  'témoin : {name}':
+      'witness: {name}',
   'une tontine':
       'a tontine',
   '{actor} a confirmé avoir reçu le paiement':

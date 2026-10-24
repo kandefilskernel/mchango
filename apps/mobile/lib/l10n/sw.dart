@@ -21,8 +21,14 @@ const sw = <String, String>{
       'Imeghairiwa',
   'Appelez ou allez voir l\'une de ces personnes :':
       'Mpigie simu au umtembelee mmoja wa watu hawa:',
+  'Appuyez longuement sur le SMS de votre opérateur, copiez-le, puis touchez ce bouton. Le SMS reste sur votre téléphone.':
+      'Bonyeza kwa muda SMS ya mtandao wako, inakili, kisha gusa kitufe hiki. SMS inabaki kwenye simu yako.',
   'Attendue':
       'Inasubiriwa',
+  'Aucun ID de transaction trouvé. Copiez d\'abord le SMS de confirmation de votre opérateur.':
+      'Hakuna namba ya muamala iliyopatikana. Kwanza nakili SMS ya uthibitisho ya mtandao wako.',
+  'Aucun ID trouvé. Copiez d\'abord le SMS de l\'argent reçu, puis touchez à nouveau ce bouton.':
+      'Hakuna namba iliyopatikana. Kwanza nakili SMS ya pesa uliyopokea, kisha gusa kitufe hiki tena.',
   'Aucun autre membre ne peut être témoin dans ce groupe : payez par mobile money.':
       'Hakuna mwanachama mwingine anayeweza kuwa shahidi katika kikundi hiki: lipa kwa pesa ya simu.',
   'Aucune demande en attente.':
@@ -39,6 +45,10 @@ const sw = <String, String>{
       'Jambo {name}',
   'Bénéficiaire : {name}':
       'Mpokeaji: {name}',
+  'Ce SMS est de l\'argent reçu, pas envoyé. Copiez le SMS de l\'argent envoyé au bénéficiaire.':
+      'SMS hii ni ya pesa uliyopokea, si uliyotuma. Nakili SMS ya pesa uliyomtumia mpokeaji.',
+  'Ce SMS est un retrait chez un agent, pas un envoi. Copiez le SMS de l\'argent envoyé au bénéficiaire.':
+      'SMS hii ni ya kutoa pesa kwa wakala, si kutuma. Nakili SMS ya pesa uliyomtumia mpokeaji.',
   'Ce n\'est pas mon compte / PIN oublié':
       'Si akaunti yangu / Nimesahau PIN',
   'Ce reçu atteste que le paiement a été déclaré par le payeur et confirmé par le bénéficiaire. {notice}':
@@ -73,6 +83,8 @@ const sw = <String, String>{
       'Msimbo wa mwaliko',
   'Code reçu par SMS':
       'Msimbo uliopokelewa kwa SMS',
+  'Coller le SMS de confirmation':
+      'Bandika SMS ya uthibitisho',
   'Commencer':
       'Anza',
   'Comment avez-vous payé ?':
@@ -205,6 +217,8 @@ const sw = <String, String>{
       'Historia iliyothibitishwa',
   'ID de transaction':
       'Namba ya muamala',
+  'ID trouvé : {id}':
+      'Namba iliyopatikana: {id}',
   'Intact':
       'Salama',
   'Inviter des membres':
@@ -227,6 +241,12 @@ const sw = <String, String>{
       'Daftari: tukio namba {n} · {hash}…',
   'Journal vérifié sur ce téléphone : {n} événements, aucun n\'a été modifié ni supprimé.':
       'Daftari limethibitishwa kwenye simu hii: matukio {n}, hakuna lililobadilishwa wala kufutwa.',
+  'L\'ID correspond, mais pas le montant : vérifiez avant de confirmer.':
+      'Namba inalingana, lakini si kiasi: kagua kabla ya kuthibitisha.',
+  'L\'ID du SMS ({sms}) ne correspond pas à celui déclaré ({declared}). Ne confirmez pas sans vérifier.':
+      'Namba ya SMS ({sms}) hailingani na iliyotangazwa ({declared}). Usithibitishe bila kukagua.',
+  'L\'ID et le montant du SMS correspondent à la déclaration. Vous pouvez confirmer si vous avez bien reçu l\'argent.':
+      'Namba na kiasi cha SMS vinalingana na tangazo. Unaweza kuthibitisha ikiwa kweli umepokea pesa.',
   'La cotisation':
       'Mchango',
   'La demande a expiré (48 heures). Recommencez.':
@@ -269,6 +289,10 @@ const sw = <String, String>{
       'Zamu yangu: {n}, tarehe {date}',
   'Mon tour {n} : reçu':
       'Zamu yangu {n}: nimepokea',
+  'Montant du SMS : {amount}, comme la cotisation.':
+      'Kiasi cha SMS: {amount}, sawa na mchango.',
+  'Montant du SMS : {amount}. La cotisation est de {expected} : vérifiez.':
+      'Kiasi cha SMS: {amount}. Mchango ni {expected}: kagua.',
   'Montant versé par chaque membre à chaque tour':
       'Kiasi kinacholipwa na kila mwanachama kila zamu',
   'Montants des paiements confirmés par les bénéficiaires. {notice}':
@@ -509,16 +533,26 @@ const sw = <String, String>{
       'Unapokea zamu hii',
   'Vous êtes garant : confirmez seulement après lui avoir parlé.':
       'Wewe ni mdhamini: thibitisha tu baada ya kuongea naye.',
+  'Vérification avec votre SMS':
+      'Ukaguzi kwa SMS yako',
+  'Vérifier avec mon SMS':
+      'Kagua kwa SMS yangu',
   'avec un code':
       'kwa msimbo',
+  'en retard':
+      'imechelewa',
   'en retard depuis le {date}':
       'imechelewa tangu {date}',
   'le {date}':
       'tarehe {date}',
+  'montant non trouvé dans le SMS':
+      'kiasi hakikupatikana katika SMS',
   'par {brand}':
       'kutoka {brand}',
   'tel que les membres vous connaissent':
       'kama wanachama wanavyokujua',
+  'témoin : {name}':
+      'shahidi: {name}',
   'une tontine':
       'likelemba',
   '{actor} a confirmé avoir reçu le paiement':

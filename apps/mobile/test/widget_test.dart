@@ -199,6 +199,9 @@ void main() {
   });
 
   testWidgets('déclaration : même offlineId si on réessaie après une coupure', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2600);
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
     var attempts = 0;
     final backend = FakeBackend()
       ..on('POST', '/groups/$groupId/cycles/1/contributions', (_, body) {

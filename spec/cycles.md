@@ -119,6 +119,18 @@ Quand tous les payeurs d'un tour sont confirmés, le tour passe `completed` et l
 
 Erreurs : `403` mauvaise personne, `409` déjà répondu ou cotisation déjà confirmée.
 
+## SMS de confirmation (app mobile)
+
+Pour éviter les fautes de frappe sur l'ID de transaction, sans permission de lecture des SMS (refusée par Google Play hors cas précis) :
+
+- **Payeur, « Coller le SMS de confirmation »** : il copie le SMS de son opérateur et l'app en tire l'ID (champ rempli), propose le moyen de paiement et compare le montant à la cotisation. Un SMS de **retrait** chez un agent ou d'argent **reçu** est refusé.
+- **Bénéficiaire, « Vérifier avec mon SMS »** : il copie le SMS de l'argent reçu et l'app compare l'ID et le montant à la déclaration. C'est une aide avant de confirmer, pas une confirmation automatique.
+- **Formats reconnus** (`apps/mobile/lib/sms/operator_sms.dart`) : Airtel Money (`Trans ID:` / `TID:` + `XX261023.2305.R45862`), et « Reference de la transaction: » (opérateur à confirmer), avec un repli générique (`ID:`, `Ref:`). Montants en USD ou CDF, virgule ou point décimal. Le solde est ignoré.
+- **Vie privée :** le SMS est lu sur le téléphone, seuls l'ID et le montant servent, le texte n'est ni envoyé ni gardé.
+- **Limite :** un texte collé peut être inventé. La preuve reste la confirmation par le bénéficiaire.
+
+À venir : lecture du SMS avec l'accord du membre (« SMS User Consent » de Google, sans permission) et « Partager vers Mchango ». Les deux sont à tester sur un vrai téléphone. Les formats exacts de M-Pesa et d'Orange Money sont aussi à confirmer avec de vrais SMS d'envoi.
+
 ## Mon carnet (`GET /me/carnet`)
 
 Résumé personnel, toutes tontines confondues, pour le membre connecté :

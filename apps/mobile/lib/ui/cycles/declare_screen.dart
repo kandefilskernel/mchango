@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../api/models.dart';
 import '../../services.dart';
 import '../../util/format.dart';
+import '../../sms/operator_sms.dart';
 import '../common.dart';
+import '../theme.dart';
 import '../../l10n/l10n.dart';
 
 /// « J'ai payé » : moyen de paiement, puis ID de transaction (mobile money) ou témoin (espèces).
@@ -36,6 +39,37 @@ class _DeclareScreenState extends State<DeclareScreen> {
   void dispose() {
     _txReference.dispose();
     super.dispose();
+  }
+
+  /// Ce que le SMS collé a appris : affiché pour que la personne vérifie avant d'envoyer.
+  OperatorSms? _sms;
+
+  /// « Coller le SMS de confirmation » : remplit l'ID, propose le moyen, vérifie le montant.
+  Future<void> _pasteSms() async {
+    final text = (await Clipboard.getData(Clipboard.kTextPlain))?.text ?? '';
+    final sms = parseOperatorSms(text);
+    if (!mounted) return;
+    if (sms == null || sms.txId == null) {
+      setState(() => _sms = null);
+      return showInfo(
+        context,
+        t("Aucun ID de transaction trouvé. Copiez d'abord le SMS de confirmation de votre opérateur."),
+      );
+    }
+    if (sms.kind == SmsKind.withdrawal || sms.kind == SmsKind.received) {
+      setState(() => _sms = null);
+      return showInfo(
+        context,
+        sms.kind == SmsKind.withdrawal
+            ? t("Ce SMS est un retrait chez un agent, pas un envoi. Copiez le SMS de l'argent envoyé au bénéficiaire.")
+            : t("Ce SMS est de l'argent reçu, pas envoyé. Copiez le SMS de l'argent envoyé au bénéficiaire."),
+      );
+    }
+    setState(() {
+      _sms = sms;
+      _txReference.text = sms.txId!;
+      if (sms.method != null && _method == null) _method = sms.method;
+    });
   }
 
   Future<void> _submit() async {
@@ -111,6 +145,19 @@ class _DeclareScreenState extends State<DeclareScreen> {
           ),
           const SizedBox(height: 16),
           if (_method != null && _method != 'cash') ...[
+            OutlinedButton.icon(
+              key: const Key('paste_sms'),
+              onPressed: _pasteSms,
+              icon: const Icon(Icons.content_paste),
+              label: Text(t('Coller le SMS de confirmation')),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              t("Appuyez longuement sur le SMS de votre opérateur, copiez-le, puis touchez ce bouton. Le SMS reste sur votre téléphone."),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            if (_sms != null) _SmsCheck(sms: _sms!, expectedMinor: g.contributionAmountMinor, currency: g.currency),
+            const SizedBox(height: 12),
             TextField(
               key: const Key('tx_reference'),
               controller: _txReference,
@@ -139,6 +186,55 @@ class _DeclareScreenState extends State<DeclareScreen> {
           const SizedBox(height: 12),
           Text(noCustodyNotice, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
         ],
+      ),
+    );
+  }
+}
+
+/// Ce que dit le SMS collé, comparé à la cotisation attendue.
+class _SmsCheck extends StatelessWidget {
+  const _SmsCheck({required this.sms, required this.expectedMinor, required this.currency});
+
+  final OperatorSms sms;
+  final int expectedMinor;
+  final String currency;
+
+  @override
+  Widget build(BuildContext context) {
+    final amountOk = sms.amountMinor == expectedMinor && sms.currency == currency;
+    final amountText = sms.amountMinor == null || sms.currency == null
+        ? t('montant non trouvé dans le SMS')
+        : formatAmount(sms.amountMinor!, sms.currency!);
+    return Card(
+      key: const Key('sms_check'),
+      color: amountOk ? Brand.mint : const Color(0xFFFFF3D6),
+      margin: const EdgeInsets.only(top: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(t('ID trouvé : {id}', {'id': sms.txId}), style: const TextStyle(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(amountOk ? Icons.check_circle : Icons.warning_amber_rounded,
+                    size: 18, color: amountOk ? Brand.green : Brand.goldDark),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    amountOk
+                        ? t('Montant du SMS : {amount}, comme la cotisation.', {'amount': amountText})
+                        : t('Montant du SMS : {amount}. La cotisation est de {expected} : vérifiez.', {
+                            'amount': amountText,
+                            'expected': formatAmount(expectedMinor, currency),
+                          }),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

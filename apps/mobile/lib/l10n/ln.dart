@@ -21,8 +21,14 @@ const ln = <String, String>{
       'Elongolami',
   'Appelez ou allez voir l\'une de ces personnes :':
       'Benga to kende komona moto moko kati na bato oyo:',
+  'Appuyez longuement sur le SMS de votre opérateur, copiez-le, puis touchez ce bouton. Le SMS reste sur votre téléphone.':
+      'Finá ntango molai na SMS ya opérateur na yo, kopia yango, sima simbá bouton oyo. SMS etikali na telefone na yo.',
   'Attendue':
       'Ezali kozelama',
+  'Aucun ID de transaction trouvé. Copiez d\'abord le SMS de confirmation de votre opérateur.':
+      'Nimero ya transaction emonani te. Kopia liboso SMS ya kondima ya opérateur na yo.',
+  'Aucun ID trouvé. Copiez d\'abord le SMS de l\'argent reçu, puis touchez à nouveau ce bouton.':
+      'Nimero emonani te. Kopia liboso SMS ya mbongo ozwi, sima simbá bouton oyo lisusu.',
   'Aucun autre membre ne peut être témoin dans ce groupe : payez par mobile money.':
       'Moto mosusu te akoki kozala motatoli na lisanga oyo: futa na mobile money.',
   'Aucune demande en attente.':
@@ -39,6 +45,10 @@ const ln = <String, String>{
       'Mbote {name}',
   'Bénéficiaire : {name}':
       'Moto oyo azwi: {name}',
+  'Ce SMS est de l\'argent reçu, pas envoyé. Copiez le SMS de l\'argent envoyé au bénéficiaire.':
+      'SMS oyo ezali ya mbongo ozwi, ezali ya kotinda te. Kopia SMS ya mbongo otindeli moto oyo azwi.',
+  'Ce SMS est un retrait chez un agent, pas un envoi. Copiez le SMS de l\'argent envoyé au bénéficiaire.':
+      'SMS oyo ezali ya kobimisa mbongo epai ya agent, ezali ya kotinda te. Kopia SMS ya mbongo otindeli moto oyo azwi.',
   'Ce n\'est pas mon compte / PIN oublié':
       'Ezali kont na ngai te / Nabosani PIN',
   'Ce reçu atteste que le paiement a été déclaré par le payeur et confirmé par le bénéficiaire. {notice}':
@@ -73,6 +83,8 @@ const ln = <String, String>{
       'Kode ya libyangi',
   'Code reçu par SMS':
       'Kode oyo ozwi na SMS',
+  'Coller le SMS de confirmation':
+      'Kangisa SMS ya kondima',
   'Commencer':
       'Banda',
   'Comment avez-vous payé ?':
@@ -205,6 +217,8 @@ const ln = <String, String>{
       'Lisolo etalami',
   'ID de transaction':
       'Nimero ya transaction',
+  'ID trouvé : {id}':
+      'Nimero emonani: {id}',
   'Intact':
       'Malamu',
   'Inviter des membres':
@@ -227,6 +241,12 @@ const ln = <String, String>{
       'Buku: likambo motángo {n} · {hash}…',
   'Journal vérifié sur ce téléphone : {n} événements, aucun n\'a été modifié ni supprimé.':
       'Buku etalami na telefone oyo: makambo {n}, moko te ebongwani to elongwami.',
+  'L\'ID correspond, mais pas le montant : vérifiez avant de confirmer.':
+      'Nimero ekokani, kasi motango te: tala malamu liboso ya kondima.',
+  'L\'ID du SMS ({sms}) ne correspond pas à celui déclaré ({declared}). Ne confirmez pas sans vérifier.':
+      'Nimero ya SMS ({sms}) ekokani te na oyo eyebisami ({declared}). Kondima te soki otali te.',
+  'L\'ID et le montant du SMS correspondent à la déclaration. Vous pouvez confirmer si vous avez bien reçu l\'argent.':
+      'Nimero mpe motango ya SMS ekokani na liyebisi. Okoki kondima soki ozwi mbongo mpenza.',
   'La cotisation':
       'Likabo',
   'La demande a expiré (48 heures). Recommencez.':
@@ -269,6 +289,10 @@ const ln = <String, String>{
       'Tango na ngai: {n}, mokolo {date}',
   'Mon tour {n} : reçu':
       'Tango na ngai {n}: nazwi',
+  'Montant du SMS : {amount}, comme la cotisation.':
+      'Motango ya SMS: {amount}, ndenge moko na likabo.',
+  'Montant du SMS : {amount}. La cotisation est de {expected} : vérifiez.':
+      'Motango ya SMS: {amount}. Likabo ezali {expected}: tala malamu.',
   'Montant versé par chaque membre à chaque tour':
       'Motango oyo mosangani nyonso afutaka na tango nyonso',
   'Montants des paiements confirmés par les bénéficiaires. {notice}':
@@ -509,16 +533,26 @@ const ln = <String, String>{
       'Yo nde ozwi na tango oyo',
   'Vous êtes garant : confirmez seulement après lui avoir parlé.':
       'Ozali motatoli: ndima kaka sima ya kosolola na ye.',
+  'Vérification avec votre SMS':
+      'Kotala na SMS na yo',
+  'Vérifier avec mon SMS':
+      'Tala na SMS na ngai',
   'avec un code':
       'na kode',
+  'en retard':
+      'eumeli',
   'en retard depuis le {date}':
       'eumeli banda {date}',
   'le {date}':
       'mokolo {date}',
+  'montant non trouvé dans le SMS':
+      'motango emonani te na SMS',
   'par {brand}':
       'epai ya {brand}',
   'tel que les membres vous connaissent':
       'ndenge basangani bayebi yo',
+  'témoin : {name}':
+      'motatoli: {name}',
   'une tontine':
       'likelemba',
   '{actor} a confirmé avoir reçu le paiement':

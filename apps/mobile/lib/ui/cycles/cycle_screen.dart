@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../api/models.dart';
 import '../../services.dart';
+import '../../sms/operator_sms.dart';
 import '../../util/format.dart';
 import '../common.dart';
 import '../receipts/receipt_screen.dart';
@@ -188,8 +190,9 @@ class _CycleScreenState extends State<CycleScreen> {
     final details = <String>[
       if (c != null) methodLabels[c.method] ?? c.method,
       if (c?.txReference != null) 'ID ${c!.txReference}',
-      if (c?.witnessMembershipId != null) 'témoin : ${_member(c!.witnessMembershipId!)?.fullName ?? '?'}',
-      if (c?.isLate == true) 'en retard',
+      if (c?.witnessMembershipId != null)
+        t('témoin : {name}', {'name': _member(c!.witnessMembershipId!)?.fullName ?? '?'}),
+      if (c?.isLate == true) t('en retard'),
     ];
 
     return Card(
@@ -222,6 +225,13 @@ class _CycleScreenState extends State<CycleScreen> {
                         label: Text(t("J'ai reçu")),
                         onPressed: () => _guard(() => _decide(c, 'confirm')),
                       ),
+                    if (canConfirm && c.txReference != null)
+                      OutlinedButton.icon(
+                        key: const Key('check_sms'),
+                        icon: const Icon(Icons.content_paste_search),
+                        label: Text(t('Vérifier avec mon SMS')),
+                        onPressed: () => _checkWithSms(c),
+                      ),
                     if (canWitness)
                       FilledButton.icon(
                         icon: const Icon(Icons.visibility),
@@ -239,6 +249,40 @@ class _CycleScreenState extends State<CycleScreen> {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Le bénéficiaire colle le SMS de l'argent reçu : l'app compare l'ID et le montant avec la
+  /// déclaration. Une aide avant de confirmer, pas une confirmation automatique.
+  Future<void> _checkWithSms(Contribution c) async {
+    final text = (await Clipboard.getData(Clipboard.kTextPlain))?.text ?? '';
+    final sms = parseOperatorSms(text);
+    if (!mounted) return;
+    final group = widget.group;
+    final idOk = sms?.txId != null && sms!.txId == c.txReference?.toUpperCase();
+    final amountOk = sms?.amountMinor == c.amountMinor && sms?.currency == group.currency;
+    final (icon, color, message) = sms?.txId == null
+        ? (Icons.help_outline, Colors.blueGrey,
+            t("Aucun ID trouvé. Copiez d'abord le SMS de l'argent reçu, puis touchez à nouveau ce bouton."))
+        : idOk && amountOk
+        ? (Icons.check_circle, Colors.green,
+            t("L'ID et le montant du SMS correspondent à la déclaration. Vous pouvez confirmer si vous avez bien reçu l'argent."))
+        : idOk
+        ? (Icons.warning_amber_rounded, Colors.orange,
+            t("L'ID correspond, mais pas le montant : vérifiez avant de confirmer."))
+        : (Icons.error_outline, Colors.red,
+            t("L'ID du SMS ({sms}) ne correspond pas à celui déclaré ({declared}). Ne confirmez pas sans vérifier.", {
+              'sms': sms!.txId,
+              'declared': c.txReference,
+            }));
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: Icon(icon, color: color, size: 40),
+        title: Text(t('Vérification avec votre SMS')),
+        content: Text(message),
+        actions: [FilledButton(onPressed: () => Navigator.pop(context), child: Text(t('OK')))],
       ),
     );
   }

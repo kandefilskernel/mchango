@@ -1,0 +1,107 @@
+# Mchango en PRODUCTION sur un seul serveur (guide : docs/mise-en-ligne.md).
+#   cd infra/prod && ./gen-secrets.sh && docker compose up -d --build
+# Seuls les ports 80 et 443 (Caddy, HTTPS automatique) sont ouverts sur Internet.
+name: mchango
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: mchango
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?à définir dans .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "postgres", "-d", "mchango"]
+      interval: 3s
+      retries: 30
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      retries: 30
+
+  # Applique les migrations de db/ qui ne l'ont pas encore été, puis s'arrête
+  migrate:
+    image: postgres:16
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGUSER: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: mchango
+      PGOPTIONS: "-c client_min_messages=warning"
+      MCHANGO_API_DB_PASSWORD: ${MCHANGO_API_DB_PASSWORD:?à définir dans .env}
+    volumes:
+      - ../../db:/db:ro
+      - ./migrate.sh:/migrate.sh:ro
+    entrypoint: ["sh", "/migrate.sh"]
+    restart: "no"
+
+  api:
+    build: ../../apps/api
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://mchango_api:${MCHANGO_API_DB_PASSWORD}@postgres:5432/mchango
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:?à définir dans .env}
+      OTP_PEPPER: ${OTP_PEPPER:?à définir dans .env}
+      STAFF_JWT_SECRET: ${STAFF_JWT_SECRET:?à définir dans .env}
+      STAFF_SECRET_KEY: ${STAFF_SECRET_KEY:?à définir dans .env}
+      STAFF_2FA_DEV_BYPASS: "0"
+      STAFF_SESSION_HOURS: ${STAFF_SESSION_HOURS:-8}
+      SMS_DRIVER: console
+      SMS_CONSOLE_PILOT: ${SMS_CONSOLE_PILOT:-0}
+      # Derrière Caddy : l'IP réelle des téléphones vient de X-Forwarded-For
+      TRUST_PROXY: "1"
+      REMINDERS_ENABLED: ${REMINDERS_ENABLED:-1}
+      CORS_ORIGINS: ""
+
+  backoffice:
+    build: ../../apps/backoffice
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      # Le serveur du back-office parle à l'API à l'intérieur du serveur, jamais par Internet
+      MCHANGO_API_URL: http://api:3000
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - api
+      - backoffice
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?à définir dans .env}
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN:?à définir dans .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+      - caddyconfig:/config
+
+volumes:
+  pgdata:
+  redisdata:
+  caddydata:
+  caddyconfig:

@@ -10,6 +10,10 @@ const schema = z.object({
   JWT_SECRET: z.string().min(32, 'au moins 32 caractères'),
   OTP_PEPPER: z.string().min(32, 'au moins 32 caractères'),
   SMS_DRIVER: z.enum(['console']).default('console'),
+  // PILOTE FERMÉ SEULEMENT : autorise SMS_DRIVER=console en production, faute de fournisseur SMS.
+  // Les codes de connexion apparaissent alors dans les journaux du serveur : l'exploitant les
+  // transmet lui-même aux testeurs. À retirer dès qu'un fournisseur SMS est branché.
+  SMS_CONSOLE_PILOT: z.enum(['0', '1']).default('0'),
   // Les opérateurs mobiles en RDC partagent souvent une même IP publique entre
   // beaucoup d'abonnés (CGNAT) : une limite par IP trop basse bloquerait des
   // utilisateurs légitimes. La vraie protection est la limite par numéro.
@@ -47,8 +51,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   if (parsed.data.NODE_ENV === 'production' && parsed.data.STAFF_SESSION_HOURS > 12) {
     throw new Error('STAFF_SESSION_HOURS : 12 h au plus en production (une session volée resterait valable trop longtemps)');
   }
-  if (parsed.data.NODE_ENV === 'production' && parsed.data.SMS_DRIVER === 'console') {
-    throw new Error('SMS_DRIVER=console est interdit en production (les codes seraient dans les logs)');
+  if (parsed.data.NODE_ENV === 'production' && parsed.data.SMS_DRIVER === 'console' && parsed.data.SMS_CONSOLE_PILOT !== '1') {
+    throw new Error(
+      'SMS_DRIVER=console est interdit en production (les codes seraient dans les logs). ' +
+        'Pilote fermé seulement : SMS_CONSOLE_PILOT=1 (voir docs/mise-en-ligne.md).',
+    );
   }
   if (parsed.data.NODE_ENV === 'production' && parsed.data.STAFF_2FA_DEV_BYPASS === '1') {
     throw new Error('STAFF_2FA_DEV_BYPASS=1 est interdit en production : la double authentification est obligatoire');

@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module.js';
@@ -13,6 +14,11 @@ async function bootstrap() {
   }
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const config = app.get<AppConfig>(APP_CONFIG);
+  if (config.NODE_ENV === 'production' && config.SMS_CONSOLE_PILOT === '1') {
+    new Logger('Pilote').warn(
+      'PILOTE FERMÉ : aucun SMS n\'est envoyé, les codes sont dans ces journaux. Ne pas ouvrir au public.',
+    );
+  }
   // Derrière un proxy (load balancer), l'IP réelle vient de X-Forwarded-For :
   // à n'activer que si le proxy est de confiance, sinon l'IP est falsifiable.
   if (config.TRUST_PROXY === '1') app.set('trust proxy', 1);

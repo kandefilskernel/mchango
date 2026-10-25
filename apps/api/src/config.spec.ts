@@ -25,6 +25,11 @@ describe('configuration', () => {
     expect(() => loadConfig({ ...base, NODE_ENV: 'production', STAFF_2FA_DEV_BYPASS: '1' })).toThrow(/2FA|SMS/);
   });
 
+  it('pilote fermé : SMS en console autorisé en production seulement avec SMS_CONSOLE_PILOT=1', () => {
+    expect(() => loadConfig({ ...base, NODE_ENV: 'production' })).toThrow(/SMS_CONSOLE_PILOT/);
+    expect(loadConfig({ ...base, NODE_ENV: 'production', SMS_CONSOLE_PILOT: '1' }).SMS_CONSOLE_PILOT).toBe('1');
+  });
+
   it('durée de session du back-office : 8 h par défaut, 24 h au plus, 12 h au plus en production', () => {
     expect(loadConfig({ ...base, NODE_ENV: 'development' }).STAFF_SESSION_HOURS).toBe(8);
     expect(loadConfig({ ...base, NODE_ENV: 'development', STAFF_SESSION_HOURS: '24' }).STAFF_SESSION_HOURS).toBe(24);

@@ -71,6 +71,7 @@ describe('Tours, cycles et cotisations (e2e)', () => {
       .set(auth(g.president.session))
       .send({ membershipIds: g.members.map((m) => m.membershipId) })
       .expect(200);
+    await api.signTerms(g.groupId, g.members.map((m) => m.session));
     await http().post(`/groups/${g.groupId}/start`).set(auth(g.president.session)).expect(200);
     return g;
   }
@@ -148,6 +149,71 @@ describe('Tours, cycles et cotisations (e2e)', () => {
       const newcomer = (await api.signUp()).session;
       await http().post('/groups/join').set(auth(newcomer)).send({ code: g.code, acceptRules: true }).expect(200);
       await draw().expect(200);
+    });
+  });
+
+  describe('signature du règlement', () => {
+    const order = (g: Awaited<ReturnType<typeof draftGroup>>, ms: Member[]) =>
+      http().put(`/groups/${g.groupId}/turn-order`).set(auth(g.president.session)).send({ membershipIds: ms.map((m) => m.membershipId) });
+    const terms = async (g: Awaited<ReturnType<typeof draftGroup>>, who: Member) =>
+      (await http().get(`/groups/${g.groupId}`).set(auth(who.session)).expect(200)).body.terms;
+    const sign = (g: Awaited<ReturnType<typeof draftGroup>>, who: Member, termsHash: string) =>
+      http().post(`/groups/${g.groupId}/sign`).set(auth(who.session)).send({ termsHash });
+
+    it("rien à signer tant que l'ordre des tours n'est pas fixé", async () => {
+      const g = await draftGroup(2);
+      const t = await terms(g, g.president);
+      expect(t).toMatchObject({ ready: false, allSigned: false });
+      await sign(g, g.president, t.hash).expect(409);
+    });
+
+    it('démarrage refusé tant que tous n\'ont pas signé ; chacun voit qui a signé', async () => {
+      const g = await draftGroup(3);
+      await order(g, g.members).expect(200);
+      const t = await terms(g, g.members[1]);
+      expect(t).toMatchObject({ ready: true, signedBy: [], allSigned: false });
+      await sign(g, g.president, t.hash).expect(200);
+      await sign(g, g.president, t.hash).expect(200); // deux fois : sans effet
+      await sign(g, g.members[1], t.hash).expect(200);
+
+      const start = await http().post(`/groups/${g.groupId}/start`).set(auth(g.president.session)).expect(409);
+      expect(start.body.message).toContain('Mama Neema');
+      expect((await terms(g, g.members[2])).signedBy).toHaveLength(2);
+
+      await sign(g, g.members[2], t.hash).expect(200);
+      expect((await terms(g, g.president)).allSigned).toBe(true);
+      await http().post(`/groups/${g.groupId}/start`).set(auth(g.president.session)).expect(200);
+
+      const history = await http().get(`/groups/${g.groupId}/history`).set(auth(g.members[2].session)).expect(200);
+      expect(history.body.events.filter((e: { action: string }) => e.action === 'group.terms_signed')).toHaveLength(3);
+      // Une fois démarré, le règlement est figé
+      await sign(g, g.members[2], t.hash).expect(409);
+    });
+
+    it("changer l'ordre (ou le montant) annule les signatures : il faut re-signer", async () => {
+      const g = await draftGroup(2);
+      await order(g, g.members).expect(200);
+      const before = await terms(g, g.president);
+      for (const m of g.members) await sign(g, m, before.hash).expect(200);
+      expect((await terms(g, g.president)).allSigned).toBe(true);
+
+      await order(g, [...g.members].reverse()).expect(200);
+      const after = await terms(g, g.president);
+      expect(after.hash).not.toBe(before.hash);
+      expect(after).toMatchObject({ signedBy: [], allSigned: false });
+      // Signer l'ancien règlement : refusé
+      await sign(g, g.members[1], before.hash).expect(409);
+
+      await http().patch(`/groups/${g.groupId}`).set(auth(g.president.session)).send({ contributionAmountMinor: 30000 }).expect(200);
+      expect((await terms(g, g.president)).hash).not.toBe(after.hash);
+    });
+
+    it("un non-membre ne signe pas", async () => {
+      const g = await draftGroup(2);
+      await order(g, g.members).expect(200);
+      const t = await terms(g, g.president);
+      const outsider = (await api.signUp()).session;
+      await http().post(`/groups/${g.groupId}/sign`).set(auth(outsider)).send({ termsHash: t.hash }).expect(404);
     });
   });
 

@@ -10,6 +10,7 @@ import { appendAudit, Db, type Actor, type Queryable } from '../infra/database.j
 import { DRAW_ALGORITHM, drawTurnOrder, membersHash } from './draw.js';
 import { GROUP_COLUMNS, toGroup, type GroupRow } from './groups.service.js';
 import { activeMembership, TODAY_DRC_SQL } from './membership.js';
+import { termsState, TERMS_VERSION } from './terms.js';
 
 type UserActor = Actor & { id: string };
 
@@ -151,6 +152,15 @@ export class GroupLifecycleService {
       if (!date_ok) {
         throw new ConflictException('La date de début est passée : modifiez-la avant de démarrer.');
       }
+      // Chaque membre a signé le règlement actuel (montant, date, ordre des tours)
+      const terms = await termsState(q, groupId);
+      if (!terms.allSigned) {
+        throw new ConflictException(
+          `Tous les membres doivent signer le règlement avant le démarrage. Manque : ${terms.missing
+            .map((m) => m.fullName)
+            .join(', ')}.`,
+        );
+      }
 
       await q.query(
         `INSERT INTO cycles (group_id, cycle_number, due_date, beneficiary_membership_id, status)
@@ -174,6 +184,41 @@ export class GroupLifecycleService {
       );
       const group = await q.query<GroupRow>(`SELECT ${GROUP_COLUMNS} FROM groups g WHERE g.id = $1`, [groupId]);
       return { ...toGroup(group.rows[0]), cycleCount: members };
+    });
+  }
+
+  /**
+   * Un membre signe le règlement qu'il a sous les yeux ([termsHash]). Si le règlement a changé
+   * entre-temps, la signature est refusée : il doit relire. Signer deux fois le même règlement
+   * ne fait rien de plus. La signature entre dans le journal du groupe, visible de tous.
+   */
+  async sign(actor: UserActor, groupId: string, signedHash: string) {
+    return this.db.transaction(actor, async (q) => {
+      const membership = await activeMembership(q, actor.id, groupId);
+      if (!membership) throw new NotFoundException('Groupe introuvable.');
+      const { rows } = await q.query<{ status: string }>('SELECT status FROM groups WHERE id = $1 FOR UPDATE', [groupId]);
+      if (rows[0].status !== 'draft') throw new ConflictException('Le groupe a déjà démarré : le règlement est figé.');
+      const terms = await termsState(q, groupId);
+      if (!terms.ready) {
+        throw new ConflictException("Le règlement n'est pas encore complet : le président doit fixer l'ordre des tours.");
+      }
+      if (signedHash !== terms.hash) {
+        throw new ConflictException('Le règlement a changé depuis que vous l\'avez ouvert : relisez-le avant de signer.');
+      }
+      const inserted = await q.query(
+        `INSERT INTO group_terms_signatures (group_id, membership_id, terms_hash, device_id)
+         VALUES ($1, $2, $3, $4) ON CONFLICT (group_id, membership_id, terms_hash) DO NOTHING`,
+        [groupId, membership.id, terms.hash, actor.deviceId ?? null],
+      );
+      if (inserted.rowCount === 1) {
+        await appendAudit(q, {
+          groupId,
+          actor,
+          action: 'group.terms_signed',
+          payload: { membership_id: membership.id, terms_hash: terms.hash, version: TERMS_VERSION },
+        });
+      }
+      return termsState(q, groupId);
     });
   }
 

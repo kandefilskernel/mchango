@@ -10,6 +10,7 @@ import {
 import { appendAudit, Db, type Queryable } from '../infra/database.js';
 import { SMS_SENDER, type SmsSender } from '../infra/sms.js';
 import { TODAY_DRC_SQL } from '../groups/membership.js';
+import { termsState } from '../groups/terms.js';
 import { toCsv } from './csv.js';
 import { SEES_PHONE_NUMBERS } from './staff.guard.js';
 import type { StaffMember } from './staff-auth.service.js';
@@ -699,6 +700,8 @@ export class AdminService {
       })),
       chain: { chainId, intact: broken.rows[0].broken === null, firstInvalidSeq: broken.rows[0].broken },
       events,
+      // Signatures du règlement, tant que la tontine est en préparation
+      terms: r.status === 'draft' ? await termsState(this.db, groupId) : null,
     };
   }
 

@@ -90,8 +90,22 @@ Erreurs :
 - `403` membre ayant quitté ou été retiré ;
 - `429` trop d'essais.
 
+## Signature du règlement (avant le démarrage)
+
+Chaque membre **signe le règlement** avant que le président puisse démarrer. Ainsi personne ne peut dire ensuite qu'il n'était pas d'accord avec le montant, la date ou son tour.
+
+- **Le règlement signé** est résumé par une empreinte SHA-256 (`terms_hash`) d'un texte canonique : JSON aux clés triées, avec `amount_minor`, `currency`, `frequency`, `group_id`, `order` (liste `[tour, membership_id]` dans l'ordre des tours), `payout_mode`, `start_date` et `version: "mchango-terms-v1"` (`apps/api/src/groups/terms.ts`).
+- **Rien à signer** tant que l'ordre des tours n'est pas fixé pour tous (au moins 2 membres).
+- **`GET /groups/:id`** renvoie `terms: { hash, ready, signedBy, missing, allSigned }` tant que le groupe est en préparation, puis `null`.
+- **`POST /groups/:id/sign`** `{ "termsHash": "…" }` : le membre signe le règlement qu'il a lu. Signer deux fois ne change rien. Erreurs `409` : règlement changé entre-temps (« relisez-le »), pas encore complet, ou groupe déjà démarré. `404` pour un non-membre.
+- **Tout changement** (ordre des tours, montant, fréquence, date) change l'empreinte : les signatures précédentes ne comptent plus et il faut re-signer. Elles restent en base (`group_terms_signatures`, ajout seul).
+- **`POST /groups/:id/start`** refuse (`409`) tant que tous les membres actifs n'ont pas signé le règlement actuel, et nomme ceux qui manquent.
+- **Dans l'app :** la signature est confirmée par le **PIN** (ou l'empreinte), vérifié sur le téléphone, avec la même pause que pour l'ouverture après 5 PIN faux. La session reste signée par la clé du téléphone.
+- **À vérifier avec un juriste :** la valeur de cette signature électronique en droit congolais (Code du numérique), en cas de conflit porté devant un tribunal.
+
 ## Journal (chaîne du groupe)
 
+- `group.terms_signed` : membre, empreinte du règlement, version (une ligne par signature) ;
 - `groups.insert` ;
 - `memberships.insert` : un par adhésion, attribué au membre qui rejoint ;
 - `group.invitation_created` : identifiant, expiration et nombre d'utilisations, **sans le code**.

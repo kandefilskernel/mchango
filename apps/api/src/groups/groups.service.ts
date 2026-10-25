@@ -14,6 +14,7 @@ import { appendAudit, Db, type Actor, type Queryable } from '../infra/database.j
 import { REDIS } from '../infra/redis.js';
 import { generateInviteCode, inviteCodeHash, normalizeInviteCode } from './invite-code.js';
 import { activeMembership } from './membership.js';
+import { termsState } from './terms.js';
 
 /** Essais de code d'invitation par utilisateur et par heure (contre le devinage). */
 const JOIN_ATTEMPTS_PER_HOUR = 10;
@@ -143,10 +144,13 @@ export class GroupsService {
        ORDER BY m.turn_order NULLS LAST, m.joined_at`,
       [groupId],
     );
+    const g = toGroup(group.rows[0]);
     return {
-      ...toGroup(group.rows[0]),
+      ...g,
       myRole: role,
       memberCount: members.rowCount,
+      // Signatures du règlement (avant le démarrage seulement : ensuite il est figé)
+      terms: g.status === 'draft' ? await termsState(this.db, groupId) : null,
       // Les numéros ne sont visibles que des membres du même groupe
       members: members.rows.map((m) => ({
         membershipId: m.membership_id,

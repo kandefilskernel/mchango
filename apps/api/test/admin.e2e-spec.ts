@@ -57,6 +57,7 @@ describe('Back-office (e2e)', () => {
       .set(asMember(president))
       .send({ membershipIds: [president, member].map((s) => detail.members.find((m: { userId: string }) => m.userId === s.userId).membershipId) })
       .expect(200);
+    await api.signTerms(g.id, [president, member]);
     await http().post(`/groups/${g.id}/start`).set(asMember(president)).expect(200);
     const tx = `MP${Date.now()}A`;
     const declared = await http()

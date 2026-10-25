@@ -56,6 +56,7 @@ const UpdateGroup = z
   .refine((v) => Object.keys(v).length > 0, 'Aucune modification demandée.');
 
 const ChosenOrder = z.object({ membershipIds: z.array(z.uuid()).min(2).max(100) });
+const SignTerms = z.object({ termsHash: z.string().regex(/^[0-9a-f]{64}$/, 'Empreinte du règlement invalide.') });
 
 const CreateInvitation = z.object({
   validHours: z.number().int().min(1).max(24 * 14).default(72),
@@ -145,6 +146,13 @@ export class GroupsController {
   @HttpCode(200)
   draw(@CurrentAuth() auth: AccessTokenClaims, @Param('id', ParseUUIDPipe) id: string) {
     return this.lifecycle.draw(actorOf(auth), id);
+  }
+
+  /** Le membre signe le règlement affiché (empreinte), avant le démarrage. */
+  @Post(':id/sign')
+  @HttpCode(200)
+  sign(@CurrentAuth() auth: AccessTokenClaims, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    return this.lifecycle.sign(actorOf(auth), id, parseBody(SignTerms, body).termsHash);
   }
 
   @Post(':id/start')

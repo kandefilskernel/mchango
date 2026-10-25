@@ -63,6 +63,8 @@ const ln = <String, String>{
       'Mokolo na mokolo',
   'Chaque membre paie directement le bénéficiaire du tour. {notice}':
       'Mosangani nyonso afutaka mbala moko moto oyo azali na tango. {notice}',
+  'Chaque membre signe ce règlement avant le démarrage. Si le président change le montant, la date ou l\'ordre des tours, il faut signer à nouveau.':
+      'Mosangani nyonso atiaka nkombo na mibeko oyo liboso ya kobanda. Soki prezida abongoli motango, mokolo to molongo ya ba tango, esengeli kotia nkombo lisusu.',
   'Chaque membre verse':
       'Mosangani nyonso afutaka',
   'Chaque mois':
@@ -163,10 +165,14 @@ const ln = <String, String>{
       'Elembo ya mosapi ekufi: fungola na PIN.',
   'Empreinte non reconnue : rien n\'a changé.':
       'Elembo ya mosapi eyebani te: eloko moko ebongwani te.',
+  'Empreinte non reconnue.':
+      'Elembo ya mosapi eyebani te.',
   'Empreinte non reconnue. Utilisez votre PIN.':
       'Elembo ya mosapi eyebani te. Salela PIN na yo.',
   'En attente de confirmation':
       'Ezali kozela kondima',
+  'En attente des signatures : {names}':
+      'Ezali kozela ba signature: {names}',
   'En attente du démarrage par le président.':
       'Ezali kozela ete prezida abanda.',
   'En cours':
@@ -237,6 +243,10 @@ const ln = <String, String>{
       'Namoni bopesi',
   'Je confirme':
       'Nandimi',
+  'Je m\'engage à payer ma cotisation à chaque tour, directement au bénéficiaire, et à la déclarer dans Mchango. {notice}':
+      'Nandimi kofuta likabo na ngai na tango nyonso, mbala moko na moto oyo azwi, mpe koyebisa yango na Mchango. {notice}',
+  'Je signe':
+      'Natii nkombo',
   'Journal : événement n°{n} · {hash}…':
       'Buku: likambo motángo {n} · {hash}…',
   'Journal vérifié sur ce téléphone : {n} événements, aucun n\'a été modifié ni supprimé.':
@@ -259,12 +269,16 @@ const ln = <String, String>{
       'Likelemba esili: tango nyonso efutami',
   'Langue':
       'Lokota',
+  'Le règlement sera à signer quand le président aura fixé l\'ordre des tours.':
+      'Mibeko ekoki kotiama nkombo soki prezida akati molongo ya ba tango.',
   'Le tirage ne peut être fait qu\'une fois pour ces membres. Son résultat et sa graine seront visibles par tous dans l\'historique, et chacun pourra le vérifier.':
       'Zeke ekoki kobetama kaka mbala moko mpo na basangani oyo. Eloko ebimi mpe mboto na yango ekomonana na bato nyonso na lisolo, mpe moto nyonso akoki kotala yango.',
   'Les deux PIN ne sont pas identiques.':
       'PIN mibale ekokani te.',
   'Les membres':
       'Basangani',
+  'Lire et signer le règlement':
+      'Tanga mpe tia nkombo na mibeko',
   'Litige clos':
       'Matata esili',
   'Litige ouvert':
@@ -421,6 +435,10 @@ const ln = <String, String>{
       'Resi ya Mchango {number}: {payer} afuti {amount} na {beneficiary} ({group}, tango {n}), endimami mokolo {date}.',
   'Règlement':
       'Mibeko',
+  'Règlement de « {name} »':
+      'Mibeko ya « {name} »',
+  'Règlement à signer':
+      'Mibeko ya kotia nkombo',
   'Réessayer':
       'Meka lisusu',
   'Réponse enregistrée. En attente des autres confirmations.':
@@ -439,6 +457,8 @@ const ln = <String, String>{
       'Yo moko, kobomba mbongo ezwaka tango. Elongo, moto nyonso azwaka na tango na ye.',
   'Si vous êtes dans une tontine, une personne du groupe (le président, ou un membre si vous êtes président) devra confirmer que c\'est bien vous. Elle recevra un SMS.':
       'Soki ozali na likelemba, moto moko ya lisanga (prezida, to mosangani soki yo nde prezida) akondima ete ezali yo mpenza. Akozwa SMS.',
+  'Signer le règlement de la tontine':
+      'Tia nkombo na mibeko ya likelemba',
   'Statut':
       'Ezalela',
   'Suivant':
@@ -505,6 +525,8 @@ const ln = <String, String>{
       'Tala resi na ngai',
   'Votre PIN':
       'PIN na yo',
+  'Votre PIN pour signer':
+      'PIN na yo mpo na kotia nkombo',
   'Votre PIN reste valable à tout moment. Attention : toute empreinte enregistrée sur ce téléphone pourra ouvrir Mchango. Ne l\'activez pas si quelqu\'un d\'autre a mis son empreinte.':
       'PIN na yo ezali kaka na motuya ntango nyonso. Keba: elembo nyonso ya mosapi oyo ebombami na telefone oyo ekoki kofungola Mchango. Kopelisa yango te soki moto mosusu atii elembo ya mosapi na ye.',
   'Votre carnet se remplira dès votre première tontine.':
@@ -521,8 +543,12 @@ const ln = <String, String>{
       'Lifuti na yo eboyami. Solola na moto oyo azwi.',
   'Votre paiement est déclaré. En attente de confirmation.':
       'Lifuti na yo eyebisami. Ezali kozela kondima.',
+  'Votre tour':
+      'Tango na yo',
   'Vous avez déjà un compte':
       'Ozali na kont kala',
+  'Vous avez signé ce règlement.':
+      'Otii nkombo na mibeko oyo.',
   'Vous n\'êtes encore dans aucune tontine.':
       'Ozali naino na likelemba moko te.',
   'Vous ouvrirez Mchango avec votre PIN seulement.':
@@ -531,14 +557,20 @@ const ln = <String, String>{
       'Okoki kotia mokano ya lisanga.',
   'Vous recevez ce tour':
       'Yo nde ozwi na tango oyo',
+  'Vous recevrez':
+      'Okozwa',
   'Vous êtes garant : confirmez seulement après lui avoir parlé.':
       'Ozali motatoli: ndima kaka sima ya kosolola na ye.',
   'Vérification avec votre SMS':
       'Kotala na SMS na yo',
   'Vérifier avec mon SMS':
       'Tala na SMS na ngai',
+  'a signé':
+      'atii nkombo',
   'avec un code':
       'na kode',
+  'en attente':
+      'ezali kozela',
   'en retard':
       'eumeli',
   'en retard depuis le {date}':

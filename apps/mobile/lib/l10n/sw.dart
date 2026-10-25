@@ -63,6 +63,8 @@ const sw = <String, String>{
       'Kila siku',
   'Chaque membre paie directement le bénéficiaire du tour. {notice}':
       'Kila mwanachama humlipa moja kwa moja mpokeaji wa zamu. {notice}',
+  'Chaque membre signe ce règlement avant le démarrage. Si le président change le montant, la date ou l\'ordre des tours, il faut signer à nouveau.':
+      'Kila mwanachama anasaini kanuni hizi kabla ya kuanza. Rais akibadilisha kiasi, tarehe au mpangilio wa zamu, lazima kusaini tena.',
   'Chaque membre verse':
       'Kila mwanachama analipa',
   'Chaque mois':
@@ -163,10 +165,14 @@ const sw = <String, String>{
       'Alama ya kidole imezimwa: fungua kwa PIN.',
   'Empreinte non reconnue : rien n\'a changé.':
       'Alama ya kidole haikutambuliwa: hakuna kilichobadilika.',
+  'Empreinte non reconnue.':
+      'Alama ya kidole haikutambuliwa.',
   'Empreinte non reconnue. Utilisez votre PIN.':
       'Alama ya kidole haikutambuliwa. Tumia PIN yako.',
   'En attente de confirmation':
       'Inasubiri uthibitisho',
+  'En attente des signatures : {names}':
+      'Inasubiri saini: {names}',
   'En attente du démarrage par le président.':
       'Inasubiri rais aanzishe.',
   'En cours':
@@ -237,6 +243,10 @@ const sw = <String, String>{
       'Nimeona makabidhiano',
   'Je confirme':
       'Nathibitisha',
+  'Je m\'engage à payer ma cotisation à chaque tour, directement au bénéficiaire, et à la déclarer dans Mchango. {notice}':
+      'Ninaahidi kulipa mchango wangu kila zamu, moja kwa moja kwa mpokeaji, na kuutangaza kwenye Mchango. {notice}',
+  'Je signe':
+      'Nasaini',
   'Journal : événement n°{n} · {hash}…':
       'Daftari: tukio namba {n} · {hash}…',
   'Journal vérifié sur ce téléphone : {n} événements, aucun n\'a été modifié ni supprimé.':
@@ -259,12 +269,16 @@ const sw = <String, String>{
       'Likelemba limekamilika: zamu zote zimelipwa',
   'Langue':
       'Lugha',
+  'Le règlement sera à signer quand le président aura fixé l\'ordre des tours.':
+      'Kanuni zitasainiwa rais atakapoweka mpangilio wa zamu.',
   'Le tirage ne peut être fait qu\'une fois pour ces membres. Son résultat et sa graine seront visibles par tous dans l\'historique, et chacun pourra le vérifier.':
       'Kura inaweza kupigwa mara moja tu kwa wanachama hawa. Matokeo yake na mbegu yake yataonekana na wote katika historia, na kila mmoja ataweza kuyakagua.',
   'Les deux PIN ne sont pas identiques.':
       'PIN hizi mbili hazifanani.',
   'Les membres':
       'Wanachama',
+  'Lire et signer le règlement':
+      'Soma na usaini kanuni',
   'Litige clos':
       'Mzozo umefungwa',
   'Litige ouvert':
@@ -421,6 +435,10 @@ const sw = <String, String>{
       'Risiti ya Mchango {number}: {payer} amelipa {amount} kwa {beneficiary} ({group}, zamu {n}), imethibitishwa tarehe {date}.',
   'Règlement':
       'Kanuni',
+  'Règlement de « {name} »':
+      'Kanuni za « {name} »',
+  'Règlement à signer':
+      'Kanuni za kusaini',
   'Réessayer':
       'Jaribu tena',
   'Réponse enregistrée. En attente des autres confirmations.':
@@ -439,6 +457,8 @@ const sw = <String, String>{
       'Peke yako, kuweka akiba kunachukua muda. Pamoja, kila mmoja anapokea kwa zamu yake.',
   'Si vous êtes dans une tontine, une personne du groupe (le président, ou un membre si vous êtes président) devra confirmer que c\'est bien vous. Elle recevra un SMS.':
       'Ikiwa uko katika likelemba, mtu wa kikundi (rais, au mwanachama ikiwa wewe ndiye rais) atapaswa kuthibitisha kwamba ni wewe kweli. Atapokea SMS.',
+  'Signer le règlement de la tontine':
+      'Saini kanuni za likelemba',
   'Statut':
       'Hali',
   'Suivant':
@@ -505,6 +525,8 @@ const sw = <String, String>{
       'Ona risiti yangu',
   'Votre PIN':
       'PIN yako',
+  'Votre PIN pour signer':
+      'PIN yako ya kusaini',
   'Votre PIN reste valable à tout moment. Attention : toute empreinte enregistrée sur ce téléphone pourra ouvrir Mchango. Ne l\'activez pas si quelqu\'un d\'autre a mis son empreinte.':
       'PIN yako inafanya kazi wakati wowote. Tahadhari: alama yoyote ya kidole iliyowekwa kwenye simu hii itaweza kufungua Mchango. Usiiwashe ikiwa mtu mwingine ameweka alama ya kidole chake.',
   'Votre carnet se remplira dès votre première tontine.':
@@ -521,8 +543,12 @@ const sw = <String, String>{
       'Malipo yako yamelalamikiwa. Ongea na mpokeaji.',
   'Votre paiement est déclaré. En attente de confirmation.':
       'Malipo yako yametangazwa. Yanasubiri uthibitisho.',
+  'Votre tour':
+      'Zamu yako',
   'Vous avez déjà un compte':
       'Tayari una akaunti',
+  'Vous avez signé ce règlement.':
+      'Umesaini kanuni hizi.',
   'Vous n\'êtes encore dans aucune tontine.':
       'Bado haupo katika likelemba lolote.',
   'Vous ouvrirez Mchango avec votre PIN seulement.':
@@ -531,14 +557,20 @@ const sw = <String, String>{
       'Unaweza kuweka lengo la kikundi.',
   'Vous recevez ce tour':
       'Unapokea zamu hii',
+  'Vous recevrez':
+      'Utapokea',
   'Vous êtes garant : confirmez seulement après lui avoir parlé.':
       'Wewe ni mdhamini: thibitisha tu baada ya kuongea naye.',
   'Vérification avec votre SMS':
       'Ukaguzi kwa SMS yako',
   'Vérifier avec mon SMS':
       'Kagua kwa SMS yangu',
+  'a signé':
+      'amesaini',
   'avec un code':
       'kwa msimbo',
+  'en attente':
+      'anasubiriwa',
   'en retard':
       'imechelewa',
   'en retard depuis le {date}':

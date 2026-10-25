@@ -44,6 +44,7 @@ class Group {
     required this.myRole,
     required this.memberCount,
     required this.members,
+    this.terms,
   });
 
   factory Group.fromJson(Json j) => Group(
@@ -60,6 +61,7 @@ class Group {
     myRole: j['myRole'] as String? ?? 'member',
     memberCount: j['memberCount'] as int? ?? 0,
     members: [for (final m in (j['members'] as List? ?? const [])) Member.fromJson(m as Json)],
+    terms: j['terms'] == null ? null : GroupTerms.fromJson(j['terms'] as Json),
   );
 
   final String id;
@@ -75,6 +77,9 @@ class Group {
   final String myRole;
   final int memberCount;
   final List<Member> members;
+
+  /// Signatures du règlement, tant que le groupe est en préparation (null ensuite).
+  final GroupTerms? terms;
 
   bool get isPresident => myRole == 'president';
   bool get isDraft => status == 'draft';
@@ -418,4 +423,28 @@ class CarnetGroup {
   final int receivedCount;
   final int receivedMinor;
   final int pendingCount;
+}
+
+/// Le règlement que chaque membre signe avant le démarrage (montant, date, ordre des tours).
+class GroupTerms {
+  GroupTerms({required this.hash, required this.ready, required this.signedBy, required this.missing, required this.allSigned});
+
+  factory GroupTerms.fromJson(Json j) => GroupTerms(
+    hash: j['hash'] as String,
+    ready: j['ready'] as bool,
+    signedBy: [for (final m in j['signedBy'] as List) m as String],
+    missing: [for (final m in j['missing'] as List) (m as Json)['fullName'] as String],
+    allSigned: j['allSigned'] as bool,
+  );
+
+  /// Empreinte du règlement : signer, c'est approuver exactement ce règlement-là.
+  final String hash;
+
+  /// Ordre des tours fixé pour tous : le règlement peut être signé.
+  final bool ready;
+  final List<String> signedBy;
+
+  /// Noms des membres qui n'ont pas encore signé.
+  final List<String> missing;
+  final bool allSigned;
 }

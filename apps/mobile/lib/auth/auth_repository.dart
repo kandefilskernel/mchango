@@ -240,6 +240,29 @@ class AuthRepository extends ChangeNotifier {
     return true;
   }
 
+  /// Confirme que c'est bien le titulaire avant un engagement (signature du règlement) :
+  /// même vérification et même pause après 5 PIN faux que pour ouvrir l'app.
+  Future<bool> confirmWithPin(String pin) async {
+    if (await lockRemaining() != null) return false;
+    final stored = await _store.read(_kPinHash);
+    if (stored != null && await LocalPin.verify(stored, pin)) {
+      await _store.write(_kPinFailures, '0');
+      return true;
+    }
+    final failures = int.parse(await _store.read(_kPinFailures) ?? '0') + 1;
+    if (failures >= maxPinFailures) {
+      await _store.write(_kPinFailures, '0');
+      await _store.write(_kLockedUntil, '${DateTime.now().add(lockDuration).millisecondsSinceEpoch}');
+    } else {
+      await _store.write(_kPinFailures, '$failures');
+    }
+    return false;
+  }
+
+  /// Même confirmation par empreinte, si elle est activée sur ce téléphone.
+  Future<bool> confirmWithBiometric(String reason) async =>
+      await biometricEnabled() && await lockRemaining() == null && await _biometric.authenticate(reason);
+
   void lock() {
     _api.accessToken = null;
     status = AuthStatus.locked;

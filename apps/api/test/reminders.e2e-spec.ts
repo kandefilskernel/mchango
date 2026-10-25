@@ -52,7 +52,10 @@ describe('Rappels avant échéance (e2e)', () => {
       .set(auth(president.session))
       .send({ membershipIds: people.map((p) => membershipOf(p.session)) })
       .expect(200);
-    if (start) await api.http().post(`/groups/${group.id}/start`).set(auth(president.session)).expect(200);
+    if (start) {
+      await api.signTerms(group.id, people.map((p) => p.session));
+      await api.http().post(`/groups/${group.id}/start`).set(auth(president.session)).expect(200);
+    }
     return { groupId: group.id, president, payers: others };
   }
 

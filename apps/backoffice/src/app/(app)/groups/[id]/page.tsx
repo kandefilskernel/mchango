@@ -21,6 +21,13 @@ interface GroupDetail {
   cycles: { cycleNumber: number; dueDate: string; status: string; beneficiary: string; confirmed: number; expected: number }[];
   chain: { chainId: string; intact: boolean; firstInvalidSeq: string | null };
   events: AuditEventRow[];
+  terms: {
+    hash: string;
+    ready: boolean;
+    signedBy: string[];
+    missing: { membershipId: string; fullName: string }[];
+    allSigned: boolean;
+  } | null;
 }
 
 export default async function GroupPage({ params }: PageProps<"/groups/[id]">) {
@@ -49,6 +56,25 @@ export default async function GroupPage({ params }: PageProps<"/groups/[id]">) {
 
       <div className="cols">
         <div>
+          {g.terms && (
+            <div className="card">
+              <h2>
+                Signature du règlement{" "}
+                <span className={`badge ${g.terms.allSigned ? "badge-ok" : "badge-warn"}`}>
+                  {g.terms.ready ? `${g.members.length - g.terms.missing.length}/${g.members.length} signé(s)` : "ordre des tours à fixer"}
+                </span>
+              </h2>
+              <p className="muted" style={{ marginTop: 0 }}>
+                Chaque membre signe le règlement (montant, date, ordre des tours) avant le démarrage. Un changement annule les
+                signatures. Empreinte : <span className="mono">{g.terms.hash.slice(0, 16)}…</span>
+              </p>
+              {g.terms.ready && g.terms.missing.length > 0 && (
+                <p>
+                  <strong>En attente :</strong> {g.terms.missing.map((m) => m.fullName).join(", ")}
+                </p>
+              )}
+            </div>
+          )}
           <div className="card">
             <h2>Tours</h2>
             {g.cycles.length === 0 ? (

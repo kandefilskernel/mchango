@@ -93,4 +93,13 @@ export class TestApi {
       .post('/auth/session')
       .send({ deviceId, nonce: body.nonce, signature: signature.toString('base64') });
   }
+
+  /** Chaque membre signe le règlement actuel (obligatoire avant le démarrage). */
+  async signTerms(groupId: string, sessions: TestSession[]) {
+    const auth = (s: TestSession) => ({ Authorization: `Bearer ${s.accessToken}` });
+    const { body } = await this.http().get(`/groups/${groupId}`).set(auth(sessions[0])).expect(200);
+    for (const s of sessions) {
+      await this.http().post(`/groups/${groupId}/sign`).set(auth(s)).send({ termsHash: body.terms.hash }).expect(200);
+    }
+  }
 }

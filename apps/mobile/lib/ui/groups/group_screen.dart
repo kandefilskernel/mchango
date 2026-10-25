@@ -8,6 +8,7 @@ import '../../util/format.dart';
 import '../common.dart';
 import '../cycles/cycle_screen.dart';
 import '../history/history_screen.dart';
+import 'terms_section.dart';
 import 'turn_order_screen.dart';
 import '../../l10n/l10n.dart';
 
@@ -85,6 +86,8 @@ class _GroupScreenState extends State<GroupScreen> {
           subtitle: Text(m.role == 'president' ? t('Président(e) · {phone}', {'phone': m.phone}) : m.phone),
         ),
       _OrderInfo(group: g),
+      const SizedBox(height: 12),
+      TermsSection(group: g, onSigned: reload),
       const SizedBox(height: 16),
       if (!g.isPresident)
         Text(t('En attente du démarrage par le président.'), textAlign: TextAlign.center)
@@ -108,7 +111,7 @@ class _GroupScreenState extends State<GroupScreen> {
         BusyButton(
           label: t('Démarrer la tontine'),
           icon: Icons.play_arrow,
-          onPressed: g.hasCompleteOrder
+          onPressed: g.hasCompleteOrder && (g.terms?.allSigned ?? false)
               ? () async {
                   if (await _confirmStart(context, g) != true) return;
                   await api.start(g.id);
@@ -120,6 +123,15 @@ class _GroupScreenState extends State<GroupScreen> {
           Padding(
             padding: EdgeInsets.only(top: 8),
             child: Text(t("Pour démarrer : au moins 2 membres et l'ordre des tours fixé."), textAlign: TextAlign.center),
+          )
+        else if (g.terms != null && !g.terms!.allSigned)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              t('En attente des signatures : {names}', {'names': g.terms!.missing.join(', ')}),
+              key: const Key('missing_signatures'),
+              textAlign: TextAlign.center,
+            ),
           ),
       ],
     ];

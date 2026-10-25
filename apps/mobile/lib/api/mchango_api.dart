@@ -54,6 +54,10 @@ class MchangoApi {
   Future<DrawResult> draw(String groupId) async =>
       DrawResult.fromJson(await client.post('/groups/$groupId/turn-order/draw') as Json);
 
+  /// Signe le règlement affiché (son empreinte). Refusé s'il a changé entre-temps.
+  Future<GroupTerms> signTerms(String groupId, String termsHash) async =>
+      GroupTerms.fromJson(await client.post('/groups/$groupId/sign', {'termsHash': termsHash}) as Json);
+
   Future<void> start(String groupId) => client.post('/groups/$groupId/start');
 
   Future<Board> board(String groupId) async => Board.fromJson(await client.get('/groups/$groupId/cycles') as Json);

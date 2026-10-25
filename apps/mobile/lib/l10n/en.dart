@@ -63,6 +63,8 @@ const en = <String, String>{
       'Every day',
   'Chaque membre paie directement le bénéficiaire du tour. {notice}':
       'Each member pays the beneficiary of the turn directly. {notice}',
+  'Chaque membre signe ce règlement avant le démarrage. Si le président change le montant, la date ou l\'ordre des tours, il faut signer à nouveau.':
+      'Every member signs these rules before the start. If the president changes the amount, the date or the turn order, everyone must sign again.',
   'Chaque membre verse':
       'Each member pays',
   'Chaque mois':
@@ -163,10 +165,14 @@ const en = <String, String>{
       'Fingerprint turned off: open with your PIN.',
   'Empreinte non reconnue : rien n\'a changé.':
       'Fingerprint not recognised: nothing has changed.',
+  'Empreinte non reconnue.':
+      'Fingerprint not recognised.',
   'Empreinte non reconnue. Utilisez votre PIN.':
       'Fingerprint not recognised. Use your PIN.',
   'En attente de confirmation':
       'Waiting for confirmation',
+  'En attente des signatures : {names}':
+      'Waiting for signatures: {names}',
   'En attente du démarrage par le président.':
       'Waiting for the president to start.',
   'En cours':
@@ -237,6 +243,10 @@ const en = <String, String>{
       'I saw the handover',
   'Je confirme':
       'I confirm',
+  'Je m\'engage à payer ma cotisation à chaque tour, directement au bénéficiaire, et à la déclarer dans Mchango. {notice}':
+      'I commit to paying my contribution at every turn, directly to the beneficiary, and to declaring it in Mchango. {notice}',
+  'Je signe':
+      'I sign',
   'Journal : événement n°{n} · {hash}…':
       'Log: event no. {n} · {hash}…',
   'Journal vérifié sur ce téléphone : {n} événements, aucun n\'a été modifié ni supprimé.':
@@ -259,12 +269,16 @@ const en = <String, String>{
       'The tontine is finished: every turn is paid',
   'Langue':
       'Language',
+  'Le règlement sera à signer quand le président aura fixé l\'ordre des tours.':
+      'The rules can be signed once the president has set the turn order.',
   'Le tirage ne peut être fait qu\'une fois pour ces membres. Son résultat et sa graine seront visibles par tous dans l\'historique, et chacun pourra le vérifier.':
       'The draw can only be done once for these members. Its result and seed will be visible to everyone in the history, and anyone can check it.',
   'Les deux PIN ne sont pas identiques.':
       'The two PINs do not match.',
   'Les membres':
       'The members',
+  'Lire et signer le règlement':
+      'Read and sign the rules',
   'Litige clos':
       'Dispute closed',
   'Litige ouvert':
@@ -421,6 +435,10 @@ const en = <String, String>{
       'Mchango receipt {number}: {payer} paid {amount} to {beneficiary} ({group}, turn {n}), confirmed on {date}.',
   'Règlement':
       'Rules',
+  'Règlement de « {name} »':
+      'Rules of "{name}"',
+  'Règlement à signer':
+      'Rules to sign',
   'Réessayer':
       'Try again',
   'Réponse enregistrée. En attente des autres confirmations.':
@@ -439,6 +457,8 @@ const en = <String, String>{
       'Saving alone takes time. Together, everyone receives in turn.',
   'Si vous êtes dans une tontine, une personne du groupe (le président, ou un membre si vous êtes président) devra confirmer que c\'est bien vous. Elle recevra un SMS.':
       'If you are in a tontine, a person from the group (the president, or a member if you are the president) will have to confirm that it is really you. They will receive an SMS.',
+  'Signer le règlement de la tontine':
+      'Sign the tontine rules',
   'Statut':
       'Status',
   'Suivant':
@@ -505,6 +525,8 @@ const en = <String, String>{
       'See my receipt',
   'Votre PIN':
       'Your PIN',
+  'Votre PIN pour signer':
+      'Your PIN to sign',
   'Votre PIN reste valable à tout moment. Attention : toute empreinte enregistrée sur ce téléphone pourra ouvrir Mchango. Ne l\'activez pas si quelqu\'un d\'autre a mis son empreinte.':
       'Your PIN still works at any time. Careful: any fingerprint saved on this phone will be able to open Mchango. Do not turn it on if someone else has added their fingerprint.',
   'Votre carnet se remplira dès votre première tontine.':
@@ -521,8 +543,12 @@ const en = <String, String>{
       'Your payment is disputed. Talk to the beneficiary about it.',
   'Votre paiement est déclaré. En attente de confirmation.':
       'Your payment is declared. Waiting for confirmation.',
+  'Votre tour':
+      'Your turn',
   'Vous avez déjà un compte':
       'You already have an account',
+  'Vous avez signé ce règlement.':
+      'You have signed these rules.',
   'Vous n\'êtes encore dans aucune tontine.':
       'You are not in any tontine yet.',
   'Vous ouvrirez Mchango avec votre PIN seulement.':
@@ -531,14 +557,20 @@ const en = <String, String>{
       'You can include the group\'s goal.',
   'Vous recevez ce tour':
       'You receive this turn',
+  'Vous recevrez':
+      'You will receive',
   'Vous êtes garant : confirmez seulement après lui avoir parlé.':
       'You are a guarantor: only confirm after speaking to them.',
   'Vérification avec votre SMS':
       'Check with your SMS',
   'Vérifier avec mon SMS':
       'Check with my SMS',
+  'a signé':
+      'signed',
   'avec un code':
       'with a code',
+  'en attente':
+      'waiting',
   'en retard':
       'late',
   'en retard depuis le {date}':

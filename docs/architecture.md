@@ -92,9 +92,12 @@ stateDiagram-v2
 
 > **Lecture automatique de l'ID dans le SMS : V3** (document de cadrage). Attention : sur Android, la permission `READ_SMS` est très encadrée par Google Play (vérifiez la politique actuelle). Une étape intermédiaire sans permission est possible : l'utilisateur colle le SMS et l'app en extrait l'ID.
 
-**Cash (remise en main propre)** : le document de cadrage prévoit au MVP une cotisation en espèces **confirmée par un tiers**. Deux façons de le faire, à trancher :
-- le receveur confirme comme pour le mobile money, et un **témoin** (autre membre) confirme aussi ;
-- plus tard, une confirmation par **co-présence** : le receveur affiche un QR code signé par son appareil, le payeur le scanne ; cela fonctionne sans réseau.
+**Cash (remise en main propre)** — retenu pour le MVP :
+1. À la déclaration, le payeur désigne un **témoin** : un autre membre actif du groupe, ni lui-même ni le receveur.
+2. Le receveur confirme, et le témoin confirme aussi.
+3. La cotisation ne passe « confirmée » qu'avec ces deux confirmations : c'est imposé par la base ([`db/003_cash_witness.sql`](../db/003_cash_witness.sql)).
+
+Plus tard, éventuellement : confirmation par **co-présence** (le receveur affiche un QR code signé par son appareil, le payeur le scanne ; fonctionne sans réseau).
 
 ### 3.4 Reçus avec QR code
 
@@ -201,11 +204,13 @@ flowchart LR
 
 ### 5.4 Authentification
 
-- **Téléphone + OTP SMS** à l'inscription et sur nouvel appareil ; **PIN** local (4–6 chiffres) pour ouvrir l'app, biométrie si disponible.
-- OTP : 6 chiffres, expiration 5 min, 5 essais max, limitation par numéro et par IP (sinon la facture SMS explose et le compte se fait attaquer).
-- PIN : jamais envoyé en clair ; vérification locale + verrouillage après échecs.
-- Nouvel appareil = nouvelle clé, annoncée dans le journal du groupe (« Mama Furaha a changé de téléphone »).
-- Récupération de compte : OTP + validation par le président du groupe ou le support (risque de vol de carte SIM / SIM swap).
+Implémentée (semaine 1) ; contrat détaillé dans [`spec/auth.md`](../spec/auth.md).
+
+- **Inscription** : code SMS → nom + PIN (6 chiffres, argon2id) + clé publique Ed25519 de l'appareil.
+- **Nouveau téléphone** : code SMS **et** PIN ; l'ancien appareil est révoqué et c'est journalisé. 5 PIN faux → blocage 30 min.
+- **Connexion courante** : l'appareil signe un défi du serveur ; jeton d'accès de 15 min. Le PIN ne circule pas à chaque connexion.
+- Codes SMS : 6 chiffres, 5 min, 5 essais, 3 envois par numéro en 15 min, stockés hachés dans Redis.
+- À venir : déverrouillage local par PIN/biométrie (semaine 3), annonce du changement de téléphone dans les groupes, récupération d'un PIN oublié via le support.
 
 ### 5.5 Organisation du dépôt
 
@@ -306,7 +311,7 @@ Repris du document de cadrage :
 | Unicité de l'ID de transaction | Par groupe | **Ma version : toute la plateforme** | Sinon le même reçu M-Pesa sert dans deux groupes. |
 | Concurrence sur le journal | « Acceptable pour le MVP » | **Ma version : sérialisé** | Mesuré : 590 fourches sur 800 insertions avec 8 clients. Correction déjà faite et testée. |
 | Écriture du journal | Par le code de l'API | **Ma version : triggers en base** | Aucun oubli possible ; même transaction. |
-| Cash confirmé par un tiers | MVP | **À trancher** | Témoin en plus du receveur, ou QR de co-présence plus tard (§3.3). |
+| Cash confirmé par un tiers | MVP | **Receveur + témoin désigné** | Décidé le 21/10/2026 ; imposé en base (§3.3). |
 
 Critères de réussite : un groupe de 5 à 10 personnes termine un cycle sans aide ; chaque cotisation a un statut clair et une trace dans le journal ; un ID de transaction ne peut pas servir deux fois ; l'écran de déclaration est compris sans explication.
 

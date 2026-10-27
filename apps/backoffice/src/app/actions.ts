@@ -122,6 +122,23 @@ export async function reactivateGroup(groupId: string) {
   });
 }
 
+/**
+ * Lance une analyse par l'agent IA (facturée), puis ouvre son résultat. L'analyse est un avis
+ * pour l'équipe : elle ne bloque, ne suspend ni ne décide rien.
+ */
+export async function runAiReview(groupId: string | null): Promise<ActionState> {
+  let id: string;
+  try {
+    const path = groupId ? `/admin/ai/groups/${groupId}/review` : "/admin/ai/feedback/review";
+    id = (await api<{ id: string }>(path, { method: "POST", body: {} })).id;
+  } catch (e) {
+    if (!(e instanceof ApiError)) throw e;
+    return { error: e.message };
+  }
+  revalidatePath("/ai");
+  redirect(`/ai/${id}`);
+}
+
 export async function decideDispute(disputeId: string, _: ActionState, form: FormData) {
   return run(async () => {
     const decision = text(form, "decision") === "reject" ? "reject" : "note";

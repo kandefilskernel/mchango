@@ -653,4 +653,26 @@ const ln = <String, String>{
       'na {name} · {phone}',
   '⚠ Échéance dépassée':
       '⚠ Mokolo ekatami eleki',
+  'Donner mon avis':
+      'Pesá likanisi na ngai',
+  'Écrivez votre avis.':
+      'Komá likanisi na yo.',
+  'Merci ! Votre avis a été envoyé à l\'équipe Mchango.':
+      'Matondi! Likanisi na yo etindami epai ya ekipi ya Mchango.',
+  'Qu\'est-ce qui marche bien ? Qu\'est-ce qui pose problème ? L\'équipe lit chaque avis.':
+      'Nini ezali kotambola malamu? Nini ezali na mokakatano? Ekipi etángaka likanisi nyonso.',
+  'À propos de':
+      'Na ntina na',
+  'Mchango en général':
+      'Mchango na mobimba',
+  'Votre note (facultatif)':
+      'Nota na yo (ezali na makambo te)',
+  'Votre avis':
+      'Likanisi na yo',
+  'Exemple : le bénéficiaire ne confirme pas mon paiement.':
+      'Ndakisa: mozwi andimi te lifuti na ngai.',
+  'N\'écrivez jamais votre PIN ni un code reçu par SMS. Pour un litige sur un paiement, utilisez « Contester » dans le tour concerné.':
+      'Kokoma soki moke te PIN na yo to kode oyo ozwi na SMS. Mpo na ntembe na lifuti, salelá « Boya » na tour oyo etali yango.',
+  'Envoyer':
+      'Tinda',
 };

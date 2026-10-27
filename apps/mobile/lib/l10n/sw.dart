@@ -653,4 +653,26 @@ const sw = <String, String>{
       'kwa {name} · {phone}',
   '⚠ Échéance dépassée':
       '⚠ Tarehe ya mwisho imepita',
+  'Donner mon avis':
+      'Toa maoni yangu',
+  'Écrivez votre avis.':
+      'Andika maoni yako.',
+  'Merci ! Votre avis a été envoyé à l\'équipe Mchango.':
+      'Asante! Maoni yako yametumwa kwa timu ya Mchango.',
+  'Qu\'est-ce qui marche bien ? Qu\'est-ce qui pose problème ? L\'équipe lit chaque avis.':
+      'Nini kinaenda vizuri? Nini kina shida? Timu inasoma kila maoni.',
+  'À propos de':
+      'Kuhusu',
+  'Mchango en général':
+      'Mchango kwa ujumla',
+  'Votre note (facultatif)':
+      'Alama yako (si lazima)',
+  'Votre avis':
+      'Maoni yako',
+  'Exemple : le bénéficiaire ne confirme pas mon paiement.':
+      'Mfano: mpokeaji hathibitishi malipo yangu.',
+  'N\'écrivez jamais votre PIN ni un code reçu par SMS. Pour un litige sur un paiement, utilisez « Contester » dans le tour concerné.':
+      'Usiandike kamwe PIN yako wala nambari uliyopokea kwa SMS. Kwa ubishi kuhusu malipo, tumia « Lalamika » katika zamu husika.',
+  'Envoyer':
+      'Tuma',
 };

@@ -42,8 +42,11 @@ export class TestApi {
     readonly db: Db,
   ) {}
 
-  static async start(): Promise<TestApi> {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+  /** [overrides] : fournisseurs remplacés pour ce test (ex. l'agent IA, jamais appelé pour de vrai). */
+  static async start(overrides: { provide: symbol | string; useValue: unknown }[] = []): Promise<TestApi> {
+    let builder = Test.createTestingModule({ imports: [AppModule] });
+    for (const o of overrides) builder = builder.overrideProvider(o.provide).useValue(o.useValue);
+    const moduleRef = await builder.compile();
     const app = moduleRef.createNestApplication<INestApplication<App>>();
     await app.init();
     return new TestApi(app, app.get(SMS_SENDER), app.get(Db));

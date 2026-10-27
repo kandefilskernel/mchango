@@ -34,6 +34,9 @@ REMINDERS_ENABLED=1
 # PILOTE FERMÉ : pas de fournisseur SMS, les codes sont dans « docker compose logs api ».
 # Remettre à 0 dès qu'un fournisseur SMS est branché.
 SMS_CONSOLE_PILOT=1
+# Agent IA du back-office (facultatif). Clé à créer sur console.anthropic.com ; vide = règles seules.
+ANTHROPIC_API_KEY=
+AI_REVIEWS_PER_DAY=30
 EOF
 
 echo "Fichier .env créé (droits 600)."

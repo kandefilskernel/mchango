@@ -36,6 +36,11 @@ const schema = z.object({
   STAFF_2FA_DEV_BYPASS: z.enum(['0', '1']).default('0'),
   // Durée d'une session du back-office : une journée de travail (8 h) ; 24 h au plus en développement
   STAFF_SESSION_HOURS: z.coerce.number().int().min(1).max(24).default(8),
+  // Agent IA du back-office (Claude). Vide = désactivé : seules les règles automatiques tournent.
+  // Les données envoyées sont pseudonymisées (M1, M2…, sans noms ni numéros), voir src/ai/.
+  ANTHROPIC_API_KEY: z.string().default(''),
+  // Plafond d'analyses IA par jour, toute l'équipe confondue (chaque analyse est facturée)
+  AI_REVIEWS_PER_DAY: z.coerce.number().int().min(0).max(1000).default(30),
 });
 
 export type AppConfig = z.infer<typeof schema>;

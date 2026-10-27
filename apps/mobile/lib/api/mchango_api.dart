@@ -17,6 +17,13 @@ class MchangoApi {
   /// Langue des SMS envoyés à ce membre (rappels).
   Future<void> setLanguage(String code) => client.put('/me/language', {'language': code});
 
+  /// Avis du membre, sur Mchango ou sur une de ses tontines (lu par l'équipe).
+  Future<void> sendFeedback({required String body, String? groupId, int? rating}) => client.post('/feedback', {
+    'body': body,
+    'groupId': ?groupId,
+    'rating': ?rating,
+  });
+
   Future<Group> group(String id) async => Group.fromJson(await client.get('/groups/$id') as Json);
 
   Future<Group> createGroup({

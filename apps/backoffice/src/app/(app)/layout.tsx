@@ -22,6 +22,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         { href: "/support", label: "À traiter", icon: "inbox", badge: todo.counts.total },
         { href: "/disputes", label: "Litiges", icon: "disputes", badge: todo.counts.disputesOpen },
         { href: "/alerts", label: "Alertes", icon: "alert" },
+        { href: "/ai", label: "Analyse IA", icon: "ai" },
       ],
     },
     {

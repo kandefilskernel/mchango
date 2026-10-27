@@ -5,6 +5,7 @@ import '../../services.dart';
 import '../../util/format.dart';
 import '../carnet/carnet_screen.dart';
 import '../common.dart';
+import '../feedback/feedback_screen.dart';
 import '../language_picker.dart';
 import '../theme.dart';
 import 'create_group_screen.dart';
@@ -96,6 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onMenu: (v) => switch (v) {
                     'lock' => services.auth.lock(),
                     'biometric' => _toggleBiometric(context),
+                    'feedback' => _open(context, FeedbackScreen(groups: data.$1)),
                     // Les rappels SMS suivent aussi la langue choisie (enregistrée sur le serveur)
                     'language' => showLanguageDialog(
                       context,
@@ -235,6 +237,15 @@ class _Header extends StatelessWidget {
                           contentPadding: EdgeInsets.zero,
                           leading: Icon(Icons.fingerprint),
                           title: Text(t('Ouverture par empreinte')),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        key: const Key('menu_feedback'),
+                        value: 'feedback',
+                        child: ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.rate_review_outlined),
+                          title: Text(t('Donner mon avis')),
                         ),
                       ),
                       PopupMenuItem(value: 'lock', child: Text(t('Verrouiller'))),

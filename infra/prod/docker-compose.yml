@@ -72,6 +72,9 @@ services:
       # Derrière Caddy : l'IP réelle des téléphones vient de X-Forwarded-For
       TRUST_PROXY: "1"
       REMINDERS_ENABLED: ${REMINDERS_ENABLED:-1}
+      # Agent IA du back-office (facultatif) : vide = règles automatiques seules
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      AI_REVIEWS_PER_DAY: ${AI_REVIEWS_PER_DAY:-30}
       CORS_ORIGINS: ""
 
   backoffice:

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { reactivateGroup, suspendGroup } from "../../../actions";
+import { reactivateGroup, runAiReview, suspendGroup } from "../../../actions";
+import { ReviewTable, type ReviewRow } from "../../ai/review-table";
 import { ActionForm } from "@/components/action-form";
 import { EventList, type AuditEventRow } from "@/components/event-list";
 import { api, CAN, currentStaff } from "@/lib/api";
@@ -32,7 +33,11 @@ interface GroupDetail {
 
 export default async function GroupPage({ params }: PageProps<"/groups/[id]">) {
   const { id } = await params;
-  const [g, staff] = await Promise.all([api<GroupDetail>(`/admin/groups/${id}`), currentStaff()]);
+  const [g, staff, reviews] = await Promise.all([
+    api<GroupDetail>(`/admin/groups/${id}`),
+    currentStaff(),
+    api<ReviewRow[]>(`/admin/ai/reviews?groupId=${id}`),
+  ]);
   const canSuspend = CAN.suspendGroups.includes(staff.role);
   return (
     <>
@@ -146,6 +151,18 @@ export default async function GroupPage({ params }: PageProps<"/groups/[id]">) {
         </div>
 
         <div>
+          <div className="card">
+            <h2>Analyse IA</h2>
+            <p className="muted">
+              Cherche les anomalies dans les cotisations, les litiges et les avis de cette tontine (données
+              pseudonymisées). Des pistes à vérifier, jamais une décision.
+            </p>
+            {CAN.supportMembers.includes(staff.role) && (
+              <ActionForm submitLabel="Analyser cette tontine" action={runAiReview.bind(null, g.id)} />
+            )}
+            <ReviewTable reviews={reviews.slice(0, 5)} />
+          </div>
+
           <div className="card">
             <h2>Suspension</h2>
             {g.status === "suspended" && g.suspendedReason && (

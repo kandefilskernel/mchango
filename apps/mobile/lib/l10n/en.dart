@@ -653,4 +653,26 @@ const en = <String, String>{
       'to {name} · {phone}',
   '⚠ Échéance dépassée':
       '⚠ Due date passed',
+  'Donner mon avis':
+      'Give feedback',
+  'Écrivez votre avis.':
+      'Write your feedback.',
+  'Merci ! Votre avis a été envoyé à l\'équipe Mchango.':
+      'Thank you! Your feedback was sent to the Mchango team.',
+  'Qu\'est-ce qui marche bien ? Qu\'est-ce qui pose problème ? L\'équipe lit chaque avis.':
+      'What works well? What is a problem? The team reads every message.',
+  'À propos de':
+      'About',
+  'Mchango en général':
+      'Mchango in general',
+  'Votre note (facultatif)':
+      'Your rating (optional)',
+  'Votre avis':
+      'Your feedback',
+  'Exemple : le bénéficiaire ne confirme pas mon paiement.':
+      'Example: the beneficiary does not confirm my payment.',
+  'N\'écrivez jamais votre PIN ni un code reçu par SMS. Pour un litige sur un paiement, utilisez « Contester » dans le tour concerné.':
+      'Never write your PIN or a code received by SMS. For a dispute about a payment, use “Dispute” in that turn.',
+  'Envoyer':
+      'Send',
 };

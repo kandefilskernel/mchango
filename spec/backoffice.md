@@ -80,6 +80,35 @@ Signaux à vérifier, **pas des preuves** : rien n'est bloqué ni gelé automati
 
 Les seuils sont dans `ALERT_RULES` (`apps/api/src/admin/admin.service.ts`) : à ajuster avec les vrais usages.
 
+## Avis des membres et agent IA (`/feedback`, `/admin/ai/…`)
+
+**Avis.** Dans l'app, menu « Donner mon avis » : un texte (3 à 2 000 caractères), une note de 1 à 5 facultative, à propos de Mchango ou d'une de ses tontines actives (`POST /feedback`). 5 avis par jour et par membre au plus. Les avis ne se modifient ni ne s'effacent.
+
+**Analyse d'une tontine** (`POST /admin/ai/groups/:id/review`, fiche de la tontine). Deux étages :
+1. **Règles automatiques, sans IA**, toujours calculées (`apps/api/src/ai/signals.ts`) :
+
+| Règle | Seuil |
+|-------|-------|
+| ID de transaction déjà utilisé dans une autre déclaration | 1 |
+| Déclaration pas confirmée par le bénéficiaire | après 72 h |
+| Retards du même payeur | 2 |
+| Contestations contre le même payeur | 2 |
+| Déclaration rejetée | 1 |
+| Même témoin pour le même payeur en espèces | 2 fois |
+
+2. **Agent IA** (Claude, `claude-opus-5-5`, si `ANTHROPIC_API_KEY` est configurée) : il relit les cotisations, les délais de confirmation, les litiges et les avis, confirme ou nuance les règles, et rend des constats structurés (gravité, catégorie, membres, preuves, action proposée) et un niveau de risque. En cas de surcharge, l'API d'Anthropic bascule d'elle-même sur un modèle de secours (option `fallbacks: "default"`) ; le modèle réellement utilisé est noté.
+
+**Synthèse des avis** (`POST /admin/ai/feedback/review`, page « Analyse IA ») : thèmes récurrents des 30 derniers jours, sentiment, et avis urgents (arnaque signalée, argent non reçu, compte piraté).
+
+Règles de conduite :
+- **Avis, jamais décision.** L'agent ne bloque, ne suspend, ne rejette rien, et ne touche à aucun argent. Toute mesure reste une décision humaine, après vérification (appel, capture du SMS opérateur).
+- **Pseudonymisation.** L'agent reçoit M1, M2… (membres) et F1, F2… (avis), jamais les noms, numéros de téléphone ou identifiants internes ; noms et numéros sont aussi retirés des textes libres (avis, motifs de litige). La correspondance reste en base et sert seulement à réafficher les vrais noms dans le back-office. Le retrait des noms dans les textes ne couvre que les noms enregistrés : un surnom ou un nom mal orthographé peut passer.
+- **Droits.** Lire : toute l'équipe. Lancer une analyse (facturée) : super admin, support, conformité. Plafond `AI_REVIEWS_PER_DAY` (30 par défaut) ; au-delà, les règles seules tournent.
+- **Traçabilité.** Chaque analyse est gardée (`ai_reviews` : règles, réponse, modèle, jetons, erreur) et journalisée (`staff.ai_review`).
+- **À vérifier avant la production** : base légale de l'envoi de données (même pseudonymisées) à un prestataire hors de RDC, mention dans la politique de confidentialité, et conditions d'utilisation et de conservation des données côté Anthropic.
+
+Sans clé, ou si l'agent est indisponible, l'analyse est quand même enregistrée avec les règles seules et la raison.
+
 ## Exports CSV (`GET /admin/export?kind=…`)
 
 `disputes` (tous les litiges), `late` (paiements attendus et non déclarés, 30 derniers jours), `audit` (une chaîne entière avec ses empreintes, `&chain=global` ou `group:<id>`). Réservés à super admin, conformité et finance ; les numéros restent masqués pour la finance. Chaque export est journalisé (`staff.data_exported` : qui, quoi, combien de lignes). Format Excel : séparateur « ; », UTF-8 avec BOM, cellules commençant par `= + - @` neutralisées.

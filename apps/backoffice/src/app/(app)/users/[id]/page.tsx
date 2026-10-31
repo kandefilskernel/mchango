@@ -15,7 +15,7 @@ interface UserDetail {
   createdAt: string;
   devices: { id: string; createdAt: string; lastSeenAt: string | null; revokedAt: string | null }[];
   memberships: { groupId: string; groupName: string; groupStatus: string; role: string; status: string }[];
-  events: { seq: number; action: string; actorType: string; createdAt: string }[];
+  events: { chainId: string; seq: number; action: string; actorType: string; createdAt: string }[];
   sms: {
     id: string;
     template: string;
@@ -188,7 +188,7 @@ export default async function UserPage({ params }: PageProps<"/users/[id]">) {
           <div className="card">
             <h2>Historique du compte</h2>
             {u.events.map((e) => (
-              <div className="event" key={e.seq}>
+              <div className="event" key={`${e.chainId}-${e.seq}`}>
                 <span className="seq">#{e.seq}</span>
                 <span>
                   {eventLabels[e.action] ?? e.action} <span className="muted">· {dateTime(e.createdAt)}</span>

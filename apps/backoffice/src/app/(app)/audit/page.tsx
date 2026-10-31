@@ -14,8 +14,9 @@ interface StaffAction {
 }
 
 export default async function AuditPage({ searchParams }: PageProps<"/audit">) {
-  const raw = String((await searchParams).chain ?? "global").trim();
-  // Accepte « global », « group:<uuid> » ou un simple identifiant de tontine
+  const raw = String((await searchParams).chain ?? "staff").trim();
+  // Accepte « staff », « system », « global » (ancienne chaîne, close), « group:<uuid> »,
+  // « user:<uuid> » ou un simple identifiant de tontine
   const chain = /^[0-9a-f-]{36}$/.test(raw) ? `group:${raw}` : raw;
   const [events, actions, staff] = await Promise.all([
     api<AuditEventRow[]>(`/admin/audit?chain=${encodeURIComponent(chain)}&limit=100`),
@@ -27,7 +28,11 @@ export default async function AuditPage({ searchParams }: PageProps<"/audit">) {
       <div className="page-head">
         <div>
           <h1>Audit</h1>
-          <div className="muted">Journal en ajout seul, chaîné par hash : une modification casse la chaîne.</div>
+          <div className="muted">
+            Journal en ajout seul, chaîné par hash : une modification casse la chaîne. Une chaîne par tontine
+            (group:…), par membre (user:…), une pour l&apos;équipe (staff) et une pour les tâches automatiques
+            (system). L&apos;ancienne chaîne « global » est close mais reste vérifiable.
+          </div>
         </div>
       </div>
 
@@ -37,7 +42,7 @@ export default async function AuditPage({ searchParams }: PageProps<"/audit">) {
             <div className="page-head" style={{ marginBottom: 8 }}>
               <h2 style={{ margin: 0 }}>Chaîne « {chain} » (100 derniers événements)</h2>
               <form className="form-inline" method="get">
-                <input name="chain" defaultValue={chain} aria-label="Chaîne" placeholder="global ou identifiant de tontine" />
+                <input name="chain" defaultValue={chain} aria-label="Chaîne" placeholder="staff, user:…, ou identifiant de tontine" />
                 <button className="btn btn-secondary">Afficher</button>
               </form>
             </div>

@@ -120,7 +120,8 @@ C'est la promesse centrale ; elle mérite d'être juste dès l'itération 1.
 Implémenté dans [`db/001_schema.sql`](../db/001_schema.sql) (table `audit_log`) :
 
 ```
-chain_id    'group:<uuid>' (une chaîne par groupe) ou 'global' (back-office, comptes)
+chain_id    'group:<uuid>' (une chaîne par groupe), 'user:<uuid>' (un membre, hors groupe),
+            'staff' (équipe), 'system' ; 'global' = ancienne chaîne, close depuis la migration 017
 seq         entier continu par chaîne, attribué sous verrou
 action      ex. contributions.insert, confirmations.insert, memberships.update
 payload     JSON stocké en TEXT, haché octet pour octet

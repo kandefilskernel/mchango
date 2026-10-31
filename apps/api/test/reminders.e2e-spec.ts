@@ -85,6 +85,20 @@ describe('Rappels avant échéance (e2e)', () => {
     expect(rows).toEqual([{ status: 'sent', n: 2 }]);
   });
 
+  it('plusieurs serveurs en même temps : chaque rappel ne part qu’une fois', async () => {
+    const g = await startedGroup('weekly', plusDays(todayDrc(), 1));
+    // Quatre vérifications simultanées, comme quatre copies de l'API qui se réveillent ensemble
+    const runs = await Promise.all([1, 2, 3, 4].map(() => reminders.runOnce(atDrc(10))));
+    for (const p of g.payers) expect(smsTo(p.phone)).toHaveLength(1);
+    const mine = await api.db.query<{ n: number }>(
+      `SELECT count(*)::int AS n FROM notifications WHERE template = 'contribution_reminder' AND user_id = ANY($1::uuid[])`,
+      [g.payers.map((p) => p.session.userId)],
+    );
+    expect(mine.rows[0].n).toBe(2);
+    // Les autres tontines du test peuvent aussi avoir des rappels : on compte au moins les nôtres, jamais en double
+    expect(runs.reduce((s, r) => s + r.sent, 0)).toBeGreaterThanOrEqual(2);
+  });
+
   it('chaque payeur reçoit le rappel dans sa langue', async () => {
     const g = await startedGroup('weekly', plusDays(todayDrc(), 1));
     const [sw, en] = g.payers;

@@ -429,15 +429,20 @@ describe('Back-office (e2e)', () => {
       await expect(api.app.get(StaffAuthService).resetCredentials('personne@mchango.test')).rejects.toThrow();
     });
 
-    it('audit : vérification de la chaîne globale et actions de l’équipe', async () => {
+    it('audit : vérification des chaînes de l’équipe et d’un membre, actions de l’équipe', async () => {
       const admin = await staff('super_admin');
-      const verify = await http().post('/admin/audit/verify').set(asStaff(admin)).send({ chainId: 'global' }).expect(200);
-      expect(verify.body).toMatchObject({ chainId: 'global', intact: true });
+      const verify = await http().post('/admin/audit/verify').set(asStaff(admin)).send({ chainId: 'staff' }).expect(200);
+      expect(verify.body).toMatchObject({ chainId: 'staff', intact: true });
+      const member = (await api.signUp()).session;
+      const own = await http().post('/admin/audit/verify').set(asStaff(admin)).send({ chainId: `user:${member.userId}` }).expect(200);
+      expect(own.body).toMatchObject({ intact: true, events: 1 });
+      // L'ancienne chaîne « global » reste vérifiable (vide dans une base neuve)
+      await http().post('/admin/audit/verify').set(asStaff(admin)).send({ chainId: 'global' }).expect(200);
       await http().post('/admin/audit/verify').set(asStaff(admin)).send({ chainId: 'n importe quoi' }).expect(400);
 
       const actions = await http().get('/admin/audit/staff').set(asStaff(admin)).expect(200);
       expect(actions.body[0]).toMatchObject({ action: 'staff.login', staff: expect.stringContaining(admin.email) });
-      const events = await http().get('/admin/audit?chain=global&limit=5').set(asStaff(admin)).expect(200);
+      const events = await http().get('/admin/audit?chain=staff&limit=5').set(asStaff(admin)).expect(200);
       expect(events.body).toHaveLength(5);
     });
   });

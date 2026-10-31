@@ -171,7 +171,7 @@ describe('Authentification (e2e)', () => {
     await http().get('/me').set('Authorization', `Bearer ${otpToken}`).expect(401);
   });
 
-  it('journalise inscription et changement de téléphone, chaîne « global » intacte', async () => {
+  it('journalise inscription et changement de téléphone dans la chaîne du membre, intacte', async () => {
     const { phone, session } = await signUp();
     const { otpToken } = await verifiedOtpToken(phone);
     await http()
@@ -181,7 +181,7 @@ describe('Authentification (e2e)', () => {
 
     const { rows } = await api.db.query<{ action: string; payload: string }>(
       `SELECT action, payload FROM audit_log
-       WHERE chain_id = 'global' AND payload::jsonb ->> 'user_id' = $1 ORDER BY seq`,
+       WHERE chain_id = 'user:' || $1 ORDER BY seq`,
       [session.userId],
     );
     expect(rows.map((r) => r.action)).toEqual(['auth.user_registered', 'auth.device_linked']);
@@ -189,8 +189,19 @@ describe('Authentification (e2e)', () => {
     expect(rows.some((r) => r.payload.includes(GOOD_PIN))).toBe(false);
 
     const check = await api.db.query<{ broken: string | null }>(
-      `SELECT audit_verify_chain('global') AS broken`,
+      `SELECT audit_verify_chain('user:' || $1) AS broken`,
+      [session.userId],
     );
     expect(check.rows[0].broken).toBeNull();
+    // Chaque membre a sa chaîne : deux inscriptions ne se disputent plus la même tête de chaîne
+    const other = (await signUp()).session;
+    const chains = await api.db.query<{ chain_id: string; first: string }>(
+      `SELECT chain_id, min(seq)::text AS first FROM audit_log
+       WHERE chain_id IN ('user:' || $1, 'user:' || $2) GROUP BY chain_id`,
+      [session.userId, other.userId],
+    );
+    expect(chains.rows.map((r) => r.first)).toEqual(['1', '1']);
+    const global = await api.db.query(`SELECT 1 FROM audit_log WHERE chain_id = 'global'`);
+    expect(global.rowCount).toBe(0);
   });
 });

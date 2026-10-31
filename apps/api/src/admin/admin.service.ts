@@ -379,7 +379,7 @@ export class AdminService {
   // ---------- Exports ----------
 
   /** Export CSV, journalisé (qui a sorti quelles données, quand). */
-  async exportCsv(staff: StaffMember, kind: ExportKind, chainId = 'global'): Promise<{ filename: string; csv: string }> {
+  async exportCsv(staff: StaffMember, kind: ExportKind, chainId = 'staff'): Promise<{ filename: string; csv: string }> {
     let header: string[];
     let rows: (string | number | null)[][];
     if (kind === 'disputes') {
@@ -506,9 +506,14 @@ export class AdminService {
          FROM memberships m JOIN groups g ON g.id = m.group_id WHERE m.user_id = $1 ORDER BY m.joined_at DESC`,
         [userId],
       ),
-      this.db.query<{ seq: string; action: string; created_at: Date; actor_type: string }>(
-        `SELECT seq, action, created_at, actor_type FROM audit_log
-         WHERE chain_id = 'global' AND payload::jsonb ->> 'user_id' = $1 ORDER BY seq DESC LIMIT 30`,
+      // Hors groupe : sa propre chaîne, plus les événements qui le concernent dans les autres
+      // (équipe, système, ancienne chaîne « global »). Les deux branches utilisent un index.
+      this.db.query<{ chain_id: string; seq: string; action: string; created_at: Date; actor_type: string }>(
+        `(SELECT chain_id, seq, action, created_at, actor_type FROM audit_log WHERE chain_id = 'user:' || $1)
+         UNION
+         (SELECT chain_id, seq, action, created_at, actor_type FROM audit_log
+          WHERE chain_id NOT LIKE 'group:%' AND payload::jsonb ->> 'user_id' = $1)
+         ORDER BY created_at DESC LIMIT 30`,
         [userId],
       ),
       this.db.query<{
@@ -556,7 +561,13 @@ export class AdminService {
         role: m.role,
         status: m.status,
       })),
-      events: events.rows.map((e) => ({ seq: Number(e.seq), action: e.action, actorType: e.actor_type, createdAt: iso(e.created_at) })),
+      events: events.rows.map((e) => ({
+        chainId: e.chain_id,
+        seq: Number(e.seq),
+        action: e.action,
+        actorType: e.actor_type,
+        createdAt: iso(e.created_at),
+      })),
       sms: sms.rows.map((s) => ({
         id: s.id,
         template: s.template,

@@ -25,18 +25,20 @@ const Note = z.object({
   followUp: z.boolean().default(false),
   closes: z.uuid().nullable().default(null),
 });
+/** Chaînes du journal : groupe, membre, équipe, système, et l'ancienne « global » (close). */
+const CHAIN_ID = /^(global|staff|system|(group|user):[0-9a-f-]{36})$/;
 const ExportQuery = z.object({
   kind: z.enum(['disputes', 'late', 'audit']),
-  chain: z.string().regex(/^(global|group:[0-9a-f-]{36})$/, 'Chaîne inconnue.').default('global'),
+  chain: z.string().regex(CHAIN_ID, 'Chaîne inconnue.').default('staff'),
 });
 const ChangePassword = z.object({ current: z.string().max(200), next: z.string().max(200) });
 const Search = z.object({ q: z.string().max(100).default(''), status: z.string().max(20).default('') });
 const AuditQuery = z.object({
-  chain: z.string().max(60).default('global'),
+  chain: z.string().max(60).default('staff'),
   beforeSeq: z.coerce.number().int().positive().optional(),
   limit: z.coerce.number().int().min(1).max(200).default(100),
 });
-const ChainParam = z.object({ chainId: z.string().regex(/^(global|group:[0-9a-f-]{36})$/, 'Chaîne inconnue.') });
+const ChainParam = z.object({ chainId: z.string().regex(CHAIN_ID, 'Chaîne inconnue.') });
 
 /** Points d'accès du back-office : réservés à l'équipe connectée (mot de passe + 2FA). */
 @Controller('admin')

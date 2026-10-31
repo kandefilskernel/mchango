@@ -3,10 +3,24 @@
 # Seuls les ports 80 et 443 (Caddy, HTTPS automatique) sont ouverts sur Internet.
 name: mchango
 
+# Journaux Docker limités à 5 × 10 Mo par service : sans limite, ils remplissent le disque
+# au fil des semaines et tout s'arrête.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+# Relance d'un service figé. Docker Compose ne redémarre un conteneur que si son processus
+# s'arrête ; un contrôle de santé qui échoue le marque seulement « unhealthy ». Le contrôle
+# arrête donc lui-même le processus figé (kill -9), et « restart » le relance. « init: true »
+# met un petit init en tête du conteneur : le processus Node n'est plus le n°1 et peut être tué.
+
 services:
   postgres:
     image: postgres:16
     restart: unless-stopped
+    logging: *logging
     environment:
       POSTGRES_DB: mchango
       POSTGRES_USER: postgres
@@ -21,6 +35,7 @@ services:
   redis:
     image: redis:7
     restart: unless-stopped
+    logging: *logging
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redisdata:/data
@@ -47,10 +62,20 @@ services:
       - ./migrate.sh:/migrate.sh:ro
     entrypoint: ["sh", "/migrate.sh"]
     restart: "no"
+    logging: *logging
 
   api:
     build: ../../apps/api
     restart: unless-stopped
+    logging: *logging
+    init: true
+    # /health répond tant que Node tourne. 3 échecs de suite (environ 1 min 30) : API figée, relancée.
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -T 5 -O /dev/null http://127.0.0.1:3000/health || (pkill -9 -x node; exit 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -80,6 +105,14 @@ services:
   backoffice:
     build: ../../apps/backoffice
     restart: unless-stopped
+    logging: *logging
+    init: true
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -T 5 -O /dev/null http://127.0.0.1:3001/login || (pkill -9 -x node; exit 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     depends_on:
       - api
     environment:
@@ -89,6 +122,7 @@ services:
   caddy:
     image: caddy:2
     restart: unless-stopped
+    logging: *logging
     depends_on:
       - api
       - backoffice

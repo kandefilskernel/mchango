@@ -171,6 +171,11 @@ describe('Authentification (e2e)', () => {
     await http().get('/me').set('Authorization', `Bearer ${otpToken}`).expect(401);
   });
 
+  it('santé : /health (vivant) et /health/ready (base et Redis), sans connexion', async () => {
+    await http().get('/health').expect(200, { status: 'ok' });
+    await http().get('/health/ready').expect(200, { status: 'ok', database: 'ok', redis: 'ok' });
+  });
+
   it('journalise inscription et changement de téléphone dans la chaîne du membre, intacte', async () => {
     const { phone, session } = await signUp();
     const { otpToken } = await verifiedOtpToken(phone);

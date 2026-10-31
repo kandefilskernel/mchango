@@ -91,7 +91,14 @@ gunzip -c backups/<fichier>.sql.gz | docker compose exec -T postgres psql -U pos
 Restaurez dans une base vide.
 
 ## 7. Surveillance
-Sur uptimerobot.com (gratuit), créez une sonde HTTP sur `https://api.5-75-1-2.sslip.io/health`. Vous serez prévenu par e-mail si l'API ne répond plus.
+Sur uptimerobot.com (gratuit), créez une sonde HTTP sur `https://api.5-75-1-2.sslip.io/health/ready`. Elle vérifie l'API, la base et Redis (réponse `503` si l'une ne répond pas). Vous serez prévenu par e-mail en cas de panne.
+
+Ce qui se répare tout seul, sans vous :
+- un service qui plante est relancé par Docker (`restart: unless-stopped`) ;
+- une API ou un back-office **figé** (qui ne répond plus sans s'arrêter) est détecté en 1 min 30 environ par le contrôle de santé, arrêté, puis relancé ;
+- les journaux Docker sont limités à 5 × 10 Mo par service : ils ne rempliront pas le disque.
+
+Ce qui ne se répare pas tout seul : une panne du serveur lui-même, un disque plein pour une autre raison, une base de données arrêtée. C'est pour cela que la sonde UptimeRobot reste utile.
 
 ## 8. Mettre à jour
 ```bash
@@ -106,14 +113,15 @@ Les nouvelles migrations de `db/` s'appliquent toutes seules (service `migrate`)
 - [ ] Sauvegardes copiées hors du serveur, et une restauration testée.
 - [ ] APK de production signé, et compte Google Play (25 $ une fois).
 - [ ] Traductions swahili et lingala relues par des locuteurs.
+- [ ] Au moins deux serveurs (ou une base gérée séparée) : aujourd'hui, une panne du serveur arrête tout.
 
 ## Ce qui tourne sur le serveur
 
 | Service | Rôle | Ouvert sur Internet |
 |---|---|---|
 | `caddy` | HTTPS automatique, renvoie vers l'API et le back-office | oui (80, 443) |
-| `api` | API NestJS | non (derrière Caddy) |
-| `backoffice` | Back-office Next.js | non (derrière Caddy) |
+| `api` | API NestJS, relancée si elle plante ou se fige | non (derrière Caddy) |
+| `backoffice` | Back-office Next.js, relancé s'il plante ou se fige | non (derrière Caddy) |
 | `postgres` | Base de données (volume `pgdata`) | non |
 | `redis` | Codes, limites, sessions (volume `redisdata`) | non |
 | `migrate` | Applique les migrations au démarrage, puis s'arrête | non |

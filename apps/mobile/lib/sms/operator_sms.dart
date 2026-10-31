@@ -19,8 +19,28 @@ enum SmsKind {
   unknown,
 }
 
+/// Forme du SMS (couche 1 du contrôle) : un faux SMS a souvent de petites différences de forme.
+enum SmsFormat {
+  /// « Trans ID: XX261023.2305.R45862 » / « TID:CO261019.1034.T00551 » (Airtel Money).
+  airtel,
+
+  /// « Reference de la transaction:DH2769HLCYN … le 02-08-2026 a 14:40:34 ».
+  reference,
+
+  /// Un ID trouvé, mais pas dans une forme connue : à regarder de plus près.
+  generic,
+}
+
 class OperatorSms {
-  const OperatorSms({required this.kind, this.txId, this.amountMinor, this.currency, this.method});
+  const OperatorSms({
+    required this.kind,
+    required this.format,
+    this.txId,
+    this.amountMinor,
+    this.currency,
+    this.method,
+    this.date,
+  });
 
   final SmsKind kind;
 
@@ -33,6 +53,30 @@ class OperatorSms {
 
   /// Moyen de paiement reconnu à la forme de l'ID (« airtel », « mpesa »), ou null si incertain.
   final String? method;
+
+  final SmsFormat format;
+
+  /// Jour de l'opération : inscrit dans l'ID Airtel (AAMMJJ) ou écrit dans le SMS (« le 02-08-2026 »).
+  final DateTime? date;
+
+  /// Nom du format envoyé au serveur (score de risque).
+  String get formatName => format.name;
+
+  /// Opération de plus de [days] jours (ou datée dans le futur) : un vieux SMS réutilisé ?
+  bool isStale(DateTime now, {int days = 3}) {
+    if (date == null) return false;
+    final today = DateTime(now.year, now.month, now.day);
+    final age = today.difference(date!).inDays;
+    return age > days || age < -1;
+  }
+}
+
+final _airtelDate = RegExp(r'^[A-Z]{2}(\d{2})(\d{2})(\d{2})\.');
+final _writtenDate = RegExp(r'\ble\s+(\d{2})[-/](\d{2})[-/](\d{4})\b', caseSensitive: false);
+
+DateTime? _validDate(int y, int m, int d) {
+  final date = DateTime(y, m, d);
+  return date.year == y && date.month == m && date.day == d ? date : null;
 }
 
 // Airtel Money : « Trans ID: XX261023.2305.R45862 » ou « TID:CO261019.1034.T00551 »
@@ -55,12 +99,25 @@ OperatorSms? parseOperatorSms(String text) {
 
   String? id;
   String? method;
+  var format = SmsFormat.generic;
+  DateTime? date;
   final airtel = _airtelId.firstMatch(t);
+  final reference = _referenceId.firstMatch(t);
   if (airtel != null) {
     id = airtel[1];
     method = 'airtel';
+    format = SmsFormat.airtel;
+    final d = _airtelDate.firstMatch(id!.toUpperCase());
+    if (d != null) date = _validDate(2000 + int.parse(d[1]!), int.parse(d[2]!), int.parse(d[3]!));
+  } else if (reference != null) {
+    id = reference[1];
+    format = SmsFormat.reference;
   } else {
-    id = (_referenceId.firstMatch(t) ?? _genericId.firstMatch(t))?[1];
+    id = _genericId.firstMatch(t)?[1];
+  }
+  if (date == null) {
+    final w = _writtenDate.firstMatch(t);
+    if (w != null) date = _validDate(int.parse(w[3]!), int.parse(w[2]!), int.parse(w[1]!));
   }
 
   final amount = _amount(t);
@@ -68,6 +125,8 @@ OperatorSms? parseOperatorSms(String text) {
 
   return OperatorSms(
     kind: _kind(t),
+    format: format,
+    date: date,
     txId: id?.toUpperCase(),
     amountMinor: amount?.$1,
     currency: amount?.$2,

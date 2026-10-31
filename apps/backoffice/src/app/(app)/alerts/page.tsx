@@ -23,7 +23,40 @@ interface Alerts {
     groups: string[];
     lastAt: string;
   }[];
+  riskyContributions: {
+    contributionId: string;
+    level: "orange" | "red";
+    score: number;
+    reasons: string[];
+    status: string;
+    payer: { userId: string; fullName: string; phone: string };
+    group: { id: string; name: string; cycleNumber: number };
+    method: string;
+    txReference: string | null;
+    declaredAt: string;
+  }[];
 }
+
+/** Raisons du score de risque (apps/api/src/contributions/risk.ts). */
+const riskReasons: Record<string, string> = {
+  tx_reused_after_rejection: "ID déjà présenté puis rejeté",
+  tx_date_mismatch: "date de l'ID ≠ jour du paiement",
+  sms_amount_mismatch: "SMS du payeur sans le bon montant",
+  payer_rejected_before: "rejets récents",
+  payer_disputed_before: "contestations récentes",
+  burst: "plusieurs déclarations en 30 min",
+  sms_format_unknown: "forme de SMS inhabituelle",
+  sms_not_pasted: "ID tapé à la main",
+  first_payment: "premier paiement dans la tontine",
+  late_declaration: "déclaré > 14 j après l'échéance",
+};
+
+const contributionStatus: Record<string, string> = {
+  declared: "en attente",
+  confirmed: "confirmée",
+  disputed: "contestée",
+  rejected: "rejetée",
+};
 
 function People({ title, hint, people, unit }: { title: string; hint: string; people: Person[]; unit: string }) {
   return (
@@ -75,6 +108,64 @@ export default async function AlertsPage() {
           </div>
         </div>
       </div>
+
+      <section className="card">
+        <div className="section-head">
+          <h2>
+            Déclarations à risque (30 jours){" "}
+            <span
+              className={`badge ${
+                a.riskyContributions.some((x) => x.level === "red")
+                  ? "badge-danger"
+                  : a.riskyContributions.length > 0
+                    ? "badge-warn"
+                    : "badge-ok"
+              }`}
+            >
+              {a.riskyContributions.length}
+            </span>
+          </h2>
+          <p className="muted">
+            Score calculé à chaque déclaration. Orange : le bénéficiaire doit attester avoir vérifié son solde. Rouge : il ne
+            peut confirmer qu&apos;avec l&apos;ID du SMS reçu. Le payeur ne voit ni le score ni les raisons.
+          </p>
+        </div>
+        {a.riskyContributions.length === 0 ? (
+          <p className="empty">Aucune déclaration orange ou rouge.</p>
+        ) : (
+          <table>
+            <tbody>
+              {a.riskyContributions.map((x) => (
+                <tr key={x.contributionId}>
+                  <td>
+                    <span className={`badge ${x.level === "red" ? "badge-danger" : "badge-warn"}`}>
+                      {x.level === "red" ? "Rouge" : "Orange"} · {x.score}
+                    </span>
+                  </td>
+                  <td>
+                    <Link href={`/users/${x.payer.userId}`}>
+                      <strong>{x.payer.fullName}</strong>
+                    </Link>
+                    <br />
+                    <Link href={`/groups/${x.group.id}`}>{x.group.name}</Link>
+                    <span className="muted"> · tour {x.group.cycleNumber}</span>
+                  </td>
+                  <td>
+                    {x.reasons.map((r) => riskReasons[r] ?? r).join(", ")}
+                    <br />
+                    <span className="muted">
+                      {methodLabels[x.method] ?? x.method}
+                      {x.txReference && <> · <span className="mono">{x.txReference}</span></>} ·{" "}
+                      {contributionStatus[x.status] ?? x.status}
+                    </span>
+                  </td>
+                  <td className="muted">{dateTime(x.declaredAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
 
       <section className="card">
         <div className="section-head">

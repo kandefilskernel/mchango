@@ -15,6 +15,7 @@ const base = (contributions: Partial<GroupDataset['contributions'][number]>[], d
     hoursToConfirm: 2,
     hoursSinceDeclared: 10,
     txReferenceReused: false,
+    risk: null,
     ...c,
   })),
   disputes,

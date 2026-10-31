@@ -17,6 +17,7 @@
 | `013_language_en.sql` | Langue anglaise autorisée pour les comptes (`fr`, `sw`, `ln`, `en`) |
 | `014_terms_signatures.sql` | Signature du règlement par chaque membre avant le démarrage (empreinte, ajout seul) |
 | `015_feedback_ai.sql` | Avis des membres (`member_feedback`) et analyses de l'agent IA (`ai_reviews`), ajout seul |
+| `016_contribution_risk.sql` | Score de risque de chaque déclaration (vert / orange / rouge), hors des chaînes de journal des groupes |
 | `tests/001_checks.sql` | Double regard, anti-fraude, journal en ajout seul, détection de falsification |
 | `tests/002_cash_witness.sql` | Règles du témoin (à lancer **après** `001_checks.sql`, sur la même base) |
 | `tests/003_turns_cycles.sql` | Ordre figé, bénéficiaire unique, receveur imposé (après `002`) |

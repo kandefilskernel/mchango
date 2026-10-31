@@ -79,6 +79,19 @@ class _DeclareScreenState extends State<DeclareScreen> {
       return showInfo(context, t("Entrez l'ID de transaction reçu par SMS."));
     }
     if (isCash && _witnessId == null) return showInfo(context, t('Choisissez un témoin.'));
+    // Ce que le SMS collé a montré (couche 1) : sert au score de risque vu par le bénéficiaire.
+    // L'ID retouché à la main après le collage compte comme tapé.
+    final sms = _sms;
+    final typed = _txReference.text.trim().toUpperCase().replaceAll(' ', '');
+    final pasted = sms != null && sms.txId == typed;
+    final smsCheck = isCash
+        ? null
+        : <String, Object>{
+            'pasted': pasted,
+            if (pasted) 'format': sms.formatName,
+            if (pasted && sms.amountMinor != null)
+              'amountMatches': sms.amountMinor == widget.group.contributionAmountMinor && sms.currency == widget.group.currency,
+          };
     await services.api.declare(
       groupId: widget.group.id,
       cycleNumber: widget.cycleNumber,
@@ -87,6 +100,7 @@ class _DeclareScreenState extends State<DeclareScreen> {
       offlineId: _offlineId,
       txReference: isCash ? null : _txReference.text.trim(),
       witnessMembershipId: isCash ? _witnessId : null,
+      smsCheck: smsCheck,
     );
     if (!mounted) return;
     showInfo(context, t('Paiement déclaré. {name} doit maintenant confirmer.', {'name': widget.beneficiary.fullName}));
@@ -205,9 +219,22 @@ class _SmsCheck extends StatelessWidget {
     final amountText = sms.amountMinor == null || sms.currency == null
         ? t('montant non trouvé dans le SMS')
         : formatAmount(sms.amountMinor!, sms.currency!);
+    final stale = sms.isStale(DateTime.now());
+    final unknownFormat = sms.format == SmsFormat.generic;
+    final allOk = amountOk && !stale && !unknownFormat;
+    Widget line(bool ok, String text) => Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        children: [
+          Icon(ok ? Icons.check_circle : Icons.warning_amber_rounded, size: 18, color: ok ? Brand.green : Brand.goldDark),
+          const SizedBox(width: 6),
+          Expanded(child: Text(text)),
+        ],
+      ),
+    );
     return Card(
       key: const Key('sms_check'),
-      color: amountOk ? Brand.mint : const Color(0xFFFFF3D6),
+      color: allOk ? Brand.mint : const Color(0xFFFFF3D6),
       margin: const EdgeInsets.only(top: 8),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -215,24 +242,19 @@ class _SmsCheck extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(t('ID trouvé : {id}', {'id': sms.txId}), style: const TextStyle(fontWeight: FontWeight.w700)),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(amountOk ? Icons.check_circle : Icons.warning_amber_rounded,
-                    size: 18, color: amountOk ? Brand.green : Brand.goldDark),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    amountOk
-                        ? t('Montant du SMS : {amount}, comme la cotisation.', {'amount': amountText})
-                        : t('Montant du SMS : {amount}. La cotisation est de {expected} : vérifiez.', {
-                            'amount': amountText,
-                            'expected': formatAmount(expectedMinor, currency),
-                          }),
-                  ),
-                ),
-              ],
+            line(
+              amountOk,
+              amountOk
+                  ? t('Montant du SMS : {amount}, comme la cotisation.', {'amount': amountText})
+                  : t('Montant du SMS : {amount}. La cotisation est de {expected} : vérifiez.', {
+                      'amount': amountText,
+                      'expected': formatAmount(expectedMinor, currency),
+                    }),
             ),
+            if (stale)
+              line(false, t('Ce SMS date du {date} : collez celui du paiement de ce tour.', {'date': formatDate(sms.date!.toIso8601String().substring(0, 10))})),
+            if (unknownFormat)
+              line(false, t("Forme de SMS inhabituelle : vérifiez qu'il vient bien de votre opérateur.")),
           ],
         ),
       ),

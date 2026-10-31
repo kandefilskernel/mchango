@@ -20,6 +20,8 @@ export interface GroupDataset {
     hoursToConfirm: number | null;
     hoursSinceDeclared: number;
     txReferenceReused: boolean;
+    /** Score de risque calculé à la déclaration (vert / orange / rouge) et ses raisons */
+    risk: { level: string; reasons: string[] } | null;
   }[];
   disputes: { cycle: number; openedBy: string; against: string; status: string; reason: string }[];
   feedback: { member: string; rating: number | null; text: string }[];
@@ -83,6 +85,8 @@ export async function groupDataset(q: Queryable, groupId: string): Promise<{ dat
     hours_to_confirm: number | null;
     hours_since: number;
     reused: boolean;
+    risk_level: string | null;
+    risk_reasons: { code: string }[] | null;
   }>(
     `SELECT c.cycle_number, k.payer_membership_id AS payer, k.receiver_membership_id AS receiver,
             k.witness_membership_id AS witness, k.method, k.amount_minor AS amount, k.status, k.is_late,
@@ -90,8 +94,10 @@ export async function groupDataset(q: Queryable, groupId: string): Promise<{ dat
               WHERE f.contribution_id = k.id AND f.decision = 'confirm')::float AS hours_to_confirm,
             (extract(epoch FROM now() - k.declared_at) / 3600)::float AS hours_since,
             EXISTS (SELECT 1 FROM contributions o WHERE o.id <> k.id AND o.method = k.method
-                      AND o.tx_reference = k.tx_reference) AS reused
+                      AND o.tx_reference = k.tx_reference) AS reused,
+            r.level AS risk_level, r.reasons AS risk_reasons
      FROM contributions k JOIN cycles c ON c.id = k.cycle_id
+     LEFT JOIN contribution_risk r ON r.contribution_id = k.id
      WHERE k.group_id = $1 ORDER BY c.cycle_number, k.declared_at`,
     [groupId],
   );
@@ -136,6 +142,7 @@ export async function groupDataset(q: Queryable, groupId: string): Promise<{ dat
         hoursToConfirm: k.hours_to_confirm === null ? null : Math.round(k.hours_to_confirm),
         hoursSinceDeclared: Math.round(k.hours_since),
         txReferenceReused: k.reused,
+        risk: k.risk_level ? { level: k.risk_level, reasons: (k.risk_reasons ?? []).map((x) => x.code) } : null,
       })),
       disputes: disputes.rows.map((d) => ({
         cycle: d.cycle_number,

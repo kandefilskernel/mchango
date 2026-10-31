@@ -675,4 +675,52 @@ const sw = <String, String>{
       'Usiandike kamwe PIN yako wala nambari uliyopokea kwa SMS. Kwa ubishi kuhusu malipo, tumia « Lalamika » katika zamu husika.',
   'Envoyer':
       'Tuma',
+  'Cet ID de transaction a déjà été présenté puis rejeté.':
+      'Kitambulisho hiki cha muamala kilishatolewa kisha kikakataliwa.',
+  'La date inscrite dans l\'ID ne correspond pas au jour du paiement.':
+      'Tarehe iliyo kwenye kitambulisho hailingani na siku ya malipo.',
+  'Le SMS du payeur ne montre pas le montant de la cotisation.':
+      'SMS ya mlipaji haionyeshi kiasi cha mchango.',
+  'Ce membre a eu des paiements rejetés récemment.':
+      'Mwanachama huyu amekataliwa malipo hivi karibuni.',
+  'Des paiements de ce membre ont été contestés récemment.':
+      'Malipo ya mwanachama huyu yamelalamikiwa hivi karibuni.',
+  'Plusieurs déclarations en quelques minutes.':
+      'Matangazo kadhaa ndani ya dakika chache.',
+  'Le SMS du payeur n\'a pas la forme habituelle de l\'opérateur.':
+      'SMS ya mlipaji haina muundo wa kawaida wa mtoa huduma.',
+  'ID tapé à la main, sans le SMS de l\'opérateur.':
+      'Kitambulisho kimeandikwa kwa mkono, bila SMS ya mtoa huduma.',
+  'Premier paiement de ce membre dans cette tontine.':
+      'Malipo ya kwanza ya mwanachama huyu katika likelemba hii.',
+  'Déclaré longtemps après l\'échéance.':
+      'Imetangazwa muda mrefu baada ya tarehe ya mwisho.',
+  'Ce SMS date du {date} : collez celui du paiement de ce tour.':
+      'SMS hii ni ya {date}: bandika ile ya malipo ya zamu hii.',
+  'Forme de SMS inhabituelle : vérifiez qu\'il vient bien de votre opérateur.':
+      'Muundo wa SMS si wa kawaida: hakikisha imetoka kwa mtoa huduma wako.',
+  'Vérification obligatoire':
+      'Uhakiki wa lazima',
+  'Vérifiez avant de confirmer':
+      'Hakikisha kabla ya kuthibitisha',
+  'Ce paiement présente des signes inhabituels :':
+      'Malipo haya yana dalili zisizo za kawaida:',
+  'Comptez l\'argent reçu avant de confirmer.':
+      'Hesabu pesa uliyopokea kabla ya kuthibitisha.',
+  'Ouvrez votre compte mobile money et vérifiez que le montant est bien arrivé.':
+      'Fungua akaunti yako ya mobile money uhakikishe kiasi kimefika.',
+  'Ne confirmez jamais sous la pression, même si on vous presse.':
+      'Usithibitishe kamwe chini ya shinikizo, hata ukiharakishwa.',
+  'Coller le SMS de l\'argent reçu':
+      'Bandika SMS ya pesa uliyopokea',
+  'L\'ID du SMS correspond.':
+      'Kitambulisho cha SMS kinalingana.',
+  'J\'ai vérifié : l\'argent est bien arrivé.':
+      'Nimehakikisha: pesa imefika.',
+  'Risque élevé : confirmez seulement avec le SMS de l\'argent reçu':
+      'Hatari kubwa: thibitisha tu kwa SMS ya pesa uliyopokea',
+  'À vérifier : regardez votre solde avant de confirmer':
+      'Ya kuhakikisha: angalia salio lako kabla ya kuthibitisha',
+  'Rien d\'inhabituel':
+      'Hakuna kisicho cha kawaida',
 };

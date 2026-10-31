@@ -675,4 +675,52 @@ const ln = <String, String>{
       'Kokoma soki moke te PIN na yo to kode oyo ozwi na SMS. Mpo na ntembe na lifuti, salelá « Boya » na tour oyo etali yango.',
   'Envoyer':
       'Tinda',
+  'Cet ID de transaction a déjà été présenté puis rejeté.':
+      'ID oyo ya transaction emonisamaki liboso mpe eboyamaki.',
+  'La date inscrite dans l\'ID ne correspond pas au jour du paiement.':
+      'Dati oyo ekomami na ID ekokani te na mokolo ya lifuti.',
+  'Le SMS du payeur ne montre pas le montant de la cotisation.':
+      'SMS ya mofuti emonisi te motuya ya lifuti.',
+  'Ce membre a eu des paiements rejetés récemment.':
+      'Lifuti ya moto oyo eboyamaki mikolo oyo.',
+  'Des paiements de ce membre ont été contestés récemment.':
+      'Lifuti ya moto oyo eboyamaki na bato mikolo oyo.',
+  'Plusieurs déclarations en quelques minutes.':
+      'Bayebisi ebele na miniti moke.',
+  'Le SMS du payeur n\'a pas la forme habituelle de l\'opérateur.':
+      'SMS ya mofuti ezali na lolenge ya opérateur te.',
+  'ID tapé à la main, sans le SMS de l\'opérateur.':
+      'ID ekomami na loboko, kozanga SMS ya opérateur.',
+  'Premier paiement de ce membre dans cette tontine.':
+      'Lifuti ya liboso ya moto oyo na likelemba oyo.',
+  'Déclaré longtemps après l\'échéance.':
+      'Eyebisami mosika nsima ya mokolo ya suka.',
+  'Ce SMS date du {date} : collez celui du paiement de ce tour.':
+      'SMS oyo ezali ya {date}: tyá oyo ya lifuti ya tour oyo.',
+  'Forme de SMS inhabituelle : vérifiez qu\'il vient bien de votre opérateur.':
+      'Lolenge ya SMS ezali ya momesano te: tála soki euti mpenza na opérateur na yo.',
+  'Vérification obligatoire':
+      'Botali ya makasi',
+  'Vérifiez avant de confirmer':
+      'Tála liboso ya kondima',
+  'Ce paiement présente des signes inhabituels :':
+      'Lifuti oyo ezali na bilembo ya momesano te:',
+  'Comptez l\'argent reçu avant de confirmer.':
+      'Tángá mbongo oyo ozwi liboso ya kondima.',
+  'Ouvrez votre compte mobile money et vérifiez que le montant est bien arrivé.':
+      'Fungolá compte na yo ya mobile money mpe tála soki mbongo ekómi mpenza.',
+  'Ne confirmez jamais sous la pression, même si on vous presse.':
+      'Kondima te na kotungisama, ata soki bato bakoti yo mbangu.',
+  'Coller le SMS de l\'argent reçu':
+      'Tyá SMS ya mbongo oyo ozwi',
+  'L\'ID du SMS correspond.':
+      'ID ya SMS ekokani.',
+  'J\'ai vérifié : l\'argent est bien arrivé.':
+      'Natali: mbongo ekómi mpenza.',
+  'Risque élevé : confirmez seulement avec le SMS de l\'argent reçu':
+      'Likama monene: ndimá kaka na SMS ya mbongo oyo ozwi',
+  'À vérifier : regardez votre solde avant de confirmer':
+      'Ya kotala: tála solde na yo liboso ya kondima',
+  'Rien d\'inhabituel':
+      'Eloko ya kokamwa ezali te',
 };

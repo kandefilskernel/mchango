@@ -177,7 +177,8 @@ class Contribution {
       txReference = j['txReference'] as String?,
       status = j['status'] as String,
       isLate = j['isLate'] as bool,
-      cycleStatus = j['cycleStatus'] as String?;
+      cycleStatus = j['cycleStatus'] as String?,
+      risk = j['risk'] == null ? null : ContributionRisk.fromJson(j['risk'] as Json);
 
   final String id;
   final String payerMembershipId;
@@ -191,6 +192,20 @@ class Contribution {
 
   /// Renseigné après une confirmation : `completed` si le tour vient de se clore.
   final String? cycleStatus;
+
+  /// Score de risque de la déclaration : visible du bénéficiaire et du témoin seulement.
+  final ContributionRisk? risk;
+}
+
+/// Vert : rien d'inhabituel. Orange : vérifier son solde avant de confirmer.
+/// Rouge : confirmer seulement avec le SMS de l'argent reçu.
+class ContributionRisk {
+  ContributionRisk.fromJson(Json j)
+    : level = j['level'] as String,
+      reasons = [for (final r in j['reasons'] as List) r as String];
+
+  final String level;
+  final List<String> reasons;
 }
 
 class Decision {

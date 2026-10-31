@@ -84,7 +84,8 @@ Avec `contribution` (détail de la déclaration ou `null`) et `decisions` (qui a
   "method": "mpesa",
   "txReference": "RK45TX9QPL",
   "amountMinor": 20000,
-  "offlineId": "<uuid généré par l'app>"
+  "offlineId": "<uuid généré par l'app>",
+  "smsCheck": { "pasted": true, "format": "airtel", "amountMatches": true }
 }
 ```
 
@@ -94,6 +95,7 @@ Avec `contribution` (détail de la déclaration ou `null`) et `decisions` (qui a
 - `cash` : `witnessMembershipId` obligatoire, un autre membre actif, ni le payeur ni le bénéficiaire.
 - `offlineId` : renvoyer la même déclaration (réseau coupé, nouvel essai) rend la déclaration existante avec `replayed: true`, sans doublon.
 - `isLate` vaut `true` si la déclaration arrive après l'échéance.
+- `smsCheck` (facultatif, mobile money) : ce que l'app a constaté sur le SMS collé. Sert au score de risque (voir plus bas).
 
 Erreurs :
 - `400` bénéficiaire qui cotise, mauvais montant, ID manquant, témoin invalide ;
@@ -106,6 +108,8 @@ Erreurs :
 { "decision": "confirm" }
 { "decision": "witness" }
 { "decision": "dispute", "note": "Je n'ai rien reçu" }
+{ "decision": "confirm", "riskAcknowledged": true }
+{ "decision": "confirm", "riskAcknowledged": true, "receivedTxReference": "XX261023.2305.R45862" }
 ```
 
 | Décision | Qui | Effet |
@@ -117,7 +121,55 @@ Erreurs :
 Réponse : la cotisation, plus `cycleStatus` (`open` ou `completed`) quand elle vient d'être confirmée.
 Quand tous les payeurs d'un tour sont confirmés, le tour passe `completed` et le suivant `open`. Après le dernier tour, le groupe passe `closed`.
 
-Erreurs : `403` mauvaise personne, `409` déjà répondu ou cotisation déjà confirmée.
+Erreurs : `403` mauvaise personne, `409` déjà répondu ou cotisation déjà confirmée, ou vérification de risque manquante (`code: "risk_check_required"`, `level`).
+
+## Contrôle anti-fraude en couches
+
+Aucune couche ne bloque tout ; ensemble, elles rendent la fraude coûteuse et visible. Rien ne touche à l'argent : Mchango ne bloque que le bouton « J'ai reçu ».
+
+### Couche 1 : contrôles sur le SMS collé (téléphone du payeur)
+
+| Contrôle | Fait | Effet |
+|----------|------|-------|
+| Type d'opération | oui | Un SMS de retrait ou d'argent reçu est refusé d'office. |
+| Forme du SMS | oui | Airtel (`Trans ID:`/`TID:`) ou « Référence de la transaction » reconnus ; une autre forme est signalée (« forme inhabituelle »). |
+| Montant | oui | Comparé à la cotisation ; écart signalé. |
+| Date de l'opération | oui | Lue dans l'ID Airtel (AAMMJJ) ou dans le texte (« le 02-08-2026 ») ; plus de 3 jours : « vieux SMS ». |
+| ID jamais vu (anti-rejeu) | oui, serveur | Un ID déjà utilisé est refusé ; un ID présenté puis rejeté compte dans le score. |
+| Expéditeur (identifiant officiel de l'opérateur) | **non** | Un texte collé ne dit pas qui l'a envoyé. Il faudrait lire la boîte SMS (permission `READ_SMS`, refusée par Google Play hors cas précis) ou la « SMS User Consent API » (un SMS à la fois, à tester). |
+| Métadonnées Android (heure de réception, canal) | **non** | Même raison. |
+| Numéro de l'émetteur | **non** | Les formats d'SMS d'envoi ne sont pas encore confirmés ; à ajouter avec de vrais exemples. |
+
+Ce que l'app constate part avec la déclaration (`smsCheck`). C'est **déclaratif** : une app modifiée peut mentir. Ces signaux ne font donc qu'**ajouter** des points ; les signaux les plus lourds sont calculés par le serveur.
+
+### Couche 2 : score de risque par déclaration (serveur)
+
+Calculé une fois à la déclaration (`apps/api/src/contributions/risk.ts`, table `contribution_risk`) :
+
+| Raison | Points |
+|--------|--------|
+| ID déjà présenté puis rejeté | 60 |
+| Date de l'ID Airtel à plus de 3 jours de la déclaration | 40 |
+| SMS collé sans le montant de la cotisation | 30 |
+| Payeur avec des déclarations rejetées (90 jours, toutes tontines) | 30 |
+| Contestations contre le payeur (90 jours, ouvertes ou rejetées) | 25 |
+| 3 déclarations ou plus du même membre en 30 minutes | 25 |
+| SMS de forme inconnue | 15 |
+| ID tapé à la main (mobile money) | 10 |
+| Premier paiement du membre dans la tontine | 10 |
+| Déclaré plus de 14 jours après l'échéance | 10 |
+
+| Niveau | Score | Ce que le bénéficiaire doit faire |
+|--------|-------|-----------------------------------|
+| Vert | < 30 | Confirmer normalement. |
+| Orange | 30 à 59 | Cocher « J'ai vérifié : l'argent est bien arrivé » (`riskAcknowledged`). |
+| Rouge | ≥ 60 | Mobile money : en plus, coller le SMS de l'argent reçu ; son ID doit être celui déclaré (`receivedTxReference`). Espèces : cocher, comme l'orange. |
+
+- **Qui voit quoi :** le niveau et les raisons, dans `GET /groups/:id/cycles/:n`, sont donnés au bénéficiaire et au témoin seulement (`contribution.risk`), jamais au payeur : il apprendrait quelles règles l'ont signalé. Le score reste hors de la chaîne de journal du groupe ; la vérification faite par le bénéficiaire est journalisée dans la chaîne globale (`contribution.risk_checked`).
+- **Équipe :** les déclarations orange et rouges des 30 derniers jours sont dans « Alertes » ; l'agent IA reçoit aussi le niveau de chaque cotisation.
+- **Consigne au bénéficiaire**, affichée à l'orange et au rouge : ne jamais confirmer sous la pression (« donne-moi vite… »), vérifier son solde.
+- **Écarté pour une tontine :** « montant inhabituellement élevé » (le montant est fixé par le groupe et vérifié à la déclaration).
+- Les points et seuils sont des premiers réglages : à ajuster avec les vrais usages du pilote.
 
 ## SMS de confirmation (app mobile)
 

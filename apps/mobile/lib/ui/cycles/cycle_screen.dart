@@ -42,12 +42,28 @@ class _CycleScreenState extends State<CycleScreen> {
 
   Future<void> _decide(Contribution c, String decision) async {
     String? note;
+    bool? riskAcknowledged;
+    String? receivedTxReference;
     if (decision == 'dispute') {
       note = await _askReason();
       if (note == null) return;
     }
+    // Score orange ou rouge : vérification avant « J'ai reçu » (le serveur l'exige aussi)
+    final level = c.risk?.level;
+    if (decision == 'confirm' && (level == 'orange' || level == 'red')) {
+      final check = await _riskCheck(c);
+      if (check == null) return;
+      riskAcknowledged = true;
+      receivedTxReference = check.receivedTxReference;
+    }
     if (!mounted) return;
-    final result = await Services.of(context).api.decide(c.id, decision, note: note);
+    final result = await Services.of(context).api.decide(
+      c.id,
+      decision,
+      note: note,
+      riskAcknowledged: riskAcknowledged,
+      receivedTxReference: receivedTxReference,
+    );
     if (!mounted) return;
     showInfo(context, switch (result.status) {
       'confirmed' =>
@@ -58,6 +74,90 @@ class _CycleScreenState extends State<CycleScreen> {
       _ => t('Réponse enregistrée. En attente des autres confirmations.'),
     });
     _reload();
+  }
+
+  /// Orange : case « j'ai vérifié mon solde ». Rouge (mobile money) : en plus, coller le SMS de
+  /// l'argent reçu, dont l'ID doit être celui déclaré. Renvoie null si la personne abandonne.
+  Future<({String? receivedTxReference})?> _riskCheck(Contribution c) async {
+    final red = c.risk!.level == 'red';
+    final needsSms = red && c.method != 'cash';
+    var checked = false;
+    String? smsId;
+    String? smsError;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialog) => AlertDialog(
+          key: const Key('risk_dialog'),
+          icon: Icon(Icons.shield_outlined, color: red ? Colors.red : Colors.orange, size: 40),
+          title: Text(red ? t('Vérification obligatoire') : t('Vérifiez avant de confirmer')),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(t('Ce paiement présente des signes inhabituels :')),
+                for (final r in c.risk!.reasons) Text('• ${riskReasonLabels[r] ?? r}'),
+                const SizedBox(height: 12),
+                Text(
+                  c.method == 'cash'
+                      ? t("Comptez l'argent reçu avant de confirmer.")
+                      : t('Ouvrez votre compte mobile money et vérifiez que le montant est bien arrivé.'),
+                ),
+                Text(t('Ne confirmez jamais sous la pression, même si on vous presse.'),
+                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                if (needsSms) ...[
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    key: const Key('risk_paste_sms'),
+                    icon: const Icon(Icons.content_paste_search),
+                    label: Text(t("Coller le SMS de l'argent reçu")),
+                    onPressed: () async {
+                      final text = (await Clipboard.getData(Clipboard.kTextPlain))?.text ?? '';
+                      final sms = parseOperatorSms(text);
+                      setDialog(() {
+                        if (sms?.txId == null) {
+                          smsId = null;
+                          smsError = t("Aucun ID trouvé. Copiez d'abord le SMS de l'argent reçu, puis touchez à nouveau ce bouton.");
+                        } else if (sms!.txId != c.txReference?.toUpperCase()) {
+                          smsId = null;
+                          smsError = t("L'ID du SMS ({sms}) ne correspond pas à celui déclaré ({declared}). Ne confirmez pas sans vérifier.", {
+                            'sms': sms.txId,
+                            'declared': c.txReference,
+                          });
+                        } else {
+                          smsId = sms.txId;
+                          smsError = null;
+                        }
+                      });
+                    },
+                  ),
+                  if (smsId != null)
+                    Text(t("L'ID du SMS correspond."), style: const TextStyle(color: Colors.green)),
+                  if (smsError != null) Text(smsError!, style: const TextStyle(color: Colors.red)),
+                ],
+                CheckboxListTile(
+                  key: const Key('risk_checked'),
+                  contentPadding: EdgeInsets.zero,
+                  value: checked,
+                  onChanged: (v) => setDialog(() => checked = v ?? false),
+                  title: Text(t("J'ai vérifié : l'argent est bien arrivé.")),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text(t('Annuler'))),
+            FilledButton(
+              key: const Key('risk_confirm'),
+              onPressed: checked && (!needsSms || smsId != null) ? () => Navigator.pop(context, true) : null,
+              child: Text(t("J'ai reçu")),
+            ),
+          ],
+        ),
+      ),
+    );
+    return ok == true ? (receivedTxReference: smsId) : null;
   }
 
   Future<String?> _askReason() {
@@ -212,6 +312,7 @@ class _CycleScreenState extends State<CycleScreen> {
                     )
                   : null,
             ),
+            if (c?.risk != null && open) _RiskBadge(risk: c!.risk!),
             if (canConfirm || canWitness || canDispute)
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -293,5 +394,32 @@ class _CycleScreenState extends State<CycleScreen> {
     } catch (e) {
       if (mounted) showError(context, e);
     }
+  }
+}
+
+/// Niveau de risque d'une déclaration, pour le bénéficiaire et le témoin.
+class _RiskBadge extends StatelessWidget {
+  const _RiskBadge({required this.risk});
+
+  final ContributionRisk risk;
+
+  @override
+  Widget build(BuildContext context) {
+    final (color, label) = switch (risk.level) {
+      'red' => (Colors.red, t("Risque élevé : confirmez seulement avec le SMS de l'argent reçu")),
+      'orange' => (Colors.orange, t('À vérifier : regardez votre solde avant de confirmer')),
+      _ => (Colors.green, t("Rien d'inhabituel")),
+    };
+    return Padding(
+      key: Key('risk_${risk.level}'),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Row(
+        children: [
+          Icon(Icons.shield_outlined, size: 18, color: color),
+          const SizedBox(width: 6),
+          Expanded(child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w700))),
+        ],
+      ),
+    );
   }
 }

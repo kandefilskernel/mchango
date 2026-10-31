@@ -5,8 +5,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Db, isUniqueViolation, type Actor, type Queryable } from '../infra/database.js';
+import { appendAudit, Db, isUniqueViolation, type Actor, type Queryable } from '../infra/database.js';
 import { activeMembership, TODAY_DRC_SQL } from '../groups/membership.js';
+import { assessContribution, type RiskLevel, type SmsCheck } from './risk.js';
 
 type UserActor = Actor & { id: string };
 
@@ -19,11 +20,24 @@ export interface DeclareInput {
   witnessMembershipId?: string;
   /** Identifiant généré par l'app : renvoyer la même déclaration (hors ligne, réseau coupé) ne crée pas de doublon. */
   offlineId: string;
+  /** Ce que l'app a constaté sur le SMS collé (couche 1) ; sert au score de risque. */
+  smsCheck?: SmsCheck;
 }
 
 export interface DecisionInput {
   decision: 'confirm' | 'witness' | 'dispute';
   note?: string;
+  /** Déclaration orange ou rouge : le bénéficiaire atteste avoir vérifié son solde (ou l'argent en main). */
+  riskAcknowledged?: boolean;
+  /** Déclaration rouge (mobile money) : l'ID lu dans le SMS reçu par le bénéficiaire. */
+  receivedTxReference?: string;
+}
+
+/** Refus de confirmer tant que la vérification demandée par le niveau de risque n'est pas faite. */
+export class RiskCheckRequired extends ConflictException {
+  constructor(level: RiskLevel, message: string) {
+    super({ message, code: 'risk_check_required', level });
+  }
 }
 
 /**
@@ -124,6 +138,8 @@ export class ContributionsService {
         turn_order: number | null;
         overdue: boolean;
         decisions: { decision: string; membershipId: string; at: string }[] | null;
+        risk_level: RiskLevel | null;
+        risk_reasons: { code: string; points: number }[] | null;
       }
     >(
       `SELECT m.id AS membership_id, u.full_name, m.turn_order,
@@ -133,7 +149,8 @@ export class ContributionsService {
               (SELECT json_agg(json_build_object('decision', f.decision,
                                                  'membershipId', f.confirmed_by,
                                                  'at', f.confirmed_at) ORDER BY f.confirmed_at)
-               FROM confirmations f WHERE f.contribution_id = k.id) AS decisions
+               FROM confirmations f WHERE f.contribution_id = k.id) AS decisions,
+              r.level AS risk_level, r.reasons AS risk_reasons
        FROM memberships m
        JOIN users u ON u.id = m.user_id
        LEFT JOIN LATERAL (
@@ -141,6 +158,7 @@ export class ContributionsService {
          WHERE x.cycle_id = $3 AND x.payer_membership_id = m.id AND x.status <> 'rejected'
          ORDER BY x.declared_at DESC LIMIT 1
        ) k ON true
+       LEFT JOIN contribution_risk r ON r.contribution_id = k.id
        WHERE m.group_id = $1 AND m.status = 'active' AND m.id <> $4
        ORDER BY m.turn_order NULLS LAST, u.full_name`,
       [groupId, cycle.due_date, cycle.id, cycle.beneficiary_membership_id],
@@ -156,7 +174,17 @@ export class ContributionsService {
         fullName: r.full_name,
         // Pas de déclaration : « attendue », ou « en retard » après l'échéance
         status: r.status ?? (r.overdue ? 'late' : 'expected'),
-        contribution: r.id ? toContribution(r as ContributionRow) : null,
+        contribution: r.id
+          ? {
+              ...toContribution(r as ContributionRow),
+              // Niveau de risque : pour le bénéficiaire et le témoin seulement. Le payeur ne doit pas
+              // apprendre quelles règles l'ont signalé.
+              risk:
+                r.risk_level && (me.id === r.receiver_membership_id || me.id === r.witness_membership_id)
+                  ? { level: r.risk_level, reasons: (r.risk_reasons ?? []).map((x) => x.code) }
+                  : null,
+            }
+          : null,
         decisions: r.decisions ?? [],
       })),
     };
@@ -251,6 +279,7 @@ export class ContributionsService {
             input.offlineId,
           ],
         );
+        await assessContribution(q, { ...inserted.rows[0], due_date: cycle.due_date }, input.smsCheck);
         return { contribution: inserted.rows[0], replayed: false };
       })
       .catch((e: unknown) => {
@@ -297,6 +326,7 @@ export class ContributionsService {
         if (input.decision === 'confirm' && me.id !== c.receiver_membership_id) {
           throw new ForbiddenException('Seul le bénéficiaire du tour confirme avoir reçu le paiement.');
         }
+        if (input.decision === 'confirm') await this.checkRisk(q, actor, c, input);
         if (input.decision === 'witness' && me.id !== c.witness_membership_id) {
           throw new ForbiddenException('Seul le témoin désigné confirme la remise en espèces.');
         }
@@ -342,6 +372,40 @@ export class ContributionsService {
       }
       const cycleStatus = status === 'confirmed' ? await this.closeCycleIfComplete(q, c.cycle_id) : null;
       return { ...toContribution({ ...c, status }), cycleStatus };
+    });
+  }
+
+  /**
+   * Orange : le bénéficiaire coche « j'ai vérifié mon solde ». Rouge (mobile money) : il doit en
+   * plus donner l'ID lu dans le SMS de l'argent reçu, identique à celui déclaré. La vérification
+   * est journalisée dans la chaîne globale (pas dans celle du groupe, que le payeur voit).
+   */
+  private async checkRisk(q: Queryable, actor: UserActor, c: ContributionRow, input: DecisionInput) {
+    const { rows } = await q.query<{ level: RiskLevel }>(
+      'SELECT level FROM contribution_risk WHERE contribution_id = $1',
+      [c.id],
+    );
+    const level = rows[0]?.level ?? 'green';
+    if (level === 'green') return;
+    if (!input.riskAcknowledged) {
+      throw new RiskCheckRequired(level, "Vérifiez votre solde (ou l'argent reçu en main) avant de confirmer.");
+    }
+    let smsVerified = false;
+    if (level === 'red' && c.method !== 'cash') {
+      const received = normalizeTxReference(input.receivedTxReference ?? '');
+      if (!received) {
+        throw new RiskCheckRequired(level, "Collez le SMS de l'argent reçu : sans lui, ce paiement ne peut pas être confirmé.");
+      }
+      if (received !== c.tx_reference) {
+        throw new RiskCheckRequired(level, "L'ID de votre SMS ne correspond pas à celui déclaré. Ne confirmez pas : contestez ou appelez le payeur.");
+      }
+      smsVerified = true;
+    }
+    await appendAudit(q, {
+      groupId: null,
+      actor,
+      action: 'contribution.risk_checked',
+      payload: { contribution_id: c.id, level, acknowledged: true, sms_verified: smsVerified },
     });
   }
 

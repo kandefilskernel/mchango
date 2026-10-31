@@ -675,4 +675,52 @@ const en = <String, String>{
       'Never write your PIN or a code received by SMS. For a dispute about a payment, use “Dispute” in that turn.',
   'Envoyer':
       'Send',
+  'Cet ID de transaction a déjà été présenté puis rejeté.':
+      'This transaction ID was already submitted and then rejected.',
+  'La date inscrite dans l\'ID ne correspond pas au jour du paiement.':
+      'The date in the ID does not match the payment day.',
+  'Le SMS du payeur ne montre pas le montant de la cotisation.':
+      'The payer\'s SMS does not show the contribution amount.',
+  'Ce membre a eu des paiements rejetés récemment.':
+      'This member recently had payments rejected.',
+  'Des paiements de ce membre ont été contestés récemment.':
+      'This member\'s payments were recently disputed.',
+  'Plusieurs déclarations en quelques minutes.':
+      'Several declarations within a few minutes.',
+  'Le SMS du payeur n\'a pas la forme habituelle de l\'opérateur.':
+      'The payer\'s SMS does not have the operator\'s usual format.',
+  'ID tapé à la main, sans le SMS de l\'opérateur.':
+      'ID typed by hand, without the operator\'s SMS.',
+  'Premier paiement de ce membre dans cette tontine.':
+      'This member\'s first payment in this tontine.',
+  'Déclaré longtemps après l\'échéance.':
+      'Declared long after the due date.',
+  'Ce SMS date du {date} : collez celui du paiement de ce tour.':
+      'This SMS is dated {date}: paste the one for this turn\'s payment.',
+  'Forme de SMS inhabituelle : vérifiez qu\'il vient bien de votre opérateur.':
+      'Unusual SMS format: check that it really comes from your operator.',
+  'Vérification obligatoire':
+      'Verification required',
+  'Vérifiez avant de confirmer':
+      'Check before confirming',
+  'Ce paiement présente des signes inhabituels :':
+      'This payment shows unusual signs:',
+  'Comptez l\'argent reçu avant de confirmer.':
+      'Count the money received before confirming.',
+  'Ouvrez votre compte mobile money et vérifiez que le montant est bien arrivé.':
+      'Open your mobile money account and check that the amount has arrived.',
+  'Ne confirmez jamais sous la pression, même si on vous presse.':
+      'Never confirm under pressure, even if someone is rushing you.',
+  'Coller le SMS de l\'argent reçu':
+      'Paste the SMS of the money received',
+  'L\'ID du SMS correspond.':
+      'The SMS ID matches.',
+  'J\'ai vérifié : l\'argent est bien arrivé.':
+      'I checked: the money has arrived.',
+  'Risque élevé : confirmez seulement avec le SMS de l\'argent reçu':
+      'High risk: confirm only with the SMS of the money received',
+  'À vérifier : regardez votre solde avant de confirmer':
+      'To check: look at your balance before confirming',
+  'Rien d\'inhabituel':
+      'Nothing unusual',
 };

@@ -21,11 +21,20 @@ const Declare = z.object({
   amountMinor: z.number().int().positive(),
   witnessMembershipId: z.uuid().optional(),
   offlineId: z.uuid(),
+  smsCheck: z
+    .object({
+      pasted: z.boolean(),
+      format: z.enum(['airtel', 'reference', 'generic']).optional(),
+      amountMatches: z.boolean().optional(),
+    })
+    .optional(),
 });
 
 const Decide = z.object({
   decision: z.enum(['confirm', 'witness', 'dispute']),
   note: z.string().max(500).optional(),
+  riskAcknowledged: z.boolean().optional(),
+  receivedTxReference: z.string().max(40).optional(),
 });
 
 const actorOf = (auth: AccessTokenClaims) => ({ type: 'user' as const, id: auth.sub, deviceId: auth.did });

@@ -45,6 +45,20 @@ Map<String, String> get frequencyLabels => {
   'monthly': t('Chaque mois'),
 };
 
+/// Raisons du score de risque d'une déclaration (codes de l'API, apps/api/src/contributions/risk.ts).
+Map<String, String> get riskReasonLabels => {
+  'tx_reused_after_rejection': t('Cet ID de transaction a déjà été présenté puis rejeté.'),
+  'tx_date_mismatch': t("La date inscrite dans l'ID ne correspond pas au jour du paiement."),
+  'sms_amount_mismatch': t('Le SMS du payeur ne montre pas le montant de la cotisation.'),
+  'payer_rejected_before': t('Ce membre a eu des paiements rejetés récemment.'),
+  'payer_disputed_before': t('Des paiements de ce membre ont été contestés récemment.'),
+  'burst': t('Plusieurs déclarations en quelques minutes.'),
+  'sms_format_unknown': t("Le SMS du payeur n'a pas la forme habituelle de l'opérateur."),
+  'sms_not_pasted': t("ID tapé à la main, sans le SMS de l'opérateur."),
+  'first_payment': t('Premier paiement de ce membre dans cette tontine.'),
+  'late_declaration': t("Déclaré longtemps après l'échéance."),
+};
+
 Map<String, String> get methodLabels => {
   'mpesa': 'M-Pesa',
   'airtel': 'Airtel Money',

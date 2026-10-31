@@ -294,7 +294,7 @@ export class AdminService {
    */
   async alerts(staff: StaffMember) {
     const r = ALERT_RULES;
-    const [pinResets, devices, rejected, reused] = await Promise.all([
+    const [pinResets, devices, rejected, reused, risky] = await Promise.all([
       this.db.query<{ user_id: string; full_name: string; phone: string; n: number; last_at: Date }>(
         `SELECT u.id AS user_id, u.full_name, u.phone, count(*)::int AS n, max(p.created_at) AS last_at
          FROM pin_reset_requests p JOIN users u ON u.id = p.user_id
@@ -326,6 +326,20 @@ export class AdminService {
          WHERE k.tx_reference IS NOT NULL
          GROUP BY k.method, k.tx_reference HAVING count(*) >= 2 ORDER BY last_at DESC LIMIT 50`,
       ),
+      // Déclarations orange ou rouges (score de risque) des 30 derniers jours, encore à surveiller
+      this.db.query<{
+        contribution_id: string; level: string; score: number; reasons: { code: string }[]; status: string;
+        user_id: string; full_name: string; phone: string; group_id: string; group_name: string;
+        cycle_number: number; method: string; tx_reference: string | null; declared_at: Date;
+      }>(
+        `SELECT r.contribution_id, r.level, r.score, r.reasons, k.status, u.id AS user_id, u.full_name, u.phone,
+                g.id AS group_id, g.name AS group_name, c.cycle_number, k.method, k.tx_reference, k.declared_at
+         FROM contribution_risk r JOIN contributions k ON k.id = r.contribution_id
+         JOIN memberships m ON m.id = k.payer_membership_id JOIN users u ON u.id = m.user_id
+         JOIN groups g ON g.id = k.group_id JOIN cycles c ON c.id = k.cycle_id
+         WHERE r.level <> 'green' AND r.computed_at > now() - interval '30 days'
+         ORDER BY (r.level = 'red') DESC, r.computed_at DESC LIMIT 100`,
+      ),
     ]);
     const person = (x: { user_id: string; full_name: string; phone: string; n: number; last_at: Date }) => ({
       userId: x.user_id,
@@ -346,6 +360,18 @@ export class AdminService {
         payers: x.payers,
         groups: x.groups,
         lastAt: iso(x.last_at),
+      })),
+      riskyContributions: risky.rows.map((x) => ({
+        contributionId: x.contribution_id,
+        level: x.level,
+        score: x.score,
+        reasons: x.reasons.map((reason) => reason.code),
+        status: x.status,
+        payer: { userId: x.user_id, fullName: x.full_name, phone: this.phone(staff, x.phone) },
+        group: { id: x.group_id, name: x.group_name, cycleNumber: x.cycle_number },
+        method: x.method,
+        txReference: x.tx_reference,
+        declaredAt: iso(x.declared_at),
       })),
     };
   }

@@ -80,6 +80,7 @@ class MchangoApi {
     required String offlineId,
     String? txReference,
     String? witnessMembershipId,
+    Map<String, Object>? smsCheck,
   }) async => Contribution.fromJson(
     await client.post('/groups/$groupId/cycles/$cycleNumber/contributions', {
       'method': method,
@@ -87,11 +88,25 @@ class MchangoApi {
       'offlineId': offlineId,
       'txReference': ?txReference,
       'witnessMembershipId': ?witnessMembershipId,
+      'smsCheck': ?smsCheck,
     }) as Json,
   );
 
-  Future<Contribution> decide(String contributionId, String decision, {String? note}) async => Contribution.fromJson(
-    await client.post('/contributions/$contributionId/decisions', {'decision': decision, 'note': ?note}) as Json,
+  /// [riskAcknowledged] : déclaration orange ou rouge, solde vérifié.
+  /// [receivedTxReference] : déclaration rouge, ID lu dans le SMS de l'argent reçu.
+  Future<Contribution> decide(
+    String contributionId,
+    String decision, {
+    String? note,
+    bool? riskAcknowledged,
+    String? receivedTxReference,
+  }) async => Contribution.fromJson(
+    await client.post('/contributions/$contributionId/decisions', {
+      'decision': decision,
+      'note': ?note,
+      'riskAcknowledged': ?riskAcknowledged,
+      'receivedTxReference': ?receivedTxReference,
+    }) as Json,
   );
 
   Future<Receipt> receipt(String contributionId) async =>

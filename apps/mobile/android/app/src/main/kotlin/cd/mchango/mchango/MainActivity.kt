@@ -1,5 +1,6 @@
 package cd.mchango.mchango
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+// FragmentActivity : nécessaire à la fenêtre d'empreinte (local_auth)
+class MainActivity : FlutterFragmentActivity()

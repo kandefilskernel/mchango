@@ -1,0 +1,23 @@
+# HTTPS automatique (Let's Encrypt) pour l'API et le back-office.
+(securite) {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		-Server
+	}
+	encode gzip
+}
+
+# API : appelée par l'app mobile
+{$API_DOMAIN} {
+	import securite
+	reverse_proxy api:3000
+}
+
+# Back-office de l'équipe
+{$ADMIN_DOMAIN} {
+	import securite
+	header X-Frame-Options DENY
+	reverse_proxy backoffice:3001
+}

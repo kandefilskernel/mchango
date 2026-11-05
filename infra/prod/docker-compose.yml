@@ -1,0 +1,144 @@
+# Mchango en PRODUCTION sur un seul serveur (guide : docs/mise-en-ligne.md).
+#   cd infra/prod && ./gen-secrets.sh && docker compose up -d --build
+# Seuls les ports 80 et 443 (Caddy, HTTPS automatique) sont ouverts sur Internet.
+name: mchango
+
+# Journaux Docker limités à 5 × 10 Mo par service : sans limite, ils remplissent le disque
+# au fil des semaines et tout s'arrête.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+# Relance d'un service figé. Docker Compose ne redémarre un conteneur que si son processus
+# s'arrête ; un contrôle de santé qui échoue le marque seulement « unhealthy ». Le contrôle
+# arrête donc lui-même le processus figé (kill -9), et « restart » le relance. « init: true »
+# met un petit init en tête du conteneur : le processus Node n'est plus le n°1 et peut être tué.
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      POSTGRES_DB: mchango
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?à définir dans .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "postgres", "-d", "mchango"]
+      interval: 3s
+      retries: 30
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    logging: *logging
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      retries: 30
+
+  # Applique les migrations de db/ qui ne l'ont pas encore été, puis s'arrête
+  migrate:
+    image: postgres:16
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGUSER: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: mchango
+      PGOPTIONS: "-c client_min_messages=warning"
+      MCHANGO_API_DB_PASSWORD: ${MCHANGO_API_DB_PASSWORD:?à définir dans .env}
+    volumes:
+      - ../../db:/db:ro
+      - ./migrate.sh:/migrate.sh:ro
+    entrypoint: ["sh", "/migrate.sh"]
+    restart: "no"
+    logging: *logging
+
+  api:
+    build: ../../apps/api
+    restart: unless-stopped
+    logging: *logging
+    init: true
+    # /health répond tant que Node tourne. 3 échecs de suite (environ 1 min 30) : API figée, relancée.
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -T 5 -O /dev/null http://127.0.0.1:3000/health || (pkill -9 -x node; exit 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://mchango_api:${MCHANGO_API_DB_PASSWORD}@postgres:5432/mchango
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:?à définir dans .env}
+      OTP_PEPPER: ${OTP_PEPPER:?à définir dans .env}
+      STAFF_JWT_SECRET: ${STAFF_JWT_SECRET:?à définir dans .env}
+      STAFF_SECRET_KEY: ${STAFF_SECRET_KEY:?à définir dans .env}
+      STAFF_2FA_DEV_BYPASS: "0"
+      STAFF_SESSION_HOURS: ${STAFF_SESSION_HOURS:-8}
+      SMS_DRIVER: console
+      SMS_CONSOLE_PILOT: ${SMS_CONSOLE_PILOT:-0}
+      # Derrière Caddy : l'IP réelle des téléphones vient de X-Forwarded-For
+      TRUST_PROXY: "1"
+      REMINDERS_ENABLED: ${REMINDERS_ENABLED:-1}
+      # Agent IA du back-office (facultatif) : vide = règles automatiques seules
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      AI_REVIEWS_PER_DAY: ${AI_REVIEWS_PER_DAY:-30}
+      CORS_ORIGINS: ""
+
+  backoffice:
+    build: ../../apps/backoffice
+    restart: unless-stopped
+    logging: *logging
+    init: true
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -T 5 -O /dev/null http://127.0.0.1:3001/login || (pkill -9 -x node; exit 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - api
+    environment:
+      # Le serveur du back-office parle à l'API à l'intérieur du serveur, jamais par Internet
+      MCHANGO_API_URL: http://api:3000
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    logging: *logging
+    depends_on:
+      - api
+      - backoffice
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?à définir dans .env}
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN:?à définir dans .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+      - caddyconfig:/config
+
+volumes:
+  pgdata:
+  redisdata:
+  caddydata:
+  caddyconfig:

@@ -1,0 +1,36 @@
+# Environnement de DÉVELOPPEMENT local : PostgreSQL 16 + Redis 7.
+#   docker compose up -d
+# Les migrations de db/ sont appliquées au premier démarrage (volume vide).
+# Pour repartir de zéro : docker compose down -v
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: mchango
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_dev
+      MCHANGO_API_DB_PASSWORD: mchango_api_dev
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - ./db:/db:ro
+      - ./infra/dev/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # -h 127.0.0.1 : le serveur temporaire de l'initialisation n'écoute pas en TCP,
+      # le conteneur n'est donc « healthy » qu'une fois les migrations terminées.
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "postgres", "-d", "mchango"]
+      interval: 2s
+      retries: 30
+
+  redis:
+    image: redis:7
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      retries: 30
+
+volumes:
+  pgdata:

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Affiche Mchango</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #0f5e43;
+    --green-dark: #0a3f2d;
+    --gold: #f2b33d;
+    --cream: #fff8ec;
+    --ink: #16212b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1350px; background: var(--green-dark); }
+  body { font-family: "Plus Jakarta Sans", system-ui, sans-serif; color: #fff; overflow: hidden; }
+
+  .poster {
+    position: relative;
+    width: 1080px;
+    height: 1350px;
+    padding: 64px 72px 0;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 85% 8%, rgba(242, 179, 61, 0.35), transparent 38%),
+      radial-gradient(circle at 10% 95%, rgba(124, 240, 180, 0.18), transparent 40%),
+      linear-gradient(160deg, var(--green-dark) 0%, var(--green) 55%, #1d7a55 100%);
+  }
+  /* motif discret façon tissu wax */
+  .poster::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.06) 2px, transparent 2px);
+    background-size: 28px 28px;
+  }
+  .poster > * { position: relative; }
+
+  .brand { display: flex; align-items: center; gap: 16px; }
+  .brand-name { font-size: 40px; font-weight: 800; letter-spacing: -0.5px; line-height: 1; }
+  .brand-name small { display: block; font-size: 17px; font-weight: 700; color: var(--gold); letter-spacing: 1px; margin-top: 6px; }
+  .pill {
+    margin-left: auto;
+    font-size: 19px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--ink); background: var(--gold);
+    padding: 12px 22px; border-radius: 999px;
+  }
+
+  h1 { margin-top: 48px; font-size: 82px; line-height: 1.02; font-weight: 800; letter-spacing: -2px; max-width: 900px; }
+  h1 em { font-style: normal; color: var(--gold); }
+  .lead { margin-top: 22px; font-size: 27px; line-height: 1.4; font-weight: 500; color: rgba(255, 255, 255, 0.88); max-width: 860px; }
+
+  .phones { position: absolute; left: 0; right: 0; top: 520px; height: 760px; }
+  .phone {
+    position: absolute;
+    width: 290px;
+    height: 600px;
+    border-radius: 44px;
+    background: #0d1116;
+    padding: 12px;
+    box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.65), 0 0 0 2px rgba(255, 255, 255, 0.08);
+  }
+  .phone .screen { width: 100%; height: 100%; border-radius: 33px; overflow: hidden; background: #f6f7f5; padding-top: 30px; }
+  /* barre d'état du téléphone : de la couleur du haut de l'écran */
+  .p1 .screen { background: linear-gradient(120deg, #0f5e43, #1f7a52); }
+  .phone img { width: 100%; display: block; }
+  .phone .notch { position: absolute; top: 22px; left: 50%; width: 86px; height: 22px; margin-left: -43px; border-radius: 12px; background: #0d1116; }
+  .p1 { left: 72px; top: 70px; transform: rotate(-6deg); }
+  .p2 { left: 395px; top: 0; z-index: 2; width: 310px; height: 640px; }
+  .p3 { left: 718px; top: 70px; transform: rotate(6deg); }
+
+  .step {
+    position: absolute;
+    display: flex; align-items: center; gap: 12px;
+    background: #fff; color: var(--ink);
+    border-radius: 18px; padding: 14px 18px;
+    font-size: 21px; font-weight: 800; line-height: 1.2;
+    box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.6);
+    z-index: 3;
+  }
+  .step b {
+    flex: none; width: 38px; height: 38px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--gold); color: var(--ink); font-size: 20px;
+  }
+  .s1 { left: 56px; top: 600px; width: 300px; }
+  .s2 { left: 385px; top: 595px; width: 330px; }
+  .s3 { left: 724px; top: 600px; width: 300px; }
+
+  .footer {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 26px 72px 30px;
+    background: rgba(5, 30, 21, 0.72);
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    z-index: 4;
+  }
+  .footer .trust { font-size: 21px; font-weight: 700; line-height: 1.35; }
+  .footer .trust span { color: var(--gold); }
+  .footer .langs { font-size: 17px; font-weight: 600; color: rgba(255, 255, 255, 0.7); margin-top: 4px; }
+  .footer .by { text-align: right; font-size: 17px; font-weight: 600; color: rgba(255, 255, 255, 0.75); white-space: nowrap; }
+  .footer .by strong { display: block; font-size: 28px; color: #fff; letter-spacing: 0.5px; }
+</style>
+</head>
+<body>
+<div class="poster">
+  <div class="brand">
+    <img src="../../apps/mobile/assets/illustrations/logo.svg" width="64" height="64" alt="">
+    <div class="brand-name">Mchango<small>par nuru-k</small></div>
+    <span class="pill">Bientôt sur Android</span>
+  </div>
+
+  <h1>Votre tontine,<br><em>enfin vérifiable.</em></h1>
+  <p class="lead">Payez comme d'habitude : M-Pesa, Airtel Money, Orange Money ou espèces. Mchango garde la preuve de chaque cotisation.</p>
+
+  <div class="phones">
+    <div class="phone p1"><div class="screen"><img src="captures/home.png" alt="Accueil : mon carnet et mes tontines"></div><div class="notch"></div></div>
+    <div class="phone p2"><div class="screen"><img src="captures/cycle.png" alt="Le tour : qui payer, qui a payé"></div><div class="notch"></div></div>
+    <div class="phone p3"><div class="screen"><img src="captures/receipt.png" alt="Reçu avec QR code"></div><div class="notch"></div></div>
+
+    <div class="step s1"><b>1</b>Votre carnet : quoi payer, votre tour</div>
+    <div class="step s2"><b>2</b>Vous déclarez, le bénéficiaire confirme</div>
+    <div class="step s3"><b>3</b>Un reçu avec QR, à partager</div>
+  </div>
+
+  <div class="footer">
+    <div>
+      <div class="trust">Mchango <span>ne détient jamais votre argent</span> : les membres se paient entre eux.</div>
+      <div class="langs">Français · Kiswahili · Lingála · English</div>
+    </div>
+    <div class="by">une application<strong>nuru-k</strong></div>
+  </div>
+</div>
+</body>
+</html>

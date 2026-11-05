@@ -1,0 +1,94 @@
+# Compile l'APK Android de l'app Mchango sur les machines de GitHub (rien à installer en local).
+# L'APK de test le plus récent se télécharge sans compte, même depuis le téléphone :
+#   https://github.com/kandefilskernel/mchango/releases/download/apk-test/mchango-test.apk
+# (aussi dans l'onglet « Actions », section « Artifacts », avec un compte GitHub).
+name: APK Android
+
+on:
+  push:
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/**'
+      - 'spec/test-vectors/**'
+      - '.github/workflows/android-apk.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: apk-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  # write : publier l'APK de test dans la page « Releases »
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      # Adresse de l'API compilée dans l'app. Par défaut : le PC de développement, vu par un téléphone
+      # branché en USB (adb reverse tcp:3000 tcp:3000). Pour une API en ligne : variable de dépôt
+      # MCHANGO_API_URL (Settings > Secrets and variables > Actions > Variables).
+      API_URL: ${{ vars.MCHANGO_API_URL || 'http://localhost:3000' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.7'
+          channel: stable
+          cache: true
+
+      - name: Vérification du journal (paquet Dart)
+        working-directory: packages/mchango_audit
+        run: |
+          dart pub get
+          dart test
+
+      - name: Tests de l'app
+        working-directory: apps/mobile
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+
+      # APK « debug » : il autorise le HTTP non chiffré, nécessaire tant que l'API n'est pas en HTTPS.
+      # Plus lourd et plus lent qu'un APK de production ; suffisant pour tester.
+      - name: Compilation de l'APK
+        working-directory: apps/mobile
+        run: flutter build apk --debug --dart-define=API_URL=$API_URL
+
+      - name: Nommer l'APK
+        run: |
+          short=$(git rev-parse --short HEAD)
+          mv apps/mobile/build/app/outputs/flutter-apk/app-debug.apk "mchango-debug-$short.apk"
+          echo "APK_NAME=mchango-debug-$short" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APK_NAME }}
+          path: ${{ env.APK_NAME }}.apk
+          retention-days: 30
+
+      # Lien de téléchargement fixe : chaque nouvelle compilation remplace l'APK de la release « apk-test »
+      - name: Préparer la release de test
+        run: cp "$APK_NAME.apk" mchango-test.apk
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-test
+          name: APK de test (dernière compilation)
+          prerelease: true
+          make_latest: false
+          body: |
+            APK de **test** de Mchango, compilé automatiquement depuis la branche `${{ github.ref_name }}` (commit ${{ github.sha }}).
+            Version « debug » : appelle l'API à l'adresse `${{ env.API_URL }}`.
+            Avec `http://localhost:3000`, le téléphone doit être branché en USB au PC de développement (`adb reverse tcp:3000 tcp:3000`).
+            Mchango ne détient, ne transfère et ne garantit aucun fonds.
+          files: mchango-test.apk
+          overwrite_files: true

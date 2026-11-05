@@ -1,0 +1,7 @@
+{
+  "description": "Ed25519 déterministe, calculé avec Node (même code que l API)",
+  "seed": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc=",
+  "public_key": "6kpsY+KcUgq+9VB7Ey7F+ZVHdq6+vnuSQh7qaRRG0iw=",
+  "message": "mchango-auth-v1\n6f1c2a5e-0000-4000-8000-000000000001\nnonce-abc",
+  "signature": "dj9tvgESOOh18vLMPMftcagWCZa2w6dmR2skZtz16eoAzdSkz4XzP2uncJ7nzH+NzhOWfUdh212v2SDnCj9aDw=="
+}

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Mchango LinkedIn 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  h2 { margin-top: 48px; }
+  .start {
+    margin-top: 30px;
+    display: flex; align-items: center; gap: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 20px; padding: 18px 22px;
+    font-size: 22px; font-weight: 700; line-height: 1.35;
+  }
+  .start b { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: #fff; color: var(--green); font-size: 22px; }
+  .row { position: absolute; left: 0; right: 0; top: 480px; }
+  .phone { width: 296px; height: 600px; top: 0; }
+  .phone:nth-child(1) { left: 54px; }
+  .phone:nth-child(2) { left: 392px; }
+  .phone:nth-child(3) { left: 730px; }
+  .s1 .screen { background-image: url(../apercu/declare.png); }
+  .s2 .screen { background-image: url(../apercu/cycle.png); }
+  .s3 .screen { background-image: url(../apercu/receipt.png); }
+  .steps { position: absolute; left: 0; right: 0; top: 1120px; display: flex; gap: 42px; padding: 0 54px; }
+  .step { width: 296px; }
+  .step b {
+    display: inline-grid; place-items: center;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--gold); color: var(--ink); font-size: 22px; margin-bottom: 10px;
+  }
+  .step strong { display: block; font-size: 23px; line-height: 1.25; }
+  .step span { display: block; margin-top: 6px; font-size: 17px; line-height: 1.35; color: var(--muted); font-weight: 600; }
+  .slide { padding-bottom: 0; }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="brand">
+    <img src="../../apps/mobile/assets/illustrations/logo.svg" width="58" height="58" alt="">
+    <div class="brand-name">Mchango<small>par nuru-k</small></div>
+    <span class="page">2/3</span>
+  </div>
+
+  <h2>Comment ça marche,<br><em>en 3 gestes.</em></h2>
+  <div class="start"><b>0</b>Avant le premier tour, chaque membre signe le règlement dans l'app : montant, rythme, ordre des tours.</div>
+
+  <div class="row">
+    <div class="phone s1"><div class="screen"></div></div>
+    <div class="phone s2"><div class="screen"></div></div>
+    <div class="phone s3"><div class="screen"></div></div>
+  </div>
+
+  <div class="steps">
+    <div class="step"><b>1</b><strong>Je paie comme d'habitude</strong><span>puis je colle le SMS de l'opérateur : l'ID se remplit tout seul.</span></div>
+    <div class="step"><b>2</b><strong>Le bénéficiaire confirme</strong><span>« J'ai reçu ». Tout le groupe voit qui a payé.</span></div>
+    <div class="step"><b>3</b><strong>Un reçu avec QR</strong><span>numéro unique, relié au journal du groupe.</span></div>
+  </div>
+</div>
+</body>
+</html>

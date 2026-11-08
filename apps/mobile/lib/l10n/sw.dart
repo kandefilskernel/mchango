@@ -265,6 +265,26 @@ const sw = <String, String>{
       'Jumla ya wanachama wote: inatosha kununua pikipiki, kufungua duka, kulipa masomo.',
   'La tontine':
       'Likelemba',
+  'La catégorie':
+      'Kundi',
+  'Communautaire':
+      'Jamii',
+  'Organisation':
+      'Shirika',
+  'Travailleurs':
+      'Wafanyakazi',
+  'Religion':
+      'Dini',
+  'Voisins, amis, marchands, taxi-motos, associations de quartier.':
+      'Majirani, marafiki, wafanyabiashara, waendesha pikipiki, vyama vya mtaa.',
+  'Associations, coopératives, syndicats, ONG, mutuelles.':
+      'Vyama, vyama vya ushirika, vyama vya wafanyakazi, mashirika yasiyo ya kiserikali.',
+  'Collègues d\'un même employeur ou d\'un même métier, fonctionnaires.':
+      'Wafanyakazi wenzako wa mwajiri mmoja au kazi moja, watumishi wa serikali.',
+  'Églises, paroisses, mosquées, communautés et leurs groupes.':
+      'Makanisa, parokia, misikiti, jumuiya na vikundi vyao.',
+  'Choisissez ce qui ressemble le plus à votre groupe. Pour l\'instant, toutes les catégories fonctionnent de la même façon.':
+      'Chagua kinachofanana zaidi na kikundi chenu. Kwa sasa, makundi yote hufanya kazi kwa njia ileile.',
   'La tontine est terminée : tous les tours sont payés':
       'Likelemba limekamilika: zamu zote zimelipwa',
   'Langue':

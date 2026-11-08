@@ -3,6 +3,7 @@ import type { Response } from 'express';
 import { z } from 'zod';
 import { PinResetService } from '../auth/pin-reset.service.js';
 import { parseBody } from '../common/parse-body.js';
+import { GROUP_CATEGORIES } from '../groups/categories.js';
 import { AdminService } from './admin.service.js';
 import { StaffAuthService, STAFF_ROLES, type StaffMember } from './staff-auth.service.js';
 import { CAN, CurrentStaff, Roles, StaffGuard } from './staff.guard.js';
@@ -33,6 +34,7 @@ const ExportQuery = z.object({
 });
 const ChangePassword = z.object({ current: z.string().max(200), next: z.string().max(200) });
 const Search = z.object({ q: z.string().max(100).default(''), status: z.string().max(20).default('') });
+const GroupSearch = Search.extend({ category: z.enum([...GROUP_CATEGORIES, '']).default('') });
 const AuditQuery = z.object({
   chain: z.string().max(60).default('staff'),
   beforeSeq: z.coerce.number().int().positive().optional(),
@@ -181,8 +183,8 @@ export class AdminController {
   @Get('groups')
   @UseGuards(StaffGuard)
   groups(@Query() query: unknown) {
-    const { q, status } = parseBody(Search, query);
-    return this.admin.searchGroups(q, status);
+    const { q, status, category } = parseBody(GroupSearch, query);
+    return this.admin.searchGroups(q, status, category);
   }
 
   @Get('groups/:id')

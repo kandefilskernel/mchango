@@ -35,6 +35,14 @@ export const groupStatus: Record<string, string> = {
   closed: "Terminée",
 };
 
+/** Catégories de tontine, du plus simple au plus évolué (spec/categories.md). */
+export const groupCategory: Record<string, string> = {
+  community: "Communautaire",
+  organization: "Organisation",
+  workers: "Travailleurs",
+  religion: "Religion",
+};
+
 /** Couleur de la pastille de statut d'une tontine. */
 export const statusBadge = (s: string) =>
   s === "active" ? "badge-ok" : s === "suspended" ? "badge-danger" : s === "draft" ? "badge-warn" : "";

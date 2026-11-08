@@ -45,6 +45,7 @@ class Group {
     required this.memberCount,
     required this.members,
     this.terms,
+    this.category = 'community',
   });
 
   factory Group.fromJson(Json j) => Group(
@@ -62,10 +63,13 @@ class Group {
     memberCount: j['memberCount'] as int? ?? 0,
     members: [for (final m in (j['members'] as List? ?? const [])) Member.fromJson(m as Json)],
     terms: j['terms'] == null ? null : GroupTerms.fromJson(j['terms'] as Json),
+    // Absente d'une ancienne réponse : « communautaire » (la tontine d'avant les catégories)
+    category: j['category'] as String? ?? 'community',
   );
 
   final String id;
   final String name;
+  final String category;
   final String currency;
   final int contributionAmountMinor;
   final String frequency;

@@ -19,9 +19,11 @@
 | `015_feedback_ai.sql` | Avis des membres (`member_feedback`) et analyses de l'agent IA (`ai_reviews`), ajout seul |
 | `016_contribution_risk.sql` | Score de risque de chaque déclaration (vert / orange / rouge), hors des chaînes de journal des groupes |
 | `017_audit_chain_shards.sql` | Journal : la chaîne « global » est répartie par auteur (`user:<uuid>`, `staff`, `system`) pour ne plus être un goulot ; « global » est close |
+| `018_group_category.sql` | Catégorie de tontine (`community`, `organization`, `workers`, `religion`), fixée à la création |
 | `tests/001_checks.sql` | Double regard, anti-fraude, journal en ajout seul, détection de falsification |
 | `tests/002_cash_witness.sql` | Règles du témoin (à lancer **après** `001_checks.sql`, sur la même base) |
 | `tests/003_turns_cycles.sql` | Ordre figé, bénéficiaire unique, receveur imposé (après `002`) |
+| `tests/004_category.sql` | Catégorie par défaut, non modifiable, valeur inconnue refusée (après `003`) |
 
 Les choix sont expliqués dans [`docs/revue-schema.md`](../docs/revue-schema.md).
 
@@ -51,6 +53,10 @@ docker compose exec -T postgres psql -U postgres -d mchango -q -f /db/tests/002_
 
 ```bash
 docker compose exec -T postgres psql -U postgres -d mchango -q -f /db/tests/003_turns_cycles.sql
+```
+
+```bash
+docker compose exec -T postgres psql -U postgres -d mchango -q -f /db/tests/004_category.sql
 ```
 
 Chaque vérification affiche `OK` ; le script s'arrête au premier `ÉCHEC`.

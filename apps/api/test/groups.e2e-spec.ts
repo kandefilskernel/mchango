@@ -68,6 +68,66 @@ describe('Groupes et invitations (e2e)', () => {
     expect(mine.body.map((g: { id: string }) => g.id)).toContain(res.body.id);
   });
 
+  describe('catégories (spec/categories.md)', () => {
+    it('un groupe créé sans catégorie est « communautaire »', async () => {
+      const president = await user();
+      const res = await api.http().post('/groups').set(auth(president)).send(newGroup()).expect(201);
+      expect(res.body.category).toBe('community');
+    });
+
+    it.each(['community', 'organization', 'workers', 'religion'])(
+      'crée un groupe de catégorie %s ; elle revient dans la liste, le détail et l’aperçu',
+      async (category) => {
+        const president = await user();
+        const created = await api.http().post('/groups').set(auth(president)).send(newGroup({ category })).expect(201);
+        expect(created.body.category).toBe(category);
+
+        const mine = await api.http().get('/groups').set(auth(president)).expect(200);
+        expect(mine.body.find((g: { id: string }) => g.id === created.body.id).category).toBe(category);
+        const detail = await api.http().get(`/groups/${created.body.id}`).set(auth(president)).expect(200);
+        expect(detail.body.category).toBe(category);
+
+        const { code } = await invite(president, created.body.id);
+        const newcomer = await user();
+        const preview = await api.http().post('/groups/preview').set(auth(newcomer)).send({ code }).expect(200);
+        expect(preview.body.category).toBe(category);
+      },
+    );
+
+    it('refuse une catégorie inconnue', async () => {
+      const president = await user();
+      await api.http().post('/groups').set(auth(president)).send(newGroup({ category: 'banque' })).expect(400);
+    });
+
+    it('la catégorie ne se modifie pas après la création', async () => {
+      const president = await user();
+      const group = await createGroup(president, { category: 'workers' });
+      await api.http().patch(`/groups/${group.id}`).set(auth(president)).send({ category: 'religion' }).expect(400);
+      const detail = await api.http().get(`/groups/${group.id}`).set(auth(president)).expect(200);
+      expect(detail.body.category).toBe('workers');
+    });
+
+    it('la catégorie est inscrite dans le journal du groupe, à la création', async () => {
+      const president = await user();
+      const group = await createGroup(president, { category: 'organization' });
+      const history = await api.http().get(`/groups/${group.id}/history`).set(auth(president)).expect(200);
+      const created = history.body.events.find((e: { action: string }) => e.action === 'groups.insert');
+      expect(JSON.parse(created.payload).category).toBe('organization');
+    });
+
+    it('GET /group-categories : quatre profils, du plus simple au plus évolué', async () => {
+      const member = await user();
+      const res = await api.http().get('/group-categories').set(auth(member)).expect(200);
+      expect(res.body.map((c: { code: string }) => c.code)).toEqual(['community', 'organization', 'workers', 'religion']);
+      expect(res.body.map((c: { level: number }) => c.level)).toEqual([1, 2, 3, 4]);
+      for (const c of res.body) {
+        expect(c.rules.maxMembersLimit).toBe(100);
+        expect(c.features).toEqual([]);
+      }
+      await api.http().get('/group-categories').expect(401);
+    });
+  });
+
   it.each([
     [{ startDate: inDays(-2) }, 'date de début passée'],
     [{ contributionAmountMinor: 1500.5 }, 'montant non entier'],

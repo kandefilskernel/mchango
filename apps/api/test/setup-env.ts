@@ -1,7 +1,9 @@
 // Tests de bout en bout : PostgreSQL et Redis de docker-compose.yml (docker compose up -d),
 // mais sur une base et une base Redis À PART (test/global-setup.ts), jamais celles du développement.
 process.env.NODE_ENV = 'test';
-process.env.DATABASE_URL = 'postgres://mchango_api:mchango_api_dev@127.0.0.1:5432/mchango_test';
+// TEST_DATABASE_URL : pour une base de développement sur un autre port (le 5432 est parfois pris)
+process.env.DATABASE_URL =
+  process.env.TEST_DATABASE_URL ?? 'postgres://mchango_api:mchango_api_dev@127.0.0.1:5432/mchango_test';
 process.env.REDIS_URL = 'redis://127.0.0.1:6379/1';
 process.env.JWT_SECRET ??= 'test-only-secret-test-only-secret-000000';
 process.env.OTP_PEPPER ??= 'test-only-pepper-test-only-pepper-000000';

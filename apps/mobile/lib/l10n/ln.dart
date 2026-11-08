@@ -265,6 +265,26 @@ const ln = <String, String>{
       'Mbongo ya basangani nyonso: ekoki mpo na kosomba moto, kofungola butiki, kofuta kelasi.',
   'La tontine':
       'Likelemba',
+  'La catégorie':
+      'Lolenge',
+  'Communautaire':
+      'Ya lisanga',
+  'Organisation':
+      'Organisation',
+  'Travailleurs':
+      'Basali ya mosala',
+  'Religion':
+      'Losambo',
+  'Voisins, amis, marchands, taxi-motos, associations de quartier.':
+      'Baninga ya quartier, bato ya mombongo, ba-taxi-moto, ba-association ya quartier.',
+  'Associations, coopératives, syndicats, ONG, mutuelles.':
+      'Ba-association, ba-coopérative, ba-syndicat, ba-ONG, ba-mutuelle.',
+  'Collègues d\'un même employeur ou d\'un même métier, fonctionnaires.':
+      'Baninga ya mosala ya patron moko to ya mosala moko, basali ya Leta.',
+  'Églises, paroisses, mosquées, communautés et leurs groupes.':
+      'Ba-église, ba-paroisse, ba-mosquée, ba-communauté mpe bisanga na bango.',
+  'Choisissez ce qui ressemble le plus à votre groupe. Pour l\'instant, toutes les catégories fonctionnent de la même façon.':
+      'Palela oyo ekokani mingi na lisanga na bino. Mpo na sikoyo, ba-catégorie nyonso esalaka ndenge moko.',
   'La tontine est terminée : tous les tours sont payés':
       'Likelemba esili: tango nyonso efutami',
   'Langue':

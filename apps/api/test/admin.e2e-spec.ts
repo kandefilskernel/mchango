@@ -153,6 +153,20 @@ describe('Back-office (e2e)', () => {
       );
     });
 
+    it('liste des tontines : catégorie affichée et filtrable', async () => {
+      const compliance = await staff('compliance');
+      const d = await disputedContribution();
+      const all = await http().get('/admin/groups?q=').set(asStaff(compliance)).expect(200);
+      expect(all.body.find((g: { id: string }) => g.id === d.groupId).category).toBe('community');
+      const community = await http().get('/admin/groups?category=community').set(asStaff(compliance)).expect(200);
+      expect(community.body.map((g: { id: string }) => g.id)).toContain(d.groupId);
+      const religion = await http().get('/admin/groups?category=religion').set(asStaff(compliance)).expect(200);
+      expect(religion.body.map((g: { id: string }) => g.id)).not.toContain(d.groupId);
+      await http().get('/admin/groups?category=banque').set(asStaff(compliance)).expect(400);
+      const detail = await http().get(`/admin/groups/${d.groupId}`).set(asStaff(compliance)).expect(200);
+      expect(detail.body.category).toBe('community');
+    });
+
     it('support ne suspend pas une tontine et ne tranche pas un litige', async () => {
       const support = await staff('support');
       const d = await disputedContribution();

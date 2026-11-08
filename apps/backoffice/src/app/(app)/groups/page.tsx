@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { amount, dateTime, frequencyLabels, groupStatus, statusBadge } from "@/lib/format";
+import { amount, dateTime, frequencyLabels, groupCategory, groupStatus, statusBadge } from "@/lib/format";
 
 interface GroupRow {
   id: string;
   name: string;
+  category: string;
   status: string;
   currency: string;
   contributionAmountMinor: number;
@@ -19,7 +20,10 @@ export default async function GroupsPage({ searchParams }: PageProps<"/groups">)
   const sp = await searchParams;
   const q = String(sp.q ?? "");
   const status = String(sp.status ?? "");
-  const groups = await api<GroupRow[]>(`/admin/groups?q=${encodeURIComponent(q)}&status=${encodeURIComponent(status)}`);
+  const category = String(sp.category ?? "");
+  const groups = await api<GroupRow[]>(
+    `/admin/groups?q=${encodeURIComponent(q)}&status=${encodeURIComponent(status)}&category=${encodeURIComponent(category)}`,
+  );
   return (
     <>
       <div className="page-head">
@@ -37,6 +41,14 @@ export default async function GroupsPage({ searchParams }: PageProps<"/groups">)
               </option>
             ))}
           </select>
+          <select name="category" defaultValue={category} aria-label="Catégorie">
+            <option value="">Toutes les catégories</option>
+            {Object.entries(groupCategory).map(([k, v]) => (
+              <option key={k} value={k}>
+                {v}
+              </option>
+            ))}
+          </select>
           <button className="btn btn-primary">Filtrer</button>
         </form>
       </div>
@@ -45,6 +57,7 @@ export default async function GroupsPage({ searchParams }: PageProps<"/groups">)
           <thead>
             <tr>
               <th>Tontine</th>
+              <th>Catégorie</th>
               <th>Président(e)</th>
               <th>Cotisation</th>
               <th>Membres</th>
@@ -55,7 +68,7 @@ export default async function GroupsPage({ searchParams }: PageProps<"/groups">)
           <tbody>
             {groups.length === 0 && (
               <tr>
-                <td colSpan={6} className="muted">
+                <td colSpan={7} className="muted">
                   Aucun résultat.
                 </td>
               </tr>
@@ -71,6 +84,7 @@ export default async function GroupsPage({ searchParams }: PageProps<"/groups">)
                     </>
                   )}
                 </td>
+                <td>{groupCategory[g.category] ?? g.category}</td>
                 <td>{g.president ?? "—"}</td>
                 <td>
                   {amount(g.contributionAmountMinor, g.currency)} · {frequencyLabels[g.frequency] ?? g.frequency}

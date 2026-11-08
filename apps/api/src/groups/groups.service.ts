@@ -12,6 +12,7 @@ import type { Redis } from 'ioredis';
 import { APP_CONFIG, type AppConfig } from '../config.js';
 import { appendAudit, Db, type Actor, type Queryable } from '../infra/database.js';
 import { REDIS } from '../infra/redis.js';
+import type { GroupCategory } from './categories.js';
 import { generateInviteCode, inviteCodeHash, normalizeInviteCode } from './invite-code.js';
 import { activeMembership } from './membership.js';
 import { termsState } from './terms.js';
@@ -22,6 +23,7 @@ const JOIN_ATTEMPTS_PER_HOUR = 10;
 export interface CreateGroupInput {
   name: string;
   type: 'formel' | 'informel';
+  category: GroupCategory;
   currency: 'CDF' | 'USD';
   contributionAmountMinor: number;
   frequency: 'daily' | 'weekly' | 'monthly';
@@ -33,6 +35,7 @@ export interface GroupRow {
   id: string;
   name: string;
   type: string;
+  category: string;
   currency: string;
   contribution_amount_minor: string;
   frequency: string;
@@ -46,7 +49,7 @@ export interface GroupRow {
   created_at: Date;
 }
 
-export const GROUP_COLUMNS = `g.id, g.name, g.type, g.currency, g.contribution_amount_minor,
+export const GROUP_COLUMNS = `g.id, g.name, g.type, g.category, g.currency, g.contribution_amount_minor,
   g.frequency, g.payout_mode, g.start_date::text AS start_date, g.status, g.max_members,
   g.turn_order_mode, g.draw_seed, g.started_at, g.created_at`;
 
@@ -55,6 +58,7 @@ export function toGroup(row: GroupRow) {
     id: row.id,
     name: row.name,
     type: row.type,
+    category: row.category,
     currency: row.currency,
     // BIGINT arrive en texte ; plafonné à 10^12 à la création, donc exact en number
     contributionAmountMinor: Number(row.contribution_amount_minor),
@@ -83,13 +87,14 @@ export class GroupsService {
   async create(actor: Actor & { id: string }, input: CreateGroupInput) {
     return this.db.transaction(actor, async (q) => {
       const { rows } = await q.query<GroupRow>(
-        `INSERT INTO groups AS g (name, type, currency, contribution_amount_minor, frequency,
+        `INSERT INTO groups AS g (name, type, category, currency, contribution_amount_minor, frequency,
                                   start_date, max_members, created_by)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          RETURNING ${GROUP_COLUMNS}`,
         [
           input.name,
           input.type,
+          input.category,
           input.currency,
           input.contributionAmountMinor,
           input.frequency,
@@ -255,6 +260,7 @@ export class GroupsService {
     return {
       name: g.name,
       type: g.type,
+      category: g.category,
       currency: g.currency,
       contributionAmountMinor: g.contributionAmountMinor,
       frequency: g.frequency,

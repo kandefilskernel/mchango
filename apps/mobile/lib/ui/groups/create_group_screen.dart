@@ -19,6 +19,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   final _name = TextEditingController();
   final _amount = TextEditingController();
   final _maxMembers = TextEditingController(text: '10');
+  String _category = 'community';
   String _currency = 'CDF';
   String _frequency = 'weekly';
   DateTime _startDate = DateTime.now().add(const Duration(days: 7));
@@ -76,6 +77,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
       frequency: _frequency,
       startDate: _startIso,
       maxMembers: max!,
+      category: _category,
     );
     if (!mounted) return;
     await Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (_) => GroupScreen(groupId: group.id)));
@@ -127,6 +129,27 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
+          _Section(
+            title: t('La catégorie'),
+            children: [
+              for (final c in _categories)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _CategoryTile(
+                    key: Key('category_${c.code}'),
+                    icon: c.icon,
+                    title: t(c.name),
+                    subtitle: t(c.description),
+                    selected: _category == c.code,
+                    onTap: () => setState(() => _category = c.code),
+                  ),
+                ),
+              Text(
+                t("Choisissez ce qui ressemble le plus à votre groupe. Pour l'instant, toutes les catégories fonctionnent de la même façon."),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
           _Section(
             title: t('La tontine'),
             children: [
@@ -222,6 +245,60 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
       ),
     );
   }
+}
+
+/// Catégories de tontine, du plus simple au plus évolué (spec/categories.md). Les codes sont ceux de
+/// l'API (`GET /group-categories`) ; les textes sont traduits ici.
+class _Category {
+  const _Category(this.code, this.icon, this.name, this.description);
+  final String code;
+  final IconData icon;
+  final String name;
+  final String description;
+}
+
+const _categories = [
+  _Category('community', Icons.groups_outlined, 'Communautaire', 'Voisins, amis, marchands, taxi-motos, associations de quartier.'),
+  _Category('organization', Icons.apartment_outlined, 'Organisation', 'Associations, coopératives, syndicats, ONG, mutuelles.'),
+  _Category('workers', Icons.work_outline, 'Travailleurs', "Collègues d'un même employeur ou d'un même métier, fonctionnaires."),
+  _Category('religion', Icons.volunteer_activism_outlined, 'Religion', 'Églises, paroisses, mosquées, communautés et leurs groupes.'),
+];
+
+class _CategoryTile extends StatelessWidget {
+  const _CategoryTile({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: selected ? Brand.mint : Colors.white,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(14),
+      side: BorderSide(
+        color: selected ? Brand.green : Brand.ink.withValues(alpha: 0.15),
+        width: selected ? 2 : 1,
+      ),
+    ),
+    child: ListTile(
+      selected: selected,
+      leading: Icon(icon, color: Brand.green),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+      subtitle: Text(subtitle),
+      trailing: selected ? const Icon(Icons.check_circle, color: Brand.green) : null,
+      onTap: onTap,
+    ),
+  );
 }
 
 class _Section extends StatelessWidget {

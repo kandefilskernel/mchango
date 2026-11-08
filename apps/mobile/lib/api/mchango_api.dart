@@ -33,9 +33,11 @@ class MchangoApi {
     required String frequency,
     required String startDate,
     required int maxMembers,
+    String category = 'community',
   }) async => Group.fromJson(
     await client.post('/groups', {
       'name': name,
+      'category': category,
       'currency': currency,
       'contributionAmountMinor': contributionAmountMinor,
       'frequency': frequency,

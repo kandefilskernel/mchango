@@ -265,6 +265,26 @@ const en = <String, String>{
       'Everyone\'s money together: enough to buy a motorbike, open a shop, pay for school.',
   'La tontine':
       'The tontine',
+  'La catégorie':
+      'Category',
+  'Communautaire':
+      'Community',
+  'Organisation':
+      'Organization',
+  'Travailleurs':
+      'Workers',
+  'Religion':
+      'Religion',
+  'Voisins, amis, marchands, taxi-motos, associations de quartier.':
+      'Neighbours, friends, traders, motorbike taxis, neighbourhood associations.',
+  'Associations, coopératives, syndicats, ONG, mutuelles.':
+      'Associations, cooperatives, unions, NGOs, mutual societies.',
+  'Collègues d\'un même employeur ou d\'un même métier, fonctionnaires.':
+      'Colleagues of the same employer or trade, civil servants.',
+  'Églises, paroisses, mosquées, communautés et leurs groupes.':
+      'Churches, parishes, mosques, communities and their groups.',
+  'Choisissez ce qui ressemble le plus à votre groupe. Pour l\'instant, toutes les catégories fonctionnent de la même façon.':
+      'Pick what is closest to your group. For now, all categories work the same way.',
   'La tontine est terminée : tous les tours sont payés':
       'The tontine is finished: every turn is paid',
   'Langue':

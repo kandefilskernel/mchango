@@ -629,10 +629,11 @@ export class AdminService {
 
   // ---------- Groupes ----------
 
-  async searchGroups(q: string, status: string) {
+  async searchGroups(q: string, status: string, category = '') {
     const { rows } = await this.db.query<{
       id: string;
       name: string;
+      category: string;
       status: string;
       currency: string;
       amount: string;
@@ -642,7 +643,7 @@ export class AdminService {
       president: string | null;
       open_disputes: number;
     }>(
-      `SELECT g.id, g.name, g.status, g.currency, g.contribution_amount_minor AS amount, g.frequency, g.created_at,
+      `SELECT g.id, g.name, g.category, g.status, g.currency, g.contribution_amount_minor AS amount, g.frequency, g.created_at,
               (SELECT count(*)::int FROM memberships m WHERE m.group_id = g.id AND m.status = 'active') AS members,
               (SELECT u.full_name FROM memberships m JOIN users u ON u.id = m.user_id
                WHERE m.group_id = g.id AND m.role = 'president' LIMIT 1) AS president,
@@ -650,12 +651,14 @@ export class AdminService {
                WHERE k.group_id = g.id AND d.status = 'open') AS open_disputes
        FROM groups g
        WHERE ($1 = '' OR g.name ILIKE '%' || $1 || '%') AND ($2 = '' OR g.status::text = $2)
+         AND ($3 = '' OR g.category::text = $3)
        ORDER BY g.created_at DESC LIMIT 50`,
-      [q.trim(), status],
+      [q.trim(), status, category],
     );
     return rows.map((r) => ({
       id: r.id,
       name: r.name,
+      category: r.category,
       status: r.status,
       currency: r.currency,
       contributionAmountMinor: Number(r.amount),
@@ -671,6 +674,7 @@ export class AdminService {
     const g = await this.db.query<{
       id: string;
       name: string;
+      category: string;
       status: string;
       currency: string;
       amount: string;
@@ -681,7 +685,7 @@ export class AdminService {
       suspended_reason: string | null;
       created_at: Date;
     }>(
-      `SELECT id, name, status, currency, contribution_amount_minor AS amount, frequency, start_date::text AS start_date,
+      `SELECT id, name, category, status, currency, contribution_amount_minor AS amount, frequency, start_date::text AS start_date,
               turn_order_mode, draw_seed, suspended_reason, created_at
        FROM groups WHERE id = $1`,
       [groupId],
@@ -710,6 +714,7 @@ export class AdminService {
     return {
       id: r.id,
       name: r.name,
+      category: r.category,
       status: r.status,
       currency: r.currency,
       contributionAmountMinor: Number(r.amount),

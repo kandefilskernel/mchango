@@ -15,6 +15,7 @@ import { z } from 'zod';
 import { AccessGuard, CurrentAuth } from '../auth/access.guard.js';
 import type { AccessTokenClaims } from '../auth/auth.service.js';
 import { parseBody } from '../common/parse-body.js';
+import { CATEGORY_PROFILES, DEFAULT_CATEGORY, GROUP_CATEGORIES } from './categories.js';
 import { GroupsService } from './groups.service.js';
 import { HistoryService } from './history.service.js';
 import { GroupLifecycleService } from './lifecycle.service.js';
@@ -36,6 +37,7 @@ const maxMembers = z.number().int().min(2).max(100);
 const CreateGroup = z.object({
   name,
   type: z.enum(['formel', 'informel']).default('informel'),
+  category: z.enum(GROUP_CATEGORIES).default(DEFAULT_CATEGORY),
   currency: z.enum(['CDF', 'USD']),
   contributionAmountMinor: amountMinor,
   frequency,
@@ -43,7 +45,7 @@ const CreateGroup = z.object({
   maxMembers: maxMembers.default(30),
 });
 
-// La devise et le type ne changent pas : ce serait un autre groupe
+// La devise, le type et la catégorie ne changent pas : ce serait un autre groupe
 const UpdateGroup = z
   .object({
     name,
@@ -76,6 +78,16 @@ const JoinGroup = z.object({
 });
 
 const actorOf = (auth: AccessTokenClaims) => ({ type: 'user' as const, id: auth.sub, deviceId: auth.did });
+
+/** Les catégories de tontine et leurs règles : l'app affiche ce qui est permis sans le coder en dur. */
+@Controller('group-categories')
+@UseGuards(AccessGuard)
+export class GroupCategoriesController {
+  @Get()
+  list() {
+    return CATEGORY_PROFILES;
+  }
+}
 
 @Controller('groups')
 @UseGuards(AccessGuard)

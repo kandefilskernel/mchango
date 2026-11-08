@@ -426,6 +426,7 @@ describe('Tours, cycles et cotisations (e2e)', () => {
       expect(preview.body).toEqual({
         name: 'Likelemba Kenya',
         type: 'informel',
+        category: 'community',
         currency: 'CDF',
         contributionAmountMinor: AMOUNT,
         frequency: 'weekly',

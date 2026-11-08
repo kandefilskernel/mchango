@@ -31,6 +31,7 @@ Tous les points d'accès exigent `Authorization: Bearer <accessToken>` (voir [`a
 {
   "name": "Likelemba Kenya",
   "type": "informel",
+  "category": "community",
   "currency": "CDF",
   "contributionAmountMinor": 20000,
   "frequency": "weekly",
@@ -42,9 +43,14 @@ Tous les points d'accès exigent `Authorization: Bearer <accessToken>` (voir [`a
 - `contributionAmountMinor` : entier en unités mineures, **francs pour CDF, cents pour USD** (20 USD → `2000`).
 - `frequency` : `daily`, `weekly` ou `monthly`.
 - `startDate` : pas dans le passé (date du jour à Lubumbashi).
-- `type` (défaut `informel`) et `maxMembers` (défaut 30) sont facultatifs.
+- `type` (défaut `informel`), `category` (défaut `community`) et `maxMembers` (défaut 30) sont facultatifs.
+- `category` : `community`, `organization`, `workers` ou `religion` ([`categories.md`](categories.md)). Elle ne change pas après la création et, à ce stade, ne change aucune règle. Une valeur inconnue donne `400`.
 
 Réponse : le groupe, avec `myRole: "president"` et `memberCount: 1`.
+
+### `GET /group-categories` → 200
+
+Les quatre catégories, du plus simple au plus évolué : `code`, `level` (1 à 4), `name`, `description` (français, repli pour un code que l'app ne connaît pas), `rules` (`maxMembersLimit`, `defaultMaxMembers`, `frequencies`, `payoutModes`) et `features` (vide à ce stade). Profils définis dans [`apps/api/src/groups/categories.ts`](../apps/api/src/groups/categories.ts).
 
 ### `GET /groups` → 200
 

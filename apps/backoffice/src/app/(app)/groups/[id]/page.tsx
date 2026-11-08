@@ -4,11 +4,12 @@ import { ReviewTable, type ReviewRow } from "../../ai/review-table";
 import { ActionForm } from "@/components/action-form";
 import { EventList, type AuditEventRow } from "@/components/event-list";
 import { api, CAN, currentStaff } from "@/lib/api";
-import { amount, cycleStatus, date, dateTime, frequencyLabels, groupStatus, memberRole, statusBadge } from "@/lib/format";
+import { amount, cycleStatus, date, dateTime, frequencyLabels, groupCategory, groupStatus, memberRole, statusBadge } from "@/lib/format";
 
 interface GroupDetail {
   id: string;
   name: string;
+  category: string;
   status: string;
   currency: string;
   contributionAmountMinor: number;
@@ -46,7 +47,8 @@ export default async function GroupPage({ params }: PageProps<"/groups/[id]">) {
           <Link href="/groups">← Tontines</Link>
           <h1>{g.name}</h1>
           <div className="muted">
-            {amount(g.contributionAmountMinor, g.currency)} · {frequencyLabels[g.frequency] ?? g.frequency} · premier tour le{" "}
+            {groupCategory[g.category] ?? g.category} · {amount(g.contributionAmountMinor, g.currency)} ·{" "}
+            {frequencyLabels[g.frequency] ?? g.frequency} · premier tour le{" "}
             {date(g.startDate)} · créée le {dateTime(g.createdAt)}
           </div>
         </div>

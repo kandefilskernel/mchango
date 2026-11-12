@@ -166,7 +166,7 @@ class GradientHeader extends StatelessWidget {
       gradient: underAppBar
           ? const LinearGradient(
               begin: Alignment.topCenter,
-              end: Alignment.bottomRight,
+              end: Alignment.bottomCenter,
               colors: [Brand.green, Brand.greenLight],
             )
           : Brand.headerGradient,

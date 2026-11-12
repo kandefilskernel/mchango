@@ -5,7 +5,10 @@ Toute implémentation (Dart, TypeScript…) doit passer les vecteurs de [`test-v
 
 ## Chaînes
 
-- Une chaîne par groupe : `chain_id = "group:<uuid>"` ; une chaîne `"global"` pour le reste.
+- Une chaîne par groupe : `chain_id = "group:<uuid>"`.
+- Hors groupe, une chaîne par auteur (`db/017_audit_chain_shards.sql`) : `"user:<uuid>"` pour chaque membre, `"staff"` pour l'équipe, `"system"` pour les tâches automatiques. Les chaînes ne se bloquent pas entre elles : chaque insertion ne verrouille que la tête de sa propre chaîne.
+- L'ancienne chaîne `"global"` (avant la migration 017) est close : elle reste vérifiable, mais ne reçoit plus d'événements.
+- Le calcul du hash ne change pas : `chain_id` en fait toujours partie.
 - `seq` commence à 1 et augmente de 1, sans trou.
 - Le premier événement a `prev_hash` = 64 caractères `0`.
 - Chaque événement a `prev_hash` = `hash` de l'événement précédent.

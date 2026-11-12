@@ -99,7 +99,7 @@ SELECT pg_temp.expect_error($$
                                amount_minor, method, tx_reference, offline_id)
     VALUES ('00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-0000000000b1',
             '00000000-0000-0000-0000-0000000000c4', '00000000-0000-0000-0000-0000000000c1',
-            20000, 'cash', NULL, gen_random_uuid())
+            20000, 'orange', 'OM-AUTRE-GROUPE', gen_random_uuid())
 $$, 'payeur membre d''un autre groupe');
 
 SELECT pg_temp.expect_error($$
@@ -115,7 +115,7 @@ SELECT pg_temp.expect_error($$
                                amount_minor, method, tx_reference, offline_id)
     VALUES ('00000000-0000-0000-0000-0000000000d1', '00000000-0000-0000-0000-0000000000b1',
             '00000000-0000-0000-0000-0000000000c2', '00000000-0000-0000-0000-0000000000c1',
-            20000, 'cash', NULL, gen_random_uuid())
+            20000, 'airtel', 'AM-DEUXIEME', gen_random_uuid())
 $$, 'deuxième cotisation active du même membre pour le même tour');
 
 -- ---------- Journal en ajout seul ----------

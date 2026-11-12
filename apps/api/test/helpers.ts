@@ -1,0 +1,108 @@
+import { INestApplication } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import { generateKeyPairSync, randomInt, sign, type KeyObject } from 'node:crypto';
+import request from 'supertest';
+import { App } from 'supertest/types.js';
+import { AppModule } from '../src/app.module.js';
+import { challengeMessage } from '../src/auth/device-key.js';
+import type { Redis } from 'ioredis';
+import { Db } from '../src/infra/database.js';
+import { REDIS } from '../src/infra/redis.js';
+import { ConsoleSmsSender, SMS_SENDER } from '../src/infra/sms.js';
+
+export const GOOD_PIN = '482915';
+
+export interface Device {
+  publicKey: string;
+  privateKey: KeyObject;
+}
+
+export interface TestSession {
+  userId: string;
+  deviceId: string;
+  accessToken: string;
+}
+
+export function newDevice(): Device {
+  const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+  const raw = publicKey.export({ format: 'der', type: 'spki' }).subarray(12);
+  return { publicKey: raw.toString('base64'), privateKey };
+}
+
+/** Numéro unique par test : la base de développement n'est pas vidée entre deux lancements. */
+export function newPhone(): string {
+  return `+24399${randomInt(0, 10_000_000).toString().padStart(7, '0')}`;
+}
+
+/** Application complète branchée sur PostgreSQL et Redis de docker compose. */
+export class TestApi {
+  private constructor(
+    readonly app: INestApplication<App>,
+    readonly sms: ConsoleSmsSender,
+    readonly db: Db,
+  ) {}
+
+  /** [overrides] : fournisseurs remplacés pour ce test (ex. l'agent IA, jamais appelé pour de vrai). */
+  static async start(overrides: { provide: symbol | string; useValue: unknown }[] = []): Promise<TestApi> {
+    let builder = Test.createTestingModule({ imports: [AppModule] });
+    for (const o of overrides) builder = builder.overrideProvider(o.provide).useValue(o.useValue);
+    const moduleRef = await builder.compile();
+    const app = moduleRef.createNestApplication<INestApplication<App>>();
+    await app.init();
+    return new TestApi(app, app.get(SMS_SENDER), app.get(Db));
+  }
+
+  close() {
+    return this.app.close();
+  }
+
+  http() {
+    return request(this.app.getHttpServer());
+  }
+
+  /** Remet à zéro la limite de codes SMS d'un numéro (3 en 15 min), pour enchaîner les étapes d'un test. */
+  async clearOtpLimit(phone: string) {
+    await this.app.get<Redis>(REDIS).del(`rl:otp:phone:${phone}`);
+  }
+
+  lastCode(phone: string): string {
+    const message = this.sms.sent.filter((m) => m.phone === phone).at(-1)?.message ?? '';
+    // Le code est le seul nombre de 6 chiffres du SMS, quelle que soit la langue
+    return /\b(\d{6})\b/.exec(message)![1];
+  }
+
+  async verifiedOtpToken(phone: string) {
+    await this.http().post('/auth/otp/request').send({ phone }).expect(202);
+    const res = await this.http()
+      .post('/auth/otp/verify')
+      .send({ phone, code: this.lastCode(phone) })
+      .expect(200);
+    return res.body as { otpToken: string; accountExists: boolean };
+  }
+
+  async signUp(phone = newPhone(), device = newDevice(), fullName = 'Mama Furaha') {
+    const { otpToken } = await this.verifiedOtpToken(phone);
+    const res = await this.http()
+      .post('/auth/register')
+      .send({ otpToken, fullName, pin: GOOD_PIN, devicePublicKey: device.publicKey })
+      .expect(201);
+    return { phone, device, session: res.body as TestSession };
+  }
+
+  async openSession(deviceId: string, device: Device) {
+    const { body } = await this.http().post('/auth/challenge').send({ deviceId }).expect(200);
+    const signature = sign(null, Buffer.from(challengeMessage(deviceId, body.nonce)), device.privateKey);
+    return this.http()
+      .post('/auth/session')
+      .send({ deviceId, nonce: body.nonce, signature: signature.toString('base64') });
+  }
+
+  /** Chaque membre signe le règlement actuel (obligatoire avant le démarrage). */
+  async signTerms(groupId: string, sessions: TestSession[]) {
+    const auth = (s: TestSession) => ({ Authorization: `Bearer ${s.accessToken}` });
+    const { body } = await this.http().get(`/groups/${groupId}`).set(auth(sessions[0])).expect(200);
+    for (const s of sessions) {
+      await this.http().post(`/groups/${groupId}/sign`).set(auth(s)).send({ termsHash: body.terms.hash }).expect(200);
+    }
+  }
+}

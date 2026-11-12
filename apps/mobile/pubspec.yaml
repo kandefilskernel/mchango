@@ -36,6 +36,14 @@ dependencies:
   cupertino_icons: ^1.0.8
   mchango_audit:
     path: ../../packages/mchango_audit
+  http: ^1.6.0
+  flutter_secure_storage: ^11.2.0
+  cryptography: ^2.9.0
+  qr_flutter: ^4.1.0
+  share_plus: ^13.3.1
+  intl: ^0.20.3
+  flutter_svg: ^2.3.0
+  local_auth: ^3.0.2
 
 dev_dependencies:
   flutter_test:
@@ -58,6 +66,10 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # Illustrations vectorielles générées par tool/illustrations.py
+  assets:
+    - assets/illustrations/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

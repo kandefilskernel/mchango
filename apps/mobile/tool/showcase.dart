@@ -1,7 +1,7 @@
 // Vitrine pour les visuels (affiches, captures) : l'app branchée sur des données d'exemple,
 // sans serveur ni compte réel. Jamais livrée aux membres.
 //   flutter build web -t tool/showcase.dart -o build/showcase
-// puis ouvrir index.html?screen=home|cycle|declare|receipt|carnet[&lang=sw|ln|en]
+// puis ouvrir index.html?screen=home|cycle|declare|receipt|carnet|category|terms[&lang=sw|ln|en]
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -17,6 +17,8 @@ import 'package:mchango/storage/key_value_store.dart';
 import 'package:mchango/ui/carnet/carnet_screen.dart';
 import 'package:mchango/ui/cycles/cycle_screen.dart';
 import 'package:mchango/ui/cycles/declare_screen.dart';
+import 'package:mchango/ui/groups/create_group_screen.dart';
+import 'package:mchango/ui/groups/group_screen.dart';
 import 'package:mchango/ui/groups/home_screen.dart';
 import 'package:mchango/ui/receipts/receipt_screen.dart';
 import 'package:mchango/ui/theme.dart';
@@ -57,6 +59,34 @@ final _group = {
   ],
 };
 
+// Tontine en préparation : règlement à signer, ordre des tours tiré au sort
+const _draftId = '22222222-2222-4222-8222-222222222222';
+const _termsHash = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+final _draftGroup = {
+  ..._group,
+  'id': _draftId,
+  'name': 'Chorale Saint-Paul',
+  'category': 'religion',
+  'status': 'draft',
+  'myRole': 'member',
+  'members': [
+    _member(_furaha, 'Mama Furaha', 1, role: 'president'),
+    {..._member(_jean, 'Papa Jean', 2), 'userId': 'u-jean'},
+    _member(_neema, 'Mama Neema', 3),
+    _member(_kabila, 'Papa Kabila', 4),
+  ],
+  'terms': {
+    'hash': _termsHash,
+    'ready': true,
+    'signedBy': [_furaha, _neema],
+    'missing': [
+      {'membershipId': _jean, 'fullName': 'Papa Jean'},
+      {'membershipId': _kabila, 'fullName': 'Papa Kabila'},
+    ],
+    'allSigned': false,
+  },
+};
+
 Map<String, Object?> _contribution(String id, String payer, String status, String tx) => {
   'id': id,
   'payerMembershipId': payer,
@@ -77,6 +107,7 @@ final _routes = <String, Object>{
     {..._group, 'id': 'g-2', 'name': 'Enseignants Kenya', 'currency': 'USD', 'contributionAmountMinor': 5000,
       'frequency': 'monthly', 'memberCount': 12, 'myRole': 'president'},
   ],
+  '/groups/$_draftId': _draftGroup,
   '/pin-resets/pending': <Object>[],
   '/me/carnet': {
     'totals': [
@@ -152,6 +183,8 @@ Future<void> main() async {
     'cycle' => CycleScreen(group: Group.fromJson(_group), cycleNumber: 1),
     'receipt' => const ReceiptScreen(contributionId: 'c-2'),
     'carnet' => const CarnetScreen(),
+    'category' => const CreateGroupScreen(),
+    'terms' => const GroupScreen(groupId: _draftId),
     'declare' => DeclareScreen(
       group: Group.fromJson(_group),
       cycleNumber: 1,

@@ -101,7 +101,7 @@ class ReceiptCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.verified, color: Colors.green, size: 32),
+                  const Icon(Icons.verified, color: Brand.success, size: 32),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(

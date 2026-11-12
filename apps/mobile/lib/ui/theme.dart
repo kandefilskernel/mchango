@@ -13,6 +13,23 @@ abstract final class Brand {
   static const cream = Color(0xFFFFF8EC);
   static const surface = Color(0xFFF7F8F6);
 
+  /// Fond doré pâle : bandeaux « à faire », badges en attente.
+  static const goldLight = Color(0xFFFFF3D6);
+
+  /// Fond neutre des badges secondaires.
+  static const neutral = Color(0xFFF0F2F1);
+
+  // Couleurs d'état : les mêmes que le back-office (--red, --red-bg…).
+  static const success = Color(0xFF1E7B4A);
+  static const successBg = mint;
+  static const warning = Color(0xFFB45309);
+  static const warningBg = goldLight;
+  static const danger = Color(0xFFB42318);
+  static const dangerBg = Color(0xFFFDEEEC);
+
+  /// Texte secondaire.
+  static Color get muted => ink.withValues(alpha: 0.65);
+
   /// Dégradé des en-têtes : vert profond vers vert clair.
   static const headerGradient = LinearGradient(
     begin: Alignment.topLeft,
@@ -97,6 +114,65 @@ ThemeData buildTheme() {
       backgroundColor: Brand.ink,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
+  );
+}
+
+/// Petit badge arrondi (statut, rôle, compteur).
+class StatusPill extends StatelessWidget {
+  const StatusPill(this.text, {super.key, this.color = Brand.ink, this.background = Brand.neutral, this.icon});
+
+  final String text;
+  final Color color;
+  final Color background;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(20)),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (icon != null) ...[Icon(icon, size: 14, color: color), const SizedBox(width: 4)],
+        Flexible(
+          child: Text(
+            text,
+            style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w700),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+/// En-tête vert en dégradé, arrondi en bas (accueil, écran d'une tontine).
+class GradientHeader extends StatelessWidget {
+  const GradientHeader({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.fromLTRB(20, 8, 8, 24),
+    this.underAppBar = false,
+  });
+
+  final Widget child;
+  final EdgeInsets padding;
+
+  /// Sous une barre verte unie : le dégradé part de ce vert sur tout le bord du haut, sans raccord visible.
+  final bool underAppBar;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    decoration: BoxDecoration(
+      gradient: underAppBar
+          ? const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomRight,
+              colors: [Brand.green, Brand.greenLight],
+            )
+          : Brand.headerGradient,
+      borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+    ),
+    child: SafeArea(bottom: false, child: Padding(padding: padding, child: child)),
   );
 }
 

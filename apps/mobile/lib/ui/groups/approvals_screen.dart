@@ -40,7 +40,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(t('Annuler'))),
           FilledButton(
-            style: approve ? null : FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            style: approve ? null : FilledButton.styleFrom(backgroundColor: Brand.danger),
             onPressed: () => Navigator.pop(context, true),
             child: Text(approve ? t('Je confirme') : t('Refuser')),
           ),
@@ -83,7 +83,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
                       Row(
                         children: [
                           const CircleAvatar(
-                            backgroundColor: Color(0xFFFFF3D6),
+                            backgroundColor: Brand.goldLight,
                             child: Icon(Icons.key, color: Brand.goldDark),
                           ),
                           const SizedBox(width: 12),

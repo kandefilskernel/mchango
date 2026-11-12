@@ -234,7 +234,7 @@ class _SmsCheck extends StatelessWidget {
     );
     return Card(
       key: const Key('sms_check'),
-      color: allOk ? Brand.mint : const Color(0xFFFFF3D6),
+      color: allOk ? Brand.mint : Brand.goldLight,
       margin: const EdgeInsets.only(top: 8),
       child: Padding(
         padding: const EdgeInsets.all(12),

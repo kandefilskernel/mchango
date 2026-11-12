@@ -453,7 +453,7 @@ export class AdminService {
 
   // ---------- Utilisateurs ----------
 
-  async searchUsers(staff: StaffMember, q: string) {
+  async searchUsers(staff: StaffMember, q: string, page = 1) {
     const digits = q.replace(/\D/g, '');
     const { rows } = await this.db.query<{
       id: string;
@@ -467,8 +467,8 @@ export class AdminService {
               (SELECT count(*)::int FROM memberships m WHERE m.user_id = u.id AND m.status = 'active') AS groups
        FROM users u
        WHERE $1 = '' OR u.full_name ILIKE '%' || $1 || '%' OR ($2 <> '' AND u.phone LIKE '%' || $2 || '%')
-       ORDER BY u.created_at DESC LIMIT 50`,
-      [q.trim(), digits.length >= 4 ? digits : ''],
+       ORDER BY u.created_at DESC, u.id LIMIT 50 OFFSET $3`,
+      [q.trim(), digits.length >= 4 ? digits : '', (page - 1) * 50],
     );
     return rows.map((r) => ({
       id: r.id,
@@ -629,7 +629,7 @@ export class AdminService {
 
   // ---------- Groupes ----------
 
-  async searchGroups(q: string, status: string, category = '') {
+  async searchGroups(q: string, status: string, category = '', page = 1) {
     const { rows } = await this.db.query<{
       id: string;
       name: string;
@@ -652,8 +652,8 @@ export class AdminService {
        FROM groups g
        WHERE ($1 = '' OR g.name ILIKE '%' || $1 || '%') AND ($2 = '' OR g.status::text = $2)
          AND ($3 = '' OR g.category::text = $3)
-       ORDER BY g.created_at DESC LIMIT 50`,
-      [q.trim(), status, category],
+       ORDER BY g.created_at DESC, g.id LIMIT 50 OFFSET $4`,
+      [q.trim(), status, category, (page - 1) * 50],
     );
     return rows.map((r) => ({
       id: r.id,

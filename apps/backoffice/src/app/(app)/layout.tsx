@@ -63,8 +63,8 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           <div className="who">
             <span className="avatar">{initials}</span>
             <div>
-              <div style={{ fontWeight: 700 }}>{staff.fullName}</div>
-              <div style={{ opacity: 0.7, fontSize: 12 }}>{roleLabels[staff.role]}</div>
+              <div className="sidebar-who-name">{staff.fullName}</div>
+              <div className="sidebar-who-role">{roleLabels[staff.role]}</div>
             </div>
           </div>
           <form action={logout}>
@@ -80,7 +80,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           </form>
           <div className="topbar-meta">
             <Icon name="calendar" size={17} />
-            <span style={{ textTransform: "capitalize" }}>{today()} · Lubumbashi</span>
+            <span className="topbar-date">{today()} · Lubumbashi</span>
             <span className="avatar" title={staff.fullName}>
               {initials}
             </span>

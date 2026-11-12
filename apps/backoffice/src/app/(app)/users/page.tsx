@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Pager, pageFrom } from "@/components/pager";
 import { api } from "@/lib/api";
 import { dateTime } from "@/lib/format";
 
@@ -12,8 +13,10 @@ interface UserRow {
 }
 
 export default async function UsersPage({ searchParams }: PageProps<"/users">) {
-  const q = String((await searchParams).q ?? "");
-  const users = await api<UserRow[]>(`/admin/users?q=${encodeURIComponent(q)}`);
+  const sp = await searchParams;
+  const q = String(sp.q ?? "");
+  const page = pageFrom(sp.page);
+  const users = await api<UserRow[]>(`/admin/users?q=${encodeURIComponent(q)}&page=${page}`);
   return (
     <>
       <div className="page-head">
@@ -41,7 +44,7 @@ export default async function UsersPage({ searchParams }: PageProps<"/users">) {
             {users.length === 0 && (
               <tr>
                 <td colSpan={5} className="muted">
-                  Aucun résultat.
+                  {q ? `Aucun membre ne correspond à « ${q} ».` : "Aucun membre inscrit."}
                 </td>
               </tr>
             )}
@@ -61,6 +64,7 @@ export default async function UsersPage({ searchParams }: PageProps<"/users">) {
           </tbody>
         </table>
       </div>
+      <Pager path="/users" params={{ q }} page={page} count={users.length} />
     </>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Pager, pageFrom } from "@/components/pager";
 import { api } from "@/lib/api";
 import { amount, dateTime, frequencyLabels, groupCategory, groupStatus, statusBadge } from "@/lib/format";
 
@@ -21,15 +22,16 @@ export default async function GroupsPage({ searchParams }: PageProps<"/groups">)
   const q = String(sp.q ?? "");
   const status = String(sp.status ?? "");
   const category = String(sp.category ?? "");
+  const page = pageFrom(sp.page);
   const groups = await api<GroupRow[]>(
-    `/admin/groups?q=${encodeURIComponent(q)}&status=${encodeURIComponent(status)}&category=${encodeURIComponent(category)}`,
+    `/admin/groups?q=${encodeURIComponent(q)}&status=${encodeURIComponent(status)}&category=${encodeURIComponent(category)}&page=${page}`,
   );
   return (
     <>
       <div className="page-head">
         <div>
           <h1>Tontines</h1>
-          <div className="muted">Les 50 plus récentes correspondant à la recherche</div>
+          <div className="muted">Les plus récentes d&apos;abord, 50 par page</div>
         </div>
         <form className="form-inline" method="get">
           <input name="q" defaultValue={q} placeholder="Nom de la tontine" aria-label="Rechercher" />
@@ -69,7 +71,7 @@ export default async function GroupsPage({ searchParams }: PageProps<"/groups">)
             {groups.length === 0 && (
               <tr>
                 <td colSpan={7} className="muted">
-                  Aucun résultat.
+                  Aucune tontine ne correspond à ces filtres.
                 </td>
               </tr>
             )}
@@ -99,6 +101,7 @@ export default async function GroupsPage({ searchParams }: PageProps<"/groups">)
           </tbody>
         </table>
       </div>
+      <Pager path="/groups" params={{ q, status, category }} page={page} count={groups.length} />
     </>
   );
 }

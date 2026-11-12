@@ -6,6 +6,7 @@ import '../../services.dart';
 import '../../storage/key_value_store.dart';
 import '../../util/format.dart';
 import '../common.dart';
+import '../theme.dart';
 import 'event_label.dart';
 import '../../l10n/l10n.dart';
 
@@ -74,7 +75,7 @@ class HistoryScreen extends StatelessWidget {
                     '${formatDateTime(DateTime.parse(e.audit.createdAt))} · ${e.audit.hash.substring(0, 12)}…',
                   ),
                   tileColor: check.verification.firstInvalidSeq == e.audit.seq
-                      ? Colors.red.withValues(alpha: 0.1)
+                      ? Brand.dangerBg
                       : null,
                 ),
             ],
@@ -101,12 +102,12 @@ class _Banner extends StatelessWidget {
             'n': check.verification.firstInvalidSeq,
           });
     return Card(
-      color: ok ? Colors.green.shade50 : Colors.red.shade50,
+      color: ok ? Brand.successBg : Brand.dangerBg,
       child: ListTile(
-        leading: Icon(ok ? Icons.verified_user : Icons.gpp_bad, color: ok ? Colors.green : Colors.red, size: 36),
+        leading: Icon(ok ? Icons.verified_user : Icons.gpp_bad, color: ok ? Brand.success : Brand.danger, size: 36),
         title: Text(
           ok ? t('Intact') : t('Problème détecté'),
-          style: TextStyle(fontWeight: FontWeight.bold, color: ok ? Colors.green.shade900 : Colors.red.shade900),
+          style: TextStyle(fontWeight: FontWeight.bold, color: ok ? Brand.success : Brand.danger),
         ),
         subtitle: Text(message),
       ),

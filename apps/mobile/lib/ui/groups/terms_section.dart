@@ -63,7 +63,7 @@ class TermsSection extends StatelessWidget {
                       Icon(
                         terms.signedBy.contains(m.membershipId) ? Icons.check_circle : Icons.hourglass_empty,
                         size: 20,
-                        color: terms.signedBy.contains(m.membershipId) ? Colors.green : Colors.blueGrey,
+                        color: terms.signedBy.contains(m.membershipId) ? Brand.success : Brand.muted,
                       ),
                       const SizedBox(width: 8),
                       Expanded(child: Text(t('Tour {n} : {name}', {'n': m.turnOrder, 'name': m.fullName}))),
@@ -194,7 +194,7 @@ class _SignDialogState extends State<_SignDialog> {
             PinField(key: const Key('sign_pin'), controller: _pin, label: t('Votre PIN pour signer')),
             if (_error != null) ...[
               const SizedBox(height: 6),
-              Text(_error!, style: const TextStyle(color: Colors.red)),
+              Text(_error!, style: const TextStyle(color: Brand.danger)),
             ],
           ],
         ),

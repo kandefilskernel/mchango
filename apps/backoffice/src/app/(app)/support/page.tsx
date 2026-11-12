@@ -4,9 +4,21 @@ import { ActionForm } from "@/components/action-form";
 import { CAN, currentStaff, inbox } from "@/lib/api";
 import { dateTime } from "@/lib/format";
 
-function Section({ title, count, hint, children }: { title: string; count: number; hint: string; children: React.ReactNode }) {
+function Section({
+  id,
+  title,
+  count,
+  hint,
+  children,
+}: {
+  id: string;
+  title: string;
+  count: number;
+  hint: string;
+  children: React.ReactNode;
+}) {
   return (
-    <section className="card">
+    <section className="card" id={id}>
       <div className="section-head">
         <h2>
           {title} <span className={`badge ${count > 0 ? "badge-danger" : "badge-ok"}`}>{count}</span>
@@ -32,12 +44,13 @@ export default async function SupportPage() {
             Les membres qui ont besoin de l&apos;équipe. Chaque action est inscrite au journal d&apos;audit.
           </div>
         </div>
-        <span className={`badge ${todo.counts.total > 0 ? "badge-danger" : "badge-ok"}`} style={{ fontSize: 14 }}>
+        <span className={`badge ${todo.counts.total > 0 ? "badge-danger" : "badge-ok"} badge-lg`}>
           {todo.counts.total === 0 ? "Tout est à jour" : `${todo.counts.total} cas en attente`}
         </span>
       </div>
 
       <Section
+        id="suivis"
         title="Suivis en cours"
         count={todo.counts.followUps}
         hint="Notes « à suivre » de l'équipe. Clôturez-les depuis la fiche du membre une fois le problème réglé."
@@ -61,6 +74,7 @@ export default async function SupportPage() {
       </Section>
 
       <Section
+        id="pin-oublie"
         title="« PIN oublié » en attente"
         count={todo.counts.pinResetsPending}
         hint="Normalement, un garant de la tontine confirme dans l'app. Intervenez seulement si personne ne répond, et seulement après avoir vérifié l'identité."
@@ -102,6 +116,7 @@ export default async function SupportPage() {
       </Section>
 
       <Section
+        id="pin-bloques"
         title="PIN bloqués"
         count={todo.counts.pinLocked}
         hint="5 PIN faux bloquent le compte 30 minutes. Débloquez après avoir parlé à la personne au téléphone."
@@ -129,6 +144,7 @@ export default async function SupportPage() {
       </Section>
 
       <Section
+        id="litiges"
         title="Litiges ouverts"
         count={todo.counts.disputesOpen}
         hint="Paiements contestés entre membres."
@@ -139,6 +155,7 @@ export default async function SupportPage() {
       </Section>
 
       <Section
+        id="sms"
         title="SMS en échec (7 derniers jours)"
         count={todo.counts.smsFailed}
         hint="Rappels qui ne sont pas partis. Un rappel se renvoie une fois (3 renvois par membre et par jour au plus), seulement si le paiement n'est pas encore déclaré."
@@ -172,7 +189,7 @@ export default async function SupportPage() {
         </table>
       </Section>
 
-      <Section title="Tontines suspendues" count={todo.counts.groupsSuspended} hint="À réactiver une fois le problème réglé.">
+      <Section id="suspendues" title="Tontines suspendues" count={todo.counts.groupsSuspended} hint="À réactiver une fois le problème réglé.">
         {todo.groupsSuspended.map((g) => (
           <div className="case" key={g.id}>
             <div>

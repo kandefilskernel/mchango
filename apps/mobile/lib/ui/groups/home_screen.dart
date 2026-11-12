@@ -115,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Padding(
                         padding: const EdgeInsets.only(bottom: 16),
                         child: Material(
-                          color: const Color(0xFFFFF3D6),
+                          color: Brand.goldLight,
                           borderRadius: BorderRadius.circular(18),
                           child: ListTile(
                             key: const Key('approvals_banner'),
@@ -201,15 +201,7 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final active = groups.where((g) => g.status == 'active').length;
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: Brand.headerGradient,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 8, 24),
+    return GradientHeader(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -268,8 +260,6 @@ class _Header extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
     );
   }
 }
@@ -324,8 +314,8 @@ class _GroupCard extends StatelessWidget {
     final g = group;
     final (color, bg) = switch (g.status) {
       'active' => (Brand.green, Brand.mint),
-      'closed' => (Brand.ink.withValues(alpha: 0.6), const Color(0xFFEDEFF1)),
-      _ => (Brand.goldDark, const Color(0xFFFFF3D6)),
+      'closed' => (Brand.ink.withValues(alpha: 0.6), Brand.neutral),
+      _ => (Brand.goldDark, Brand.goldLight),
     };
     return Card(
       child: InkWell(
@@ -366,9 +356,9 @@ class _GroupCard extends StatelessWidget {
                       spacing: 6,
                       runSpacing: 6,
                       children: [
-                        _Pill(groupStatusLabels[g.status] ?? g.status, color, bg),
-                        _Pill(t('{n} membre(s)', {'n': g.memberCount}), Brand.ink.withValues(alpha: 0.7), const Color(0xFFF0F2F1)),
-                        if (g.isPresident) _Pill(t('Président(e)'), Brand.goldDark, Color(0xFFFFF3D6)),
+                        StatusPill(groupStatusLabels[g.status] ?? g.status, color: color, background: bg),
+                        StatusPill(t('{n} membre(s)', {'n': g.memberCount}), color: Brand.muted, icon: Icons.people_outline),
+                        if (g.isPresident) StatusPill(t('Président(e)'), color: Brand.goldDark, background: Brand.goldLight, icon: Icons.star_rounded),
                       ],
                     ),
                   ],
@@ -381,24 +371,6 @@ class _GroupCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class _Pill extends StatelessWidget {
-  const _Pill(this.text, this.color, this.background);
-
-  final String text;
-  final Color color;
-  final Color background;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-    decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(20)),
-    child: Text(
-      text,
-      style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w700),
-    ),
-  );
 }
 
 class _EmptyState extends StatelessWidget {

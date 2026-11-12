@@ -18,6 +18,49 @@
   --blue-bg: #e8f0fb;
   --radius: 16px;
   --shadow: 0 1px 2px rgba(16, 33, 43, 0.04), 0 6px 20px -8px rgba(16, 33, 43, 0.1);
+  /* Surfaces secondaires (en-têtes de tableau, survol, champs) */
+  --card-2: #f8faf9;
+  --field: #ffffff;
+  --field-line: #d5dcd8;
+  --field-line-hover: #c2cbc6;
+  --chip: #eef1f0;
+  --amber-line: #f5dfa8;
+  --topbar: rgba(243, 245, 244, 0.85);
+  --focus: rgba(46, 139, 87, 0.15);
+  --skeleton: #e9edeb;
+  color-scheme: light;
+}
+
+/* Mode sombre : suit le système, sauf si data-theme="light" est forcé */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --green: #3fae7f;
+    --green-light: #4cc08e;
+    --mint: #15382b;
+    --gold-dark: #f2b33d;
+    --ink: #e7ecea;
+    --ink-2: #c3ccc8;
+    --muted: #8e9a96;
+    --line: #26322e;
+    --surface: #0f1714;
+    --card: #16201c;
+    --red: #f2836f;
+    --red-bg: #3a1d19;
+    --amber-bg: #33280f;
+    --blue: #7fb0ea;
+    --blue-bg: #172638;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 20px -8px rgba(0, 0, 0, 0.5);
+    --card-2: #1a2621;
+    --field: #111a17;
+    --field-line: #2f3d38;
+    --field-line-hover: #41524b;
+    --chip: #22302b;
+    --amber-line: #5a4517;
+    --topbar: rgba(15, 23, 20, 0.85);
+    --focus: rgba(76, 192, 142, 0.25);
+    --skeleton: #1f2b27;
+    color-scheme: dark;
+  }
 }
 
 * {
@@ -219,7 +262,7 @@ h2 {
   align-items: center;
   gap: 16px;
   padding: 12px 32px;
-  background: rgba(243, 245, 244, 0.85);
+  background: var(--topbar);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
@@ -230,7 +273,7 @@ h2 {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #fff;
+  background: var(--field);
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 0 12px;
@@ -239,7 +282,7 @@ h2 {
 
 .search:focus-within {
   border-color: var(--green-light);
-  box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.15);
+  box-shadow: 0 0 0 3px var(--focus);
 }
 
 .search input {
@@ -429,7 +472,7 @@ h2 {
   text-align: center;
   border: 1px dashed var(--line);
   border-radius: 12px;
-  background: #fafbfa;
+  background: var(--card-2);
 }
 
 .case {
@@ -526,7 +569,7 @@ h2 {
 }
 
 .todo li a:hover {
-  background: #f8faf9;
+  background: var(--card-2);
   text-decoration: none;
 }
 
@@ -565,7 +608,7 @@ h2 {
 
 /* Un tableau occupe toute la largeur de sa carte, bord à bord */
 .card:has(> table) {
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .card > table {
@@ -606,7 +649,7 @@ th {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--muted);
-  background: #f8faf9;
+  background: var(--card-2);
 }
 
 tbody tr {
@@ -614,7 +657,7 @@ tbody tr {
 }
 
 tbody tr:hover {
-  background: #fafcfb;
+  background: var(--card-2);
 }
 
 tr:last-child td {
@@ -631,7 +674,7 @@ tr:last-child td {
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
-  background: #eef1f0;
+  background: var(--chip);
   color: var(--ink-2);
   white-space: nowrap;
   line-height: 1.5;
@@ -694,9 +737,9 @@ select,
 textarea {
   font: inherit;
   padding: 10px 12px;
-  border: 1px solid #d5dcd8;
+  border: 1px solid var(--field-line);
   border-radius: 10px;
-  background: #fff;
+  background: var(--field);
   color: var(--ink);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -706,7 +749,7 @@ select:focus,
 textarea:focus {
   outline: none;
   border-color: var(--green-light);
-  box-shadow: 0 0 0 3px rgba(46, 139, 87, 0.15);
+  box-shadow: 0 0 0 3px var(--focus);
 }
 
 textarea {
@@ -753,14 +796,14 @@ textarea {
 }
 
 .btn-secondary {
-  background: #fff;
+  background: var(--card);
   color: var(--ink);
-  border-color: #d5dcd8;
+  border-color: var(--field-line);
 }
 
 .btn-secondary:hover {
-  background: #f6f8f7;
-  border-color: #c2cbc6;
+  background: var(--card-2);
+  border-color: var(--field-line-hover);
 }
 
 .btn-danger {
@@ -802,7 +845,7 @@ textarea {
 
 .notice {
   background: var(--amber-bg);
-  border: 1px solid #f5dfa8;
+  border: 1px solid var(--amber-line);
   border-radius: 12px;
   padding: 10px 14px;
   font-size: 13.5px;
@@ -813,7 +856,7 @@ textarea {
   border: 2px dashed var(--gold);
   border-radius: var(--radius);
   padding: 14px;
-  background: #fffaf0;
+  background: var(--amber-bg);
 }
 
 .credentials dt {
@@ -873,7 +916,7 @@ textarea {
   max-width: 980px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  background: #fff;
+  background: var(--card);
   border-radius: 28px;
   overflow: hidden;
   box-shadow: 0 40px 90px -30px rgba(3, 30, 20, 0.6);
@@ -1140,4 +1183,159 @@ label.check input {
 
 .app-footer strong {
   color: var(--green);
+}
+
+/* ---------- Ajouts UX ---------- */
+
+.sidebar-who-name {
+  font-weight: 700;
+}
+
+.sidebar-who-role {
+  opacity: 0.7;
+  font-size: 12px;
+}
+
+.topbar-date {
+  text-transform: capitalize;
+}
+
+.footnote {
+  margin-top: 24px;
+  font-size: 13px;
+}
+
+/* Squelette pendant le chargement d'une page */
+.skeleton {
+  background: var(--skeleton);
+  border-radius: 10px;
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.skeleton-title {
+  height: 28px;
+  width: 260px;
+  max-width: 70%;
+  margin-bottom: 10px;
+}
+
+.skeleton-line {
+  height: 14px;
+  width: 380px;
+  max-width: 90%;
+  margin-bottom: 24px;
+}
+
+.skeleton-card {
+  height: 96px;
+}
+
+.skeleton-table {
+  height: 280px;
+  margin-top: 16px;
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+/* Page d'erreur */
+.error-state {
+  max-width: 520px;
+  margin: 48px auto;
+  text-align: center;
+}
+
+.error-state .error-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--amber-bg);
+  color: var(--gold-dark);
+}
+
+.error-state p {
+  margin: 0 0 20px;
+}
+
+.error-state .actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Barre sous une liste : nombre de résultats et pages */
+.list-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.list-foot .pager {
+  display: flex;
+  gap: 8px;
+}
+
+.btn[aria-disabled="true"] {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* Cases du tableau de bord : lien vers la bonne liste */
+.stat-link {
+  color: inherit;
+  font-weight: inherit;
+  display: block;
+  border-radius: var(--radius);
+}
+
+.stat-link:hover {
+  text-decoration: none;
+}
+
+.stat-link:hover .stat {
+  border-color: var(--green-light);
+}
+
+.stat-link:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Texte lu par les lecteurs d'écran seulement */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.badge-lg {
+  font-size: 14px;
+}
+
+/* Les ancres ne passent pas sous la barre du haut */
+.card[id] {
+  scroll-margin-top: 80px;
 }

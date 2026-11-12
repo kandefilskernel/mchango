@@ -743,4 +743,16 @@ const sw = <String, String>{
       'Ya kuhakikisha: angalia salio lako kabla ya kuthibitisha',
   'Rien d\'inhabituel':
       'Hakuna kisicho cha kawaida',
+  'Voir le tour':
+      'Tazama zamu',
+  'Au moins 2 membres':
+      'Angalau wanachama 2',
+  'Ordre des tours fixé':
+      'Mpangilio wa zamu umewekwa',
+  'Règlement signé par tous':
+      'Kanuni zimesainiwa na wote',
+  'Avant de démarrer':
+      'Kabla ya kuanza',
+  'Impossible de charger':
+      'Imeshindwa kupakia',
 };

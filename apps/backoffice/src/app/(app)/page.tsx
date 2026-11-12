@@ -21,8 +21,21 @@ interface Dashboard {
 
 type Tone = "warn" | "alert" | "info" | undefined;
 
-function Stat({ label, value, icon, tone }: { label: string; value: string | number; icon: IconName; tone?: Tone }) {
-  return (
+function Stat({
+  label,
+  value,
+  icon,
+  tone,
+  href,
+}: {
+  label: string;
+  value: string | number;
+  icon: IconName;
+  tone?: Tone;
+  /** Liste correspondante : la case devient un lien. */
+  href?: string;
+}) {
+  const card = (
     <div className={`stat ${tone ?? ""}`}>
       <div className="stat-top">
         <span className="stat-icon">
@@ -33,6 +46,19 @@ function Stat({ label, value, icon, tone }: { label: string; value: string | num
       <div className="value">{value}</div>
     </div>
   );
+  return href ? (
+    <Link className="stat-link" href={href}>
+      {card}
+    </Link>
+  ) : (
+    card
+  );
+}
+
+/** Orange dès qu'il y a quelque chose, rouge au-delà du seuil, neutre à zéro. */
+function toneFor(n: number | null, alertAbove = Infinity): Tone {
+  if (n === null || n <= 0) return undefined;
+  return n > alertAbove ? "alert" : "warn";
 }
 
 function SectionTitle({ title, children }: { title: string; children?: React.ReactNode }) {
@@ -48,12 +74,12 @@ export default async function DashboardPage() {
   const [d, todo, staff] = await Promise.all([api<Dashboard>("/admin/dashboard"), inbox(), currentStaff()]);
   const c = todo.counts;
   const cases: { label: string; n: number; href: string; icon: IconName }[] = [
-    { label: "Suivis en cours", n: c.followUps, href: "/support", icon: "note" },
-    { label: "« PIN oublié » en attente", n: c.pinResetsPending, href: "/support", icon: "lock" },
-    { label: "PIN bloqués", n: c.pinLocked, href: "/support", icon: "lock" },
+    { label: "Suivis en cours", n: c.followUps, href: "/support#suivis", icon: "note" },
+    { label: "« PIN oublié » en attente", n: c.pinResetsPending, href: "/support#pin-oublie", icon: "lock" },
+    { label: "PIN bloqués", n: c.pinLocked, href: "/support#pin-bloques", icon: "lock" },
     { label: "Litiges ouverts", n: c.disputesOpen, href: "/disputes", icon: "disputes" },
-    { label: "SMS en échec", n: c.smsFailed, href: "/support", icon: "sms" },
-    { label: "Tontines suspendues", n: c.groupsSuspended, href: "/support", icon: "pause" },
+    { label: "SMS en échec", n: c.smsFailed, href: "/support#sms", icon: "sms" },
+    { label: "Tontines suspendues", n: c.groupsSuspended, href: "/groups?status=suspended", icon: "pause" },
   ];
   const open = cases.filter((x) => x.n > 0);
   const confirmRate =
@@ -111,13 +137,6 @@ export default async function DashboardPage() {
           value={d.contributions_confirmed_today}
           icon="check"
         />
-        <Stat label="Litiges ouverts" value={d.disputes_open} icon="disputes" tone={d.disputes_open > 0 ? "alert" : undefined} />
-        <Stat
-          label="« PIN oublié » en attente"
-          value={d.pin_resets_pending}
-          icon="lock"
-          tone={d.pin_resets_pending > 0 ? "warn" : undefined}
-        />
       </div>
 
       <SectionTitle title="Retards (30 derniers jours)">
@@ -132,33 +151,40 @@ export default async function DashboardPage() {
           label="Taux de paiements en retard"
           value={d.late_rate_30d === null ? "—" : `${d.late_rate_30d} %`}
           icon="clock"
-          tone={d.late_rate_30d !== null && d.late_rate_30d > 20 ? "alert" : "warn"}
+          tone={toneFor(d.late_rate_30d, 20)}
         />
-        <Stat label="Paiements en retard" value={d.late_payments_30d} icon="clock" tone="warn" />
+        <Stat label="Paiements en retard" value={d.late_payments_30d} icon="clock" tone={toneFor(d.late_payments_30d)} />
       </div>
 
       <SectionTitle title="Tontines" />
       <div className="grid">
-        <Stat label="En cours" value={d.groups_active} icon="groups" />
-        <Stat label="En préparation" value={d.groups_draft} icon="calendar" tone="info" />
-        <Stat label="Suspendues" value={d.groups_suspended} icon="pause" tone={d.groups_suspended > 0 ? "warn" : undefined} />
-        <Stat label="Terminées" value={d.groups_closed} icon="check" tone="info" />
+        <Stat label="En cours" value={d.groups_active} icon="groups" href="/groups?status=active" />
+        <Stat label="En préparation" value={d.groups_draft} icon="calendar" tone="info" href="/groups?status=draft" />
+        <Stat
+          label="Suspendues"
+          value={d.groups_suspended}
+          icon="pause"
+          tone={toneFor(d.groups_suspended)}
+          href="/groups?status=suspended"
+        />
+        <Stat label="Terminées" value={d.groups_closed} icon="check" tone="info" href="/groups?status=closed" />
       </div>
 
       <SectionTitle title="Membres" />
       <div className="grid">
-        <Stat label="Inscrits" value={d.users_total} icon="users" />
+        <Stat label="Inscrits" value={d.users_total} icon="users" href="/users" />
         <Stat label="Nouveaux (7 jours)" value={d.users_new_7d} icon="users" tone="info" />
-        <Stat label="Comptes bloqués" value={d.users_blocked} icon="lock" tone={d.users_blocked > 0 ? "warn" : undefined} />
+        <Stat label="Comptes bloqués" value={d.users_blocked} icon="lock" tone={toneFor(d.users_blocked)} />
         <Stat
           label="SMS en échec (7 jours)"
           value={d.notifications_failed_7d}
           icon="sms"
-          tone={d.notifications_failed_7d > 0 ? "warn" : undefined}
+          tone={toneFor(d.notifications_failed_7d)}
+          href="/support#sms"
         />
       </div>
 
-      <p className="muted" style={{ marginTop: 24, fontSize: 13 }}>
+      <p className="muted footnote">
         Pas de revenus affichés : la facturation est prévue en V2. Mchango ne détient, ne transfère et ne garantit aucun
         fonds.
       </p>

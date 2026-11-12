@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
 import '../l10n/l10n.dart';
+import 'theme.dart';
 
 String errorMessage(Object error) => error is ApiException ? error.message : t('Une erreur est survenue. Réessayez.');
 
@@ -95,22 +96,45 @@ class _LoaderState<T> extends State<Loader<T>> {
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(32),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.cloud_off, size: 48),
-                  const SizedBox(height: 12),
-                  Text(errorMessage(snapshot.error!), textAlign: TextAlign.center),
-                  const SizedBox(height: 12),
-                  OutlinedButton(onPressed: _reload, child: Text(t('Réessayer'))),
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: const BoxDecoration(color: Brand.goldLight, shape: BoxShape.circle),
+                    child: const Icon(Icons.cloud_off_rounded, size: 40, color: Brand.goldDark),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    t('Impossible de charger'),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    errorMessage(snapshot.error!),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Brand.muted),
+                  ),
+                  const SizedBox(height: 20),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(minimumSize: const Size(180, 48)),
+                    onPressed: _reload,
+                    icon: const Icon(Icons.refresh),
+                    label: Text(t('Réessayer')),
+                  ),
                 ],
               ),
             ),
           );
         }
-        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+        if (!snapshot.hasData) {
+          return const Center(
+            child: SizedBox(width: 32, height: 32, child: CircularProgressIndicator(strokeWidth: 3, color: Brand.green)),
+          );
+        }
         return widget.builder(context, snapshot.data as T, _reload);
       },
     );

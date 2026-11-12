@@ -135,7 +135,7 @@ class StepTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = step;
     final (icon, color, bg) = s.isPayment
-        ? (s.late ? Icons.warning_amber_rounded : Icons.payments_outlined, s.late ? Colors.deepOrange : Brand.goldDark, const Color(0xFFFFF3D6))
+        ? (s.late ? Icons.warning_amber_rounded : Icons.payments_outlined, s.late ? Brand.warning : Brand.goldDark, Brand.goldLight)
         : (Icons.savings_outlined, Brand.green, Brand.mint);
     final title = s.isPayment
         ? t('Payer {amount} à {name}', {'amount': formatAmount(s.amountMinor, s.currency), 'name': s.counterpart})

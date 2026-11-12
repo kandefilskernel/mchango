@@ -33,7 +33,12 @@ const ExportQuery = z.object({
   chain: z.string().regex(CHAIN_ID, 'Chaîne inconnue.').default('staff'),
 });
 const ChangePassword = z.object({ current: z.string().max(200), next: z.string().max(200) });
-const Search = z.object({ q: z.string().max(100).default(''), status: z.string().max(20).default('') });
+/** Listes paginées par 50 (`page` commence à 1) : voir searchUsers et searchGroups. */
+const Search = z.object({
+  q: z.string().max(100).default(''),
+  status: z.string().max(20).default(''),
+  page: z.coerce.number().int().min(1).max(1000).default(1),
+});
 const GroupSearch = Search.extend({ category: z.enum([...GROUP_CATEGORIES, '']).default('') });
 const AuditQuery = z.object({
   chain: z.string().max(60).default('staff'),
@@ -141,7 +146,8 @@ export class AdminController {
   @Get('users')
   @UseGuards(StaffGuard)
   users(@CurrentStaff() staff: StaffMember, @Query() query: unknown) {
-    return this.admin.searchUsers(staff, parseBody(Search, query).q);
+    const { q, page } = parseBody(Search, query);
+    return this.admin.searchUsers(staff, q, page);
   }
 
   @Get('users/:id')
@@ -183,8 +189,8 @@ export class AdminController {
   @Get('groups')
   @UseGuards(StaffGuard)
   groups(@Query() query: unknown) {
-    const { q, status, category } = parseBody(GroupSearch, query);
-    return this.admin.searchGroups(q, status, category);
+    const { q, status, category, page } = parseBody(GroupSearch, query);
+    return this.admin.searchGroups(q, status, category, page);
   }
 
   @Get('groups/:id')

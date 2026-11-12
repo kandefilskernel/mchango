@@ -743,4 +743,16 @@ const ln = <String, String>{
       'Ya kotala: tála solde na yo liboso ya kondima',
   'Rien d\'inhabituel':
       'Eloko ya kokamwa ezali te',
+  'Voir le tour':
+      'Tála tango',
+  'Au moins 2 membres':
+      'Ata basangani 2',
+  'Ordre des tours fixé':
+      'Molongo ya ba tango ekatami',
+  'Règlement signé par tous':
+      'Mibeko etiami nkombo na bato nyonso',
+  'Avant de démarrer':
+      'Liboso ya kobanda',
+  'Impossible de charger':
+      'Ekoki kofungwama te',
 };

@@ -6,6 +6,7 @@ import '../../services.dart';
 import '../../sms/operator_sms.dart';
 import '../../util/format.dart';
 import '../common.dart';
+import '../theme.dart';
 import '../receipts/receipt_screen.dart';
 import 'declare_screen.dart';
 import '../../l10n/l10n.dart';
@@ -89,7 +90,7 @@ class _CycleScreenState extends State<CycleScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setDialog) => AlertDialog(
           key: const Key('risk_dialog'),
-          icon: Icon(Icons.shield_outlined, color: red ? Colors.red : Colors.orange, size: 40),
+          icon: Icon(Icons.shield_outlined, color: red ? Brand.danger : Brand.warning, size: 40),
           title: Text(red ? t('Vérification obligatoire') : t('Vérifiez avant de confirmer')),
           content: SingleChildScrollView(
             child: Column(
@@ -133,8 +134,8 @@ class _CycleScreenState extends State<CycleScreen> {
                     },
                   ),
                   if (smsId != null)
-                    Text(t("L'ID du SMS correspond."), style: const TextStyle(color: Colors.green)),
-                  if (smsError != null) Text(smsError!, style: const TextStyle(color: Colors.red)),
+                    Text(t("L'ID du SMS correspond."), style: const TextStyle(color: Brand.success, fontWeight: FontWeight.w700)),
+                  if (smsError != null) Text(smsError!, style: const TextStyle(color: Brand.danger)),
                 ],
                 CheckboxListTile(
                   key: const Key('risk_checked'),
@@ -364,15 +365,15 @@ class _CycleScreenState extends State<CycleScreen> {
     final idOk = sms?.txId != null && sms!.txId == c.txReference?.toUpperCase();
     final amountOk = sms?.amountMinor == c.amountMinor && sms?.currency == group.currency;
     final (icon, color, message) = sms?.txId == null
-        ? (Icons.help_outline, Colors.blueGrey,
+        ? (Icons.help_outline, Brand.muted,
             t("Aucun ID trouvé. Copiez d'abord le SMS de l'argent reçu, puis touchez à nouveau ce bouton."))
         : idOk && amountOk
-        ? (Icons.check_circle, Colors.green,
+        ? (Icons.check_circle, Brand.success,
             t("L'ID et le montant du SMS correspondent à la déclaration. Vous pouvez confirmer si vous avez bien reçu l'argent."))
         : idOk
-        ? (Icons.warning_amber_rounded, Colors.orange,
+        ? (Icons.warning_amber_rounded, Brand.warning,
             t("L'ID correspond, mais pas le montant : vérifiez avant de confirmer."))
-        : (Icons.error_outline, Colors.red,
+        : (Icons.error_outline, Brand.danger,
             t("L'ID du SMS ({sms}) ne correspond pas à celui déclaré ({declared}). Ne confirmez pas sans vérifier.", {
               'sms': sms!.txId,
               'declared': c.txReference,
@@ -406,9 +407,9 @@ class _RiskBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (color, label) = switch (risk.level) {
-      'red' => (Colors.red, t("Risque élevé : confirmez seulement avec le SMS de l'argent reçu")),
-      'orange' => (Colors.orange, t('À vérifier : regardez votre solde avant de confirmer')),
-      _ => (Colors.green, t("Rien d'inhabituel")),
+      'red' => (Brand.danger, t("Risque élevé : confirmez seulement avec le SMS de l'argent reçu")),
+      'orange' => (Brand.warning, t('À vérifier : regardez votre solde avant de confirmer')),
+      _ => (Brand.success, t("Rien d'inhabituel")),
     };
     return Padding(
       key: Key('risk_${risk.level}'),

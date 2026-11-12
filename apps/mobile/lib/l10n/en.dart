@@ -743,4 +743,16 @@ const en = <String, String>{
       'To check: look at your balance before confirming',
   'Rien d\'inhabituel':
       'Nothing unusual',
+  'Voir le tour':
+      'View the turn',
+  'Au moins 2 membres':
+      'At least 2 members',
+  'Ordre des tours fixé':
+      'Turn order set',
+  'Règlement signé par tous':
+      'Rules signed by everyone',
+  'Avant de démarrer':
+      'Before starting',
+  'Impossible de charger':
+      'Could not load',
 };

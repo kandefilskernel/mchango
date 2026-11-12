@@ -163,6 +163,11 @@ describe('Back-office (e2e)', () => {
       const religion = await http().get('/admin/groups?category=religion').set(asStaff(compliance)).expect(200);
       expect(religion.body.map((g: { id: string }) => g.id)).not.toContain(d.groupId);
       await http().get('/admin/groups?category=banque').set(asStaff(compliance)).expect(400);
+      // Pages de 50 : la tontine la plus récente est en page 1, pas en page 2
+      const page2 = await http().get('/admin/groups?page=2').set(asStaff(compliance)).expect(200);
+      expect(page2.body.map((g: { id: string }) => g.id)).not.toContain(d.groupId);
+      await http().get('/admin/groups?page=0').set(asStaff(compliance)).expect(400);
+      await http().get('/admin/users?page=abc').set(asStaff(compliance)).expect(400);
       const detail = await http().get(`/admin/groups/${d.groupId}`).set(asStaff(compliance)).expect(200);
       expect(detail.body.category).toBe('community');
     });

@@ -755,4 +755,207 @@ const sw = <String, String>{
       'Kabla ya kuanza',
   'Impossible de charger':
       'Imeshindwa kupakia',
+  // ---------- Achats groupés ----------
+  "Achats groupés":
+      "Manunuzi ya pamoja",
+  "Avec ton groupe, achète moins cher.":
+      "Pamoja na kikundi chako, nunua kwa bei nafuu.",
+  "Réservez votre quantité. À la date de fin, le prix dépend du nombre d'unités réservées. Vous payez et retirez en boutique.":
+      "Hifadhi kiasi chako. Siku ya mwisho, bei inategemea idadi ya vipimo vilivyohifadhiwa. Unalipa na kuchukua dukani.",
+  "Toutes les zones":
+      "Maeneo yote",
+  "Aucune offre en cours ici pour le moment.":
+      "Hakuna ofa hapa kwa sasa.",
+  "Mes commandes":
+      "Oda zangu",
+  "Réservée":
+      "Imehifadhiwa",
+  "À payer et retirer":
+      "Ya kulipa na kuchukua",
+  "Payée : à retirer":
+      "Imelipwa: ya kuchukua",
+  "Retirée":
+      "Imechukuliwa",
+  "Annulée":
+      "Imeghairiwa",
+  "Expirée":
+      "Muda umeisha",
+  "Brouillon":
+      "Rasimu",
+  "Ouverte":
+      "Iko wazi",
+  "Clôturée":
+      "Imefungwa",
+  "Terminée":
+      "Imekamilika",
+  "{n} manquant(s) pour atteindre le prix collectif":
+      "Zimebaki {n} kufikia bei ya pamoja",
+  "Meilleur prix atteint":
+      "Bei bora imefikiwa",
+  "Encore {n} pour passer à {price}":
+      "Zimebaki {n} kufikia {price}",
+  "{n} / {threshold} {unit} confirmé(s)":
+      "{n} / {threshold} {unit} zimethibitishwa",
+  "Fin : {date}":
+      "Mwisho: {date}",
+  "Détail de l'offre":
+      "Maelezo ya ofa",
+  "Prix selon les unités réservées":
+      "Bei kulingana na vipimo vilivyohifadhiwa",
+  "À partir de {n}":
+      "Kuanzia {n}",
+  "Fin":
+      "Mwisho",
+  "Retrait et paiement":
+      "Kuchukua na kulipa",
+  "Délai pour retirer":
+      "Muda wa kuchukua",
+  "{n} h après la clôture":
+      "Saa {n} baada ya kufungwa",
+  "Sous le seuil à la date de fin, l'offre est annulée et personne ne paie. Vous payez la boutique au retrait : Mchango ne touche pas à l'argent.":
+      "Isipofikia kiwango siku ya mwisho, ofa inaghairiwa na hakuna anayelipa. Unalipa duka unapochukua: Mchango haiguzi pesa.",
+  "Ma réservation : {n} {unit}":
+      "Nilichohifadhi: {n} {unit}",
+  "Participer":
+      "Shiriki",
+  "Cette offre n'accepte plus de réservation.":
+      "Ofa hii haipokei tena maombi.",
+  "Inviter":
+      "Alika",
+  "Réservation enregistrée. Vous paierez en boutique après la clôture.":
+      "Umehifadhi. Utalipa dukani baada ya kufungwa.",
+  "Indiquez le nom pour le retrait.":
+      "Andika jina la atakayechukua.",
+  "Total indicatif : {amount}":
+      "Jumla ya makadirio: {amount}",
+  "Le prix final dépend du palier atteint à la date de fin.":
+      "Bei ya mwisho inategemea kiwango kilichofikiwa siku ya mwisho.",
+  "Nom pour le retrait":
+      "Jina la atakayechukua",
+  "Confirmer ma réservation":
+      "Thibitisha nilichohifadhi",
+  "{title} ({unit}) à {price} au lieu de {regular} chez {shop}, {commune}. Réservez dans l'app Mchango, rubrique Achats groupés, avant le {date}.":
+      "{title} ({unit}) kwa {price} badala ya {regular} kwa {shop}, {commune}. Hifadhi kwenye app ya Mchango, sehemu ya Manunuzi ya pamoja, kabla ya {date}.",
+  "Offre proposée à {group}.":
+      "Ofa imependekezwa kwa {group}.",
+  "Aucun achat n'est engagé par l'envoi d'une invitation.":
+      "Kutuma mwaliko hakumlazimishi mtu kununua.",
+  "Partager via WhatsApp":
+      "Shiriki kwa WhatsApp",
+  "Proposer à un de mes groupes":
+      "Pendekeza kwa kikundi changu",
+  "Vous n'êtes encore dans aucun groupe.":
+      "Bado hauko katika kikundi chochote.",
+  "Annuler cette réservation ?":
+      "Ghairi ulichohifadhi?",
+  "Vous pourrez réserver à nouveau tant que l'offre est ouverte.":
+      "Unaweza kuhifadhi tena ofa ikiwa bado iko wazi.",
+  "Non":
+      "Hapana",
+  "Annuler la réservation":
+      "Ghairi ulichohifadhi",
+  "Aucune commande pour le moment.":
+      "Hakuna oda kwa sasa.",
+  "À payer en boutique : {amount}":
+      "Ya kulipa dukani: {amount}",
+  "Prix collectif pas encore atteint":
+      "Bei ya pamoja bado haijafikiwa",
+  "Code de retrait":
+      "Namba ya kuchukua",
+  "Au nom de {name}":
+      "Kwa jina la {name}",
+  "À retirer avant le {date}":
+      "Chukua kabla ya {date}",
+  "Clôture le {date}. Le code de retrait arrive à ce moment-là.":
+      "Inafungwa {date}. Namba ya kuchukua itakuja wakati huo.",
+  "Achats proposés":
+      "Manunuzi yaliyopendekezwa",
+  "Aucun achat proposé. Depuis une offre, touchez « Inviter » pour la proposer ici.":
+      "Hakuna manunuzi yaliyopendekezwa. Kwenye ofa, gusa « Alika » ili kuipendekeza hapa.",
+  "Proposé par {name}":
+      "Imependekezwa na {name}",
+  "{n} membre(s) du groupe ont réservé":
+      "Wanachama {n} wa kikundi wamehifadhi",
+  "{n} / {threshold} confirmé(s) · fin le {date}":
+      "{n} / {threshold} zimethibitishwa · mwisho {date}",
+  "Ma boutique : {name}":
+      "Duka langu: {name}",
+  "Encaisser, remettre, publier une offre":
+      "Pokea malipo, kabidhi, chapisha ofa",
+  "Comptoir":
+      "Kaunta",
+  "Mes offres":
+      "Ofa zangu",
+  "Code de retrait ou nom du client":
+      "Namba ya kuchukua au jina la mteja",
+  "{n} commande(s) à encaisser ou à remettre":
+      "Oda {n} za kupokea malipo au kukabidhi",
+  "Payée":
+      "Imelipwa",
+  "À encaisser":
+      "Ya kupokea malipo",
+  "Saisissez l'ID de transaction du mobile money.":
+      "Andika namba ya muamala wa pesa ya simu.",
+  "Produit remis. Merci !":
+      "Bidhaa imekabidhiwa. Asante!",
+  "Montant":
+      "Kiasi",
+  "Le client dit avoir payé : vérifiez avant de confirmer.":
+      "Mteja anasema amelipa: hakikisha kabla ya kuthibitisha.",
+  "Moyen de paiement":
+      "Njia ya malipo",
+  "J'ai reçu {amount}":
+      "Nimepokea {amount}",
+  "Paiement confirmé.":
+      "Malipo yamethibitishwa.",
+  "Code montré par le client":
+      "Namba aliyoonyesha mteja",
+  "Remettre le produit":
+      "Kabidhi bidhaa",
+  "Nouvelle offre":
+      "Ofa mpya",
+  "Aucune offre. Créez la première : prix habituel, paliers, date de fin.":
+      "Hakuna ofa. Unda ya kwanza: bei ya kawaida, viwango, siku ya mwisho.",
+  "Publier":
+      "Chapisha",
+  "Indiquez le produit et l'unité.":
+      "Andika bidhaa na kipimo.",
+  "Prix habituel invalide.":
+      "Bei ya kawaida si sahihi.",
+  "Chaque palier demande une quantité et un prix.":
+      "Kila kiwango kinahitaji idadi na bei.",
+  "Chaque palier doit être moins cher que le prix habituel.":
+      "Kila kiwango lazima kiwe nafuu kuliko bei ya kawaida.",
+  "Chaque palier demande plus d'unités et un prix plus bas que le précédent.":
+      "Kila kiwango kinahitaji vipimo zaidi na bei ya chini kuliko kilichotangulia.",
+  "La date de fin doit être dans le futur.":
+      "Siku ya mwisho lazima iwe ijayo.",
+  "Produit (ex. Riz)":
+      "Bidhaa (mfano Mchele)",
+  "Unité (ex. sac de 25 kg)":
+      "Kipimo (mfano gunia la kilo 25)",
+  "Prix habituel par unité":
+      "Bei ya kawaida kwa kipimo",
+  "Paliers de prix":
+      "Viwango vya bei",
+  "Le premier palier est le seuil : en dessous, l'offre est annulée à la date de fin.":
+      "Kiwango cha kwanza ndicho cha chini: chini yake, ofa inaghairiwa siku ya mwisho.",
+  "À partir de (unités)":
+      "Kuanzia (vipimo)",
+  "Prix par unité":
+      "Bei kwa kipimo",
+  "Ajouter un palier":
+      "Ongeza kiwango",
+  "Fin de l'offre":
+      "Mwisho wa ofa",
+  "Délai pour retirer après la clôture":
+      "Muda wa kuchukua baada ya kufungwa",
+  "{n} h":
+      "Saa {n}",
+  "Publier tout de suite":
+      "Chapisha sasa hivi",
+  "Une offre publiée ne se modifie plus.":
+      "Ofa iliyochapishwa haibadilishwi tena.",
+  "Enregistrer l'offre":
+      "Hifadhi ofa",
 };

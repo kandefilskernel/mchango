@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../api/models.dart';
+import '../../api/purchases_api.dart';
 import '../../services.dart';
 import '../../util/format.dart';
 import '../carnet/carnet_screen.dart';
 import '../common.dart';
 import '../feedback/feedback_screen.dart';
 import '../language_picker.dart';
+import '../purchases/merchant_screen.dart';
+import '../purchases/offers_screen.dart';
 import '../theme.dart';
 import 'create_group_screen.dart';
 import 'group_screen.dart';
@@ -78,13 +81,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final services = Services.of(context);
     final firstName = (services.auth.fullName ?? '').split(' ').first;
     return Scaffold(
-      body: Loader<(List<Group>, List<PinResetRequest>, Carnet?)>(
+      body: Loader<(List<Group>, List<PinResetRequest>, Carnet?, List<Merchant>)>(
         key: ValueKey(_version),
         load: () async => (
           await services.api.myGroups(),
           // Les demandes à confirmer et le carnet ne doivent pas empêcher d'afficher les tontines
           await services.api.pendingPinResets().catchError((_) => <PinResetRequest>[]),
           await services.api.carnet().then<Carnet?>((c) => c).catchError((_) => null),
+          // Boutiques dont je suis employé : l'espace boutique n'apparaît que pour elles
+          await services.purchases.myMerchants().catchError((_) => <Merchant>[]),
         ),
         builder: (context, data, reload) => RefreshIndicator(
           onRefresh: reload,
@@ -133,6 +138,22 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       ),
+                    _PurchasesBanner(onTap: () => _open(context, const OffersScreen())),
+                    for (final m in data.$4)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Card(
+                          child: ListTile(
+                            key: Key('open_merchant_${m.id}'),
+                            leading: const Icon(Icons.storefront, color: Brand.green),
+                            title: Text(t('Ma boutique : {name}', {'name': m.name}), style: const TextStyle(fontWeight: FontWeight.w800)),
+                            subtitle: Text(t('Encaisser, remettre, publier une offre')),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => _open(context, MerchantScreen(merchant: m)),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(
@@ -395,6 +416,47 @@ class _EmptyState extends StatelessWidget {
           style: TextStyle(color: Brand.ink.withValues(alpha: 0.65)),
         ),
       ],
+    ),
+  );
+}
+
+/// Entrée des achats groupés, la promesse de lancement : en tête de l'accueil.
+class _PurchasesBanner extends StatelessWidget {
+  const _PurchasesBanner({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: Brand.goldLight,
+    borderRadius: BorderRadius.circular(18),
+    child: InkWell(
+      key: const Key('open_purchases'),
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+              child: const Icon(Icons.shopping_basket_outlined, color: Brand.goldDark),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(t('Achats groupés'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                  Text(t('Avec ton groupe, achète moins cher.'), style: TextStyle(color: Brand.ink.withValues(alpha: 0.7))),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right),
+          ],
+        ),
+      ),
     ),
   );
 }

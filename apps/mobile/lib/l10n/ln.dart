@@ -755,4 +755,207 @@ const ln = <String, String>{
       'Liboso ya kobanda',
   'Impossible de charger':
       'Ekoki kofungwama te',
+  // ---------- Achats groupés ----------
+  "Achats groupés":
+      "Kosomba elongo",
+  "Avec ton groupe, achète moins cher.":
+      "Elongo na lisanga na yo, somba na ntalo ya moke.",
+  "Réservez votre quantité. À la date de fin, le prix dépend du nombre d'unités réservées. Vous payez et retirez en boutique.":
+      "Bomba motango na yo. Na mokolo ya suka, ntalo ekotalela motango ya biloko oyo babombi. Okofuta mpe okozwa na butiki.",
+  "Toutes les zones":
+      "Bisika nyonso",
+  "Aucune offre en cours ici pour le moment.":
+      "Offre moko te awa sikoyo.",
+  "Mes commandes":
+      "Bakomandi na ngai",
+  "Réservée":
+      "Ebombami",
+  "À payer et retirer":
+      "Ya kofuta mpe kozwa",
+  "Payée : à retirer":
+      "Efutami: ya kozwa",
+  "Retirée":
+      "Ezwami",
+  "Annulée":
+      "Elongolami",
+  "Expirée":
+      "Ntango esili",
+  "Brouillon":
+      "Brouillon",
+  "Ouverte":
+      "Efungwami",
+  "Clôturée":
+      "Ekangami",
+  "Terminée":
+      "Esili",
+  "{n} manquant(s) pour atteindre le prix collectif":
+      "Etikali {n} mpo na kokokisa ntalo ya lisanga",
+  "Meilleur prix atteint":
+      "Ntalo ya malamu ekoki",
+  "Encore {n} pour passer à {price}":
+      "Etikali {n} mpo ntalo ekita na {price}",
+  "{n} / {threshold} {unit} confirmé(s)":
+      "{n} / {threshold} {unit} endimami",
+  "Fin : {date}":
+      "Suka: {date}",
+  "Détail de l'offre":
+      "Makambo ya offre",
+  "Prix selon les unités réservées":
+      "Ntalo engebene biloko oyo babombi",
+  "À partir de {n}":
+      "Kobanda {n}",
+  "Fin":
+      "Suka",
+  "Retrait et paiement":
+      "Kozwa mpe kofuta",
+  "Délai pour retirer":
+      "Ntango ya kozwa",
+  "{n} h après la clôture":
+      "Ngonga {n} sima ya kokanga",
+  "Sous le seuil à la date de fin, l'offre est annulée et personne ne paie. Vous payez la boutique au retrait : Mchango ne touche pas à l'argent.":
+      "Soki motango ekoki te na mokolo ya suka, offre elongolami mpe moto moko te akofuta. Okofuta butiki ntango okozwa: Mchango esimbaka mbongo te.",
+  "Ma réservation : {n} {unit}":
+      "Oyo nabombi: {n} {unit}",
+  "Participer":
+      "Kosangana",
+  "Cette offre n'accepte plus de réservation.":
+      "Offre oyo endimaka lisusu te.",
+  "Inviter":
+      "Kobenga",
+  "Réservation enregistrée. Vous paierez en boutique après la clôture.":
+      "Obombi. Okofuta na butiki sima ya kokanga.",
+  "Indiquez le nom pour le retrait.":
+      "Koma kombo ya moto oyo akozwa.",
+  "Total indicatif : {amount}":
+      "Motango ya bokanisi: {amount}",
+  "Le prix final dépend du palier atteint à la date de fin.":
+      "Ntalo ya suka ekotalela palier oyo ekoki na mokolo ya suka.",
+  "Nom pour le retrait":
+      "Kombo ya moto oyo akozwa",
+  "Confirmer ma réservation":
+      "Ndima oyo nabombi",
+  "{title} ({unit}) à {price} au lieu de {regular} chez {shop}, {commune}. Réservez dans l'app Mchango, rubrique Achats groupés, avant le {date}.":
+      "{title} ({unit}) na {price} na esika ya {regular} epai ya {shop}, {commune}. Bomba na app Mchango, na Kosomba elongo, liboso ya {date}.",
+  "Offre proposée à {group}.":
+      "Offre etindami na {group}.",
+  "Aucun achat n'est engagé par l'envoi d'une invitation.":
+      "Kotinda libengi ekangisaka moto te kosomba.",
+  "Partager via WhatsApp":
+      "Kabola na WhatsApp",
+  "Proposer à un de mes groupes":
+      "Tinda na moko ya masanga na ngai",
+  "Vous n'êtes encore dans aucun groupe.":
+      "Ozali naino na lisanga moko te.",
+  "Annuler cette réservation ?":
+      "Kolongola oyo obombaki?",
+  "Vous pourrez réserver à nouveau tant que l'offre est ouverte.":
+      "Okoki kobomba lisusu soki offre ezali naino efungwami.",
+  "Non":
+      "Te",
+  "Annuler la réservation":
+      "Kolongola oyo obombaki",
+  "Aucune commande pour le moment.":
+      "Komandi moko te sikoyo.",
+  "À payer en boutique : {amount}":
+      "Ya kofuta na butiki: {amount}",
+  "Prix collectif pas encore atteint":
+      "Ntalo ya lisanga ekoki naino te",
+  "Code de retrait":
+      "Code ya kozwa",
+  "Au nom de {name}":
+      "Na kombo ya {name}",
+  "À retirer avant le {date}":
+      "Zwa liboso ya {date}",
+  "Clôture le {date}. Le code de retrait arrive à ce moment-là.":
+      "Ekokangama {date}. Code ya kozwa ekoya na ntango wana.",
+  "Achats proposés":
+      "Biloko ya kosomba oyo batindi",
+  "Aucun achat proposé. Depuis une offre, touchez « Inviter » pour la proposer ici.":
+      "Eloko moko te etindami. Na offre moko, finá « Kobenga » mpo na kotinda yango awa.",
+  "Proposé par {name}":
+      "Etindami na {name}",
+  "{n} membre(s) du groupe ont réservé":
+      "Basangani {n} ya lisanga babombi",
+  "{n} / {threshold} confirmé(s) · fin le {date}":
+      "{n} / {threshold} endimami · suka {date}",
+  "Ma boutique : {name}":
+      "Butiki na ngai: {name}",
+  "Encaisser, remettre, publier une offre":
+      "Kozwa mbongo, kopesa, kobimisa offre",
+  "Comptoir":
+      "Comptoir",
+  "Mes offres":
+      "Ba offre na ngai",
+  "Code de retrait ou nom du client":
+      "Code ya kozwa to kombo ya mosombi",
+  "{n} commande(s) à encaisser ou à remettre":
+      "Bakomandi {n} ya kozwa mbongo to kopesa",
+  "Payée":
+      "Efutami",
+  "À encaisser":
+      "Ya kozwa mbongo",
+  "Saisissez l'ID de transaction du mobile money.":
+      "Koma nimero ya transaction ya mobile money.",
+  "Produit remis. Merci !":
+      "Eloko epesami. Matondo!",
+  "Montant":
+      "Motango",
+  "Le client dit avoir payé : vérifiez avant de confirmer.":
+      "Mosombi alobi afuti: tala malamu liboso ya kondima.",
+  "Moyen de paiement":
+      "Ndenge ya kofuta",
+  "J'ai reçu {amount}":
+      "Nazwi {amount}",
+  "Paiement confirmé.":
+      "Bofuti endimami.",
+  "Code montré par le client":
+      "Code oyo mosombi alakisi",
+  "Remettre le produit":
+      "Kopesa eloko",
+  "Nouvelle offre":
+      "Offre ya sika",
+  "Aucune offre. Créez la première : prix habituel, paliers, date de fin.":
+      "Offre moko te. Salá ya liboso: ntalo ya momesano, ba palier, mokolo ya suka.",
+  "Publier":
+      "Kobimisa",
+  "Indiquez le produit et l'unité.":
+      "Koma eloko mpe unité.",
+  "Prix habituel invalide.":
+      "Ntalo ya momesano ebongi te.",
+  "Chaque palier demande une quantité et un prix.":
+      "Palier moko na moko esengeli motango mpe ntalo.",
+  "Chaque palier doit être moins cher que le prix habituel.":
+      "Palier moko na moko esengeli kozala na ntalo moke koleka ntalo ya momesano.",
+  "Chaque palier demande plus d'unités et un prix plus bas que le précédent.":
+      "Palier moko na moko esengeli biloko mingi mpe ntalo moke koleka oyo ya liboso.",
+  "La date de fin doit être dans le futur.":
+      "Mokolo ya suka esengeli kozala na mikolo ekoya.",
+  "Produit (ex. Riz)":
+      "Eloko (ndakisa Loso)",
+  "Unité (ex. sac de 25 kg)":
+      "Unité (ndakisa saki ya kilo 25)",
+  "Prix habituel par unité":
+      "Ntalo ya momesano mpo na unité moko",
+  "Paliers de prix":
+      "Ba palier ya ntalo",
+  "Le premier palier est le seuil : en dessous, l'offre est annulée à la date de fin.":
+      "Palier ya liboso ezali motango ya moke: na nse na yango, offre elongolami na mokolo ya suka.",
+  "À partir de (unités)":
+      "Kobanda (unités)",
+  "Prix par unité":
+      "Ntalo mpo na unité moko",
+  "Ajouter un palier":
+      "Bakisa palier",
+  "Fin de l'offre":
+      "Suka ya offre",
+  "Délai pour retirer après la clôture":
+      "Ntango ya kozwa sima ya kokanga",
+  "{n} h":
+      "Ngonga {n}",
+  "Publier tout de suite":
+      "Kobimisa sikoyo",
+  "Une offre publiée ne se modifie plus.":
+      "Offre oyo ebimi ebongwanaka lisusu te.",
+  "Enregistrer l'offre":
+      "Kobomba offre",
 };

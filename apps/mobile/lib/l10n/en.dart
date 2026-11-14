@@ -755,4 +755,207 @@ const en = <String, String>{
       'Before starting',
   'Impossible de charger':
       'Could not load',
+  // ---------- Achats groupés ----------
+  "Achats groupés":
+      "Group buying",
+  "Avec ton groupe, achète moins cher.":
+      "With your group, buy for less.",
+  "Réservez votre quantité. À la date de fin, le prix dépend du nombre d'unités réservées. Vous payez et retirez en boutique.":
+      "Reserve your quantity. On the end date, the price depends on how many units were reserved. You pay and collect at the shop.",
+  "Toutes les zones":
+      "All areas",
+  "Aucune offre en cours ici pour le moment.":
+      "No offers here right now.",
+  "Mes commandes":
+      "My orders",
+  "Réservée":
+      "Reserved",
+  "À payer et retirer":
+      "To pay and collect",
+  "Payée : à retirer":
+      "Paid: to collect",
+  "Retirée":
+      "Collected",
+  "Annulée":
+      "Cancelled",
+  "Expirée":
+      "Expired",
+  "Brouillon":
+      "Draft",
+  "Ouverte":
+      "Open",
+  "Clôturée":
+      "Closed",
+  "Terminée":
+      "Completed",
+  "{n} manquant(s) pour atteindre le prix collectif":
+      "{n} more needed to reach the group price",
+  "Meilleur prix atteint":
+      "Best price reached",
+  "Encore {n} pour passer à {price}":
+      "{n} more to drop to {price}",
+  "{n} / {threshold} {unit} confirmé(s)":
+      "{n} / {threshold} {unit} confirmed",
+  "Fin : {date}":
+      "Ends: {date}",
+  "Détail de l'offre":
+      "Offer details",
+  "Prix selon les unités réservées":
+      "Price by units reserved",
+  "À partir de {n}":
+      "From {n}",
+  "Fin":
+      "Ends",
+  "Retrait et paiement":
+      "Collection and payment",
+  "Délai pour retirer":
+      "Time to collect",
+  "{n} h après la clôture":
+      "{n} h after closing",
+  "Sous le seuil à la date de fin, l'offre est annulée et personne ne paie. Vous payez la boutique au retrait : Mchango ne touche pas à l'argent.":
+      "Below the threshold on the end date, the offer is cancelled and nobody pays. You pay the shop when you collect: Mchango never touches the money.",
+  "Ma réservation : {n} {unit}":
+      "My reservation: {n} {unit}",
+  "Participer":
+      "Join",
+  "Cette offre n'accepte plus de réservation.":
+      "This offer no longer accepts reservations.",
+  "Inviter":
+      "Invite",
+  "Réservation enregistrée. Vous paierez en boutique après la clôture.":
+      "Reservation saved. You will pay at the shop after closing.",
+  "Indiquez le nom pour le retrait.":
+      "Enter the name for collection.",
+  "Total indicatif : {amount}":
+      "Estimated total: {amount}",
+  "Le prix final dépend du palier atteint à la date de fin.":
+      "The final price depends on the tier reached on the end date.",
+  "Nom pour le retrait":
+      "Name for collection",
+  "Confirmer ma réservation":
+      "Confirm my reservation",
+  "{title} ({unit}) à {price} au lieu de {regular} chez {shop}, {commune}. Réservez dans l'app Mchango, rubrique Achats groupés, avant le {date}.":
+      "{title} ({unit}) for {price} instead of {regular} at {shop}, {commune}. Reserve in the Mchango app, Group buying section, before {date}.",
+  "Offre proposée à {group}.":
+      "Offer suggested to {group}.",
+  "Aucun achat n'est engagé par l'envoi d'une invitation.":
+      "Sending an invitation does not commit anyone to buy.",
+  "Partager via WhatsApp":
+      "Share on WhatsApp",
+  "Proposer à un de mes groupes":
+      "Suggest to one of my groups",
+  "Vous n'êtes encore dans aucun groupe.":
+      "You are not in any group yet.",
+  "Annuler cette réservation ?":
+      "Cancel this reservation?",
+  "Vous pourrez réserver à nouveau tant que l'offre est ouverte.":
+      "You can reserve again while the offer is open.",
+  "Non":
+      "No",
+  "Annuler la réservation":
+      "Cancel the reservation",
+  "Aucune commande pour le moment.":
+      "No orders yet.",
+  "À payer en boutique : {amount}":
+      "To pay at the shop: {amount}",
+  "Prix collectif pas encore atteint":
+      "Group price not reached yet",
+  "Code de retrait":
+      "Collection code",
+  "Au nom de {name}":
+      "In the name of {name}",
+  "À retirer avant le {date}":
+      "Collect before {date}",
+  "Clôture le {date}. Le code de retrait arrive à ce moment-là.":
+      "Closes on {date}. Your collection code arrives then.",
+  "Achats proposés":
+      "Suggested purchases",
+  "Aucun achat proposé. Depuis une offre, touchez « Inviter » pour la proposer ici.":
+      "No suggested purchases. From an offer, tap “Invite” to suggest it here.",
+  "Proposé par {name}":
+      "Suggested by {name}",
+  "{n} membre(s) du groupe ont réservé":
+      "{n} group member(s) reserved",
+  "{n} / {threshold} confirmé(s) · fin le {date}":
+      "{n} / {threshold} confirmed · ends {date}",
+  "Ma boutique : {name}":
+      "My shop: {name}",
+  "Encaisser, remettre, publier une offre":
+      "Take payment, hand over, publish an offer",
+  "Comptoir":
+      "Counter",
+  "Mes offres":
+      "My offers",
+  "Code de retrait ou nom du client":
+      "Collection code or customer name",
+  "{n} commande(s) à encaisser ou à remettre":
+      "{n} order(s) to take payment for or hand over",
+  "Payée":
+      "Paid",
+  "À encaisser":
+      "To be paid",
+  "Saisissez l'ID de transaction du mobile money.":
+      "Enter the mobile money transaction ID.",
+  "Produit remis. Merci !":
+      "Product handed over. Thank you!",
+  "Montant":
+      "Amount",
+  "Le client dit avoir payé : vérifiez avant de confirmer.":
+      "The customer says they paid: check before confirming.",
+  "Moyen de paiement":
+      "Payment method",
+  "J'ai reçu {amount}":
+      "I received {amount}",
+  "Paiement confirmé.":
+      "Payment confirmed.",
+  "Code montré par le client":
+      "Code shown by the customer",
+  "Remettre le produit":
+      "Hand over the product",
+  "Nouvelle offre":
+      "New offer",
+  "Aucune offre. Créez la première : prix habituel, paliers, date de fin.":
+      "No offers. Create the first one: usual price, tiers, end date.",
+  "Publier":
+      "Publish",
+  "Indiquez le produit et l'unité.":
+      "Enter the product and the unit.",
+  "Prix habituel invalide.":
+      "Invalid usual price.",
+  "Chaque palier demande une quantité et un prix.":
+      "Each tier needs a quantity and a price.",
+  "Chaque palier doit être moins cher que le prix habituel.":
+      "Each tier must be cheaper than the usual price.",
+  "Chaque palier demande plus d'unités et un prix plus bas que le précédent.":
+      "Each tier needs more units and a lower price than the previous one.",
+  "La date de fin doit être dans le futur.":
+      "The end date must be in the future.",
+  "Produit (ex. Riz)":
+      "Product (e.g. Rice)",
+  "Unité (ex. sac de 25 kg)":
+      "Unit (e.g. 25 kg bag)",
+  "Prix habituel par unité":
+      "Usual price per unit",
+  "Paliers de prix":
+      "Price tiers",
+  "Le premier palier est le seuil : en dessous, l'offre est annulée à la date de fin.":
+      "The first tier is the threshold: below it, the offer is cancelled on the end date.",
+  "À partir de (unités)":
+      "From (units)",
+  "Prix par unité":
+      "Price per unit",
+  "Ajouter un palier":
+      "Add a tier",
+  "Fin de l'offre":
+      "Offer ends",
+  "Délai pour retirer après la clôture":
+      "Time to collect after closing",
+  "{n} h":
+      "{n} h",
+  "Publier tout de suite":
+      "Publish now",
+  "Une offre publiée ne se modifie plus.":
+      "A published offer can no longer be changed.",
+  "Enregistrer l'offre":
+      "Save the offer",
 };

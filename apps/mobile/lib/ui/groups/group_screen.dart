@@ -8,6 +8,7 @@ import '../../util/format.dart';
 import '../common.dart';
 import '../cycles/cycle_screen.dart';
 import '../history/history_screen.dart';
+import '../purchases/group_proposals_screen.dart';
 import '../theme.dart';
 import 'terms_section.dart';
 import 'turn_order_screen.dart';
@@ -31,9 +32,13 @@ class GroupScreen extends StatefulWidget {
 class _GroupScreenState extends State<GroupScreen> {
   int _version = 0;
 
+  /// Nom du groupe, une fois chargé (titre de l'écran des achats proposés).
+  String? _groupName;
+
   Future<_GroupData> _load() async {
     final api = Services.of(context).api;
     final group = await api.group(widget.groupId);
+    _groupName = group.name;
     return _GroupData(group, group.isDraft ? null : await api.board(widget.groupId));
   }
 
@@ -51,6 +56,12 @@ class _GroupScreenState extends State<GroupScreen> {
         foregroundColor: Colors.white,
         systemOverlayStyle: SystemUiOverlayStyle.light,
         actions: [
+          IconButton(
+            key: const Key('open_proposals'),
+            tooltip: t('Achats proposés'),
+            icon: const Icon(Icons.shopping_basket_outlined),
+            onPressed: () => _push(GroupProposalsScreen(groupId: widget.groupId, groupName: _groupName ?? '')),
+          ),
           IconButton(
             tooltip: t('Historique vérifié'),
             icon: const Icon(Icons.history),

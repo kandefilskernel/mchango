@@ -13,6 +13,9 @@ App Android des membres. Français uniquement à l'itération 1.
 | Tableau des tours, « J'ai payé », « J'ai reçu », témoin, contestation | `lib/ui/cycles/` |
 | Reçu avec QR code, partage en image | `lib/ui/receipts/receipt_screen.dart` |
 | Historique vérifié sur le téléphone | `lib/ui/history/history_screen.dart` |
+| Achats groupés : offres par zone, fiche (prix collectif, compteur, paliers), Participer, Inviter (groupe ou WhatsApp), Mes commandes et code de retrait | `lib/ui/purchases/` |
+| Achats proposés à un groupe (bouton panier de l'écran du groupe) | `lib/ui/purchases/group_proposals_screen.dart` |
+| Espace boutique (employés d'une boutique) : comptoir (encaisser, remettre contre le code), créer et publier une offre | `lib/ui/purchases/merchant_screen.dart`, `create_offer_screen.dart` |
 
 ## Sécurité sur le téléphone
 
@@ -61,3 +64,4 @@ MCHANGO_API_URL=http://localhost:3000 MCHANGO_API_LOG=/tmp/mchango-api.log flutt
 - **Textes** : en français, directement dans le code. Swahili et lingala demanderont de passer aux fichiers de traduction (ARB).
 - **Vérification d'un reçu par scan du QR** : V2. Le QR contient déjà le numéro, la cotisation, le groupe, et l'événement du journal (`seq` + `hash`).
 - **APK** : pas encore compilé ni testé sur un vrai téléphone Android (le SDK Android n'est pas installé sur la machine de développement actuelle).
+- **Achats groupés** : un lien WhatsApp n'ouvre pas encore l'offre dans l'app (il faut un domaine web et les liens d'app Android) ; le message partagé dit où la trouver. On ne consulte les offres qu'après connexion, alors que le concept prévoit de les voir sans compte. Les textes swahili et lingala des achats sont à faire relire.

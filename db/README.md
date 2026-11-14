@@ -20,10 +20,12 @@
 | `016_contribution_risk.sql` | Score de risque de chaque déclaration (vert / orange / rouge), hors des chaînes de journal des groupes |
 | `017_audit_chain_shards.sql` | Journal : la chaîne « global » est répartie par auteur (`user:<uuid>`, `staff`, `system`) pour ne plus être un goulot ; « global » est close |
 | `018_group_category.sql` | Catégorie de tontine (`community`, `organization`, `workers`, `religion`), fixée à la création |
+| `019_achats.sql` | Achats groupés : boutiques, zones, offres à paliers, commandes, paiements et retraits en boutique, partages ; chaîne de journal `offer:<uuid>` (voir `spec/achats.md`) |
 | `tests/001_checks.sql` | Double regard, anti-fraude, journal en ajout seul, détection de falsification |
 | `tests/002_cash_witness.sql` | Règles du témoin (à lancer **après** `001_checks.sql`, sur la même base) |
 | `tests/003_turns_cycles.sql` | Ordre figé, bénéficiaire unique, receveur imposé (après `002`) |
 | `tests/004_category.sql` | Catégorie par défaut, non modifiable, valeur inconnue refusée (après `003`) |
+| `tests/005_achats.sql` | Achats : compteur calculé, jamais de double comptage, prix final fixé par la base, paiement et retrait confirmés par la seule boutique (après `004` ; attend quelques secondes la date de fin des offres) |
 
 Les choix sont expliqués dans [`docs/revue-schema.md`](../docs/revue-schema.md).
 
@@ -57,6 +59,10 @@ docker compose exec -T postgres psql -U postgres -d mchango -q -f /db/tests/003_
 
 ```bash
 docker compose exec -T postgres psql -U postgres -d mchango -q -f /db/tests/004_category.sql
+```
+
+```bash
+docker compose exec -T postgres psql -U postgres -d mchango -q -f /db/tests/005_achats.sql
 ```
 
 Chaque vérification affiche `OK` ; le script s'arrête au premier `ÉCHEC`.

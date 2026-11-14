@@ -25,6 +25,9 @@ const schema = z.object({
   // Rappels SMS avant échéance : vérification périodique (voir src/reminders/)
   REMINDERS_ENABLED: z.enum(['0', '1']).default('1'),
   REMINDERS_INTERVAL_MINUTES: z.coerce.number().int().min(1).max(120).default(15),
+  // Achats groupés : clôture des offres à leur date de fin, expiration des retraits (voir src/purchases/)
+  PURCHASES_JOBS_ENABLED: z.enum(['0', '1']).default('1'),
+  PURCHASES_JOBS_INTERVAL_SECONDS: z.coerce.number().int().min(10).max(3600).default(60),
   // Back-office : secret des jetons de l'équipe (distinct de celui des membres) et clé AES-256
   // (32 octets en base64) qui chiffre les secrets de double authentification en base.
   STAFF_JWT_SECRET: z.string().min(32, 'au moins 32 caractères'),

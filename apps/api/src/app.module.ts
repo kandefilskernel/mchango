@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { APP_CONFIG, loadConfig } from './config.js';
 import { ContributionsModule } from './contributions/contributions.module.js';
 import { GroupsModule } from './groups/groups.module.js';
+import { PurchasesModule } from './purchases/purchases.module.js';
 import { Db, DatabaseModule } from './infra/database.js';
 import { RemindersModule } from './reminders/reminders.module.js';
 import { REDIS, RedisModule } from './infra/redis.js';
@@ -55,6 +56,7 @@ class ConfigModule {}
     SmsModule,
     AuthModule,
     GroupsModule,
+    PurchasesModule,
     ContributionsModule,
     RemindersModule,
     AdminModule,

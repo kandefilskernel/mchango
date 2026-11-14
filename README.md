@@ -70,5 +70,6 @@ Tests de la base : voir [`db/README.md`](db/README.md).
 - [Reçus, historique et aperçu d'un groupe : contrat de l'API](spec/receipts.md)
 - [Rappels SMS avant échéance](spec/reminders.md)
 - [« PIN oublié » avec confirmation d'un garant](spec/pin-reset.md)
+- [Achats groupés : règles et contrat de l'API](spec/achats.md) — [plan et décisions](docs/plan-achats-groupes.md)
 - [Back-office : modules, rôles, sécurité, mise en route](spec/backoffice.md)
 - [App mobile : écrans, sécurité sur le téléphone, tests](apps/mobile/README.md)

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../api/purchases_api.dart';
 import '../../l10n/l10n.dart';
@@ -22,15 +23,35 @@ class MerchantScreen extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(merchant.name),
+          backgroundColor: Brand.green,
+          foregroundColor: Colors.white,
+          systemOverlayStyle: SystemUiOverlayStyle.light,
+          title: Text(
+            merchant.name,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
           bottom: TabBar(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            indicatorColor: Brand.gold,
+            indicatorWeight: 3,
+            dividerColor: Colors.transparent,
+            labelStyle: const TextStyle(fontWeight: FontWeight.w800),
             tabs: [
               Tab(key: const Key('tab_counter'), text: t('Comptoir')),
               Tab(key: const Key('tab_offers'), text: t('Mes offres')),
             ],
           ),
         ),
-        body: TabBarView(children: [_CounterTab(merchant: merchant), _OffersTab(merchant: merchant)]),
+        body: TabBarView(
+          children: [
+            _CounterTab(merchant: merchant),
+            _OffersTab(merchant: merchant),
+          ],
+        ),
       ),
     );
   }
@@ -59,7 +80,13 @@ class _CounterTabState extends State<_CounterTab> {
     final changed = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => _CounterSheet(merchantId: widget.merchant.id, order: order, typedCode: _code.text.trim()),
+      showDragHandle: true,
+      backgroundColor: Colors.white,
+      builder: (_) => _CounterSheet(
+        merchantId: widget.merchant.id,
+        order: order,
+        typedCode: _code.text.trim(),
+      ),
     );
     if (changed == true && mounted) {
       _code.clear();
@@ -79,7 +106,13 @@ class _CounterTabState extends State<_CounterTab> {
           final typed = _code.text.trim().toUpperCase();
           final shown = typed.isEmpty
               ? orders
-              : orders.where((o) => o.pickupCode.toUpperCase().contains(typed) || o.pickupName.toUpperCase().contains(typed)).toList();
+              : orders
+                    .where(
+                      (o) =>
+                          o.pickupCode.toUpperCase().contains(typed) ||
+                          o.pickupName.toUpperCase().contains(typed),
+                    )
+                    .toList();
           return RefreshIndicator(
             onRefresh: reload,
             child: ListView(
@@ -96,22 +129,54 @@ class _CounterTabState extends State<_CounterTab> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  t('{n} commande(s) à encaisser ou à remettre', {'n': orders.length}),
+                  t('{n} commande(s) à encaisser ou à remettre', {
+                    'n': orders.length,
+                  }),
                   style: TextStyle(color: Brand.muted),
                 ),
                 const SizedBox(height: 8),
                 for (final o in shown)
-                  Card(
-                    child: ListTile(
-                      key: Key('counter_${o.id}'),
-                      title: Text('${o.pickupCode} · ${o.pickupName}', style: const TextStyle(fontWeight: FontWeight.w800)),
-                      subtitle: Text('${o.title} · ${o.quantity} ${o.unitLabel} · ${formatAmount(o.amountDueMinor, o.currency)}'),
-                      trailing: StatusPill(
-                        o.status == 'paid' ? t('Payée') : t('À encaisser'),
-                        color: o.status == 'paid' ? Brand.green : Brand.goldDark,
-                        background: o.status == 'paid' ? Brand.mint : Brand.goldLight,
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Brand.ink.withValues(alpha: 0.06),
+                          blurRadius: 14,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      clipBehavior: Clip.antiAlias,
+                      child: ListTile(
+                        key: Key('counter_${o.id}'),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
+                        leading: ProductThumb(o.title, size: 46),
+                        title: Text(
+                          '${o.pickupCode} · ${o.pickupName}',
+                          style: const TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                        subtitle: Text(
+                          '${o.title} · ${o.quantity} ${o.unitLabel} · ${formatAmount(o.amountDueMinor, o.currency)}',
+                        ),
+                        trailing: StatusPill(
+                          o.status == 'paid' ? t('Payée') : t('À encaisser'),
+                          color: o.status == 'paid'
+                              ? Brand.green
+                              : Brand.goldDark,
+                          background: o.status == 'paid'
+                              ? Brand.mint
+                              : Brand.goldLight,
+                        ),
+                        onTap: () => _openOrder(o),
                       ),
-                      onTap: () => _openOrder(o),
                     ),
                   ),
               ],
@@ -126,7 +191,11 @@ class _CounterTabState extends State<_CounterTab> {
 /// Une commande au comptoir : encaisser (espèces ou mobile money), puis remettre le produit
 /// contre le code que montre le client.
 class _CounterSheet extends StatefulWidget {
-  const _CounterSheet({required this.merchantId, required this.order, required this.typedCode});
+  const _CounterSheet({
+    required this.merchantId,
+    required this.order,
+    required this.typedCode,
+  });
 
   final String merchantId;
   final MerchantOrder order;
@@ -165,7 +234,8 @@ class _CounterSheetState extends State<_CounterSheet> {
   }
 
   Future<void> _handOver() async {
-    await Services.of(context).purchases.confirmPickup(widget.merchantId, _order.id, _code.text.trim());
+    await Services.of(context).purchases
+        .confirmPickup(widget.merchantId, _order.id, _code.text.trim());
     if (mounted) {
       Navigator.pop(context, true);
       showInfo(context, t('Produit remis. Merci !'));
@@ -180,21 +250,59 @@ class _CounterSheetState extends State<_CounterSheet> {
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) Navigator.pop(context, o.status != widget.order.status);
       },
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + MediaQuery.viewInsetsOf(context).bottom),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          0,
+          20,
+          20 + MediaQuery.viewInsetsOf(context).bottom,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(o.pickupName, style: Theme.of(context).textTheme.titleLarge),
-            Text('${o.title} · ${o.quantity} ${o.unitLabel}', style: TextStyle(color: Brand.muted)),
-            const SizedBox(height: 12),
-            InfoRow(t('Montant'), formatAmount(o.amountDueMinor, o.currency), icon: Icons.payments_outlined),
+            Row(
+              children: [
+                ProductThumb(o.title, size: 48),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        o.pickupName,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      Text(
+                        '${o.title} · ${o.quantity} ${o.unitLabel}',
+                        style: TextStyle(color: Brand.muted),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Brand.surface,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: InfoRow(
+                t('Montant'),
+                formatAmount(o.amountDueMinor, o.currency),
+                icon: Icons.payments_outlined,
+              ),
+            ),
             if (o.status == 'ready') ...[
               if (o.paymentStatus == 'declared')
                 Text(
                   t('Le client dit avoir payé : vérifiez avant de confirmer.'),
-                  style: const TextStyle(color: Brand.warning, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    color: Brand.warning,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
@@ -202,7 +310,8 @@ class _CounterSheetState extends State<_CounterSheet> {
                 initialValue: _method,
                 decoration: InputDecoration(labelText: t('Moyen de paiement')),
                 items: [
-                  for (final e in methodLabels.entries) DropdownMenuItem(value: e.key, child: Text(e.value)),
+                  for (final e in methodLabels.entries)
+                    DropdownMenuItem(value: e.key, child: Text(e.value)),
                 ],
                 onChanged: (v) => setState(() => _method = v ?? 'cash'),
               ),
@@ -212,27 +321,46 @@ class _CounterSheetState extends State<_CounterSheet> {
                   key: const Key('counter_txref'),
                   controller: _txRef,
                   textCapitalization: TextCapitalization.characters,
-                  decoration: InputDecoration(labelText: t('ID de transaction')),
+                  decoration: InputDecoration(
+                    labelText: t('ID de transaction'),
+                  ),
                 ),
               ],
               const SizedBox(height: 16),
               BusyButton(
                 key: const Key('confirm_payment'),
-                label: t('J\'ai reçu {amount}', {'amount': formatAmount(o.amountDueMinor, o.currency)}),
+                label: t('J\'ai reçu {amount}', {
+                  'amount': formatAmount(o.amountDueMinor, o.currency),
+                }),
                 icon: Icons.check,
                 onPressed: _pay,
               ),
             ] else ...[
-              Text(
-                t('Paiement confirmé.'),
-                style: const TextStyle(color: Brand.success, fontWeight: FontWeight.w700),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.check_circle,
+                    color: Brand.success,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    t('Paiement confirmé.'),
+                    style: const TextStyle(
+                      color: Brand.success,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 12),
               TextField(
                 key: const Key('handover_code'),
                 controller: _code,
                 textCapitalization: TextCapitalization.characters,
-                decoration: InputDecoration(labelText: t('Code montré par le client')),
+                decoration: InputDecoration(
+                  labelText: t('Code montré par le client'),
+                ),
               ),
               const SizedBox(height: 16),
               BusyButton(
@@ -264,7 +392,9 @@ class _OffersTabState extends State<_OffersTab> {
   Future<void> _create() async {
     final created = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(builder: (_) => CreateOfferScreen(merchantId: widget.merchant.id)),
+      MaterialPageRoute(
+        builder: (_) => CreateOfferScreen(merchantId: widget.merchant.id),
+      ),
     );
     if (created == true && mounted) setState(() => _version++);
   }
@@ -288,16 +418,26 @@ class _OffersTabState extends State<_OffersTab> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
             children: [
               if (offers.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 32),
-                  child: Text(
-                    t('Aucune offre. Créez la première : prix habituel, paliers, date de fin.'),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Brand.muted),
+                EmptyState(
+                  icon: Icons.local_offer_outlined,
+                  title: t(
+                    'Aucune offre. Créez la première : prix habituel, paliers, date de fin.',
                   ),
                 ),
               for (final o in offers)
-                Card(
+                Container(
+                  margin: const EdgeInsets.only(bottom: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(22),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Brand.ink.withValues(alpha: 0.07),
+                        blurRadius: 18,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -305,13 +445,29 @@ class _OffersTabState extends State<_OffersTab> {
                       children: [
                         Row(
                           children: [
+                            ProductThumb(o.title, size: 46),
+                            const SizedBox(width: 12),
                             Expanded(
-                              child: Text('${o.title} · ${o.unitLabel}', style: const TextStyle(fontWeight: FontWeight.w800)),
+                              child: Text(
+                                '${o.title} · ${o.unitLabel}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 16,
+                                ),
+                              ),
                             ),
-                            StatusPill(offerStatusLabels[o.status] ?? o.status),
+                            StatusPill(
+                              offerStatusLabels[o.status] ?? o.status,
+                              color: o.status == 'open'
+                                  ? Brand.green
+                                  : Brand.ink,
+                              background: o.status == 'open'
+                                  ? Brand.mint
+                                  : Brand.neutral,
+                            ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 14),
                         OfferProgress(offer: o),
                         if (o.status == 'draft') ...[
                           const SizedBox(height: 12),

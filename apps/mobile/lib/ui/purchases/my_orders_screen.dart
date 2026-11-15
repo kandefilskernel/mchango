@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../api/purchases_api.dart';
 import '../../l10n/l10n.dart';
@@ -24,10 +25,18 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(t('Annuler cette réservation ?')),
-        content: Text(t('Vous pourrez réserver à nouveau tant que l\'offre est ouverte.')),
+        content: Text(
+          t('Vous pourrez réserver à nouveau tant que l\'offre est ouverte.'),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(t('Non'))),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: Text(t('Annuler la réservation'))),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(t('Non')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(t('Annuler la réservation')),
+          ),
         ],
       ),
     );
@@ -43,25 +52,33 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(t('Mes commandes'))),
+      appBar: AppBar(
+        backgroundColor: Brand.green,
+        foregroundColor: Colors.white,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+        title: Text(
+          t('Mes commandes'),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
       body: Loader<List<PurchaseOrder>>(
         key: ValueKey(_version),
         load: Services.of(context).purchases.myOrders,
         builder: (context, orders, reload) => RefreshIndicator(
           onRefresh: reload,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
             children: [
               if (orders.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 32),
-                  child: Text(
-                    t('Aucune commande pour le moment.'),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
+                EmptyState(
+                  icon: Icons.receipt_long_outlined,
+                  title: t('Aucune commande pour le moment.'),
                 ),
-              for (final o in orders) _OrderCard(order: o, onCancel: () => _cancel(o)),
+              for (final o in orders)
+                _OrderCard(order: o, onCancel: () => _cancel(o)),
             ],
           ),
         ),
@@ -81,81 +98,177 @@ class _OrderCard extends StatelessWidget {
     final o = order;
     final style = orderStatusStyles[o.status];
     final amount = o.amountDueMinor != null
-        ? t('À payer en boutique : {amount}', {'amount': formatAmount(o.amountDueMinor!, o.currency)})
+        ? t('À payer en boutique : {amount}', {
+            'amount': formatAmount(o.amountDueMinor!, o.currency),
+          })
         : o.indicativeTotalMinor != null
-        ? t('Total indicatif : {amount}', {'amount': formatAmount(o.indicativeTotalMinor!, o.currency)})
+        ? t('Total indicatif : {amount}', {
+            'amount': formatAmount(o.indicativeTotalMinor!, o.currency),
+          })
         : t('Prix collectif pas encore atteint');
-    return Card(
+    return Container(
       key: Key('order_${o.id}'),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '${o.title} · ${o.quantity} ${o.unitLabel}',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-                  ),
-                ),
-                if (style != null) StatusPill(style.label, color: style.color, icon: style.icon),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text('${o.merchantName} · ${o.merchantAddress}', style: TextStyle(color: Brand.muted)),
-            const SizedBox(height: 8),
-            if (o.isActive && o.status != 'picked_up') Text(amount, style: const TextStyle(fontWeight: FontWeight.w700)),
-            if (o.pickupCode != null) ...[
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(color: Brand.mint, borderRadius: BorderRadius.circular(14)),
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Brand.ink.withValues(alpha: 0.07),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ProductThumb(o.title, size: 48),
+              const SizedBox(width: 12),
+              Expanded(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(t('Code de retrait'), style: TextStyle(color: Brand.muted)),
                     Text(
-                      o.pickupCode!,
-                      key: const Key('pickup_code'),
-                      style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, letterSpacing: 3, color: Brand.green),
+                      '${o.title} · ${o.quantity} ${o.unitLabel}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        height: 1.25,
+                      ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
-                      t('Au nom de {name}', {'name': o.pickupName}),
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      '${o.merchantName} · ${o.merchantAddress}',
+                      style: TextStyle(color: Brand.muted, fontSize: 13),
                     ),
                   ],
                 ),
               ),
-              if (o.pickupDeadline != null) ...[
-                const SizedBox(height: 6),
-                Text(
-                  t('À retirer avant le {date}', {'date': formatDateTime(o.pickupDeadline!)}),
-                  style: TextStyle(color: Brand.muted),
-                ),
-              ],
             ],
-            if (o.status == 'reserved')
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Text(
-                  t('Clôture le {date}. Le code de retrait arrive à ce moment-là.', {'date': formatDateTime(o.endsAt)}),
-                  style: TextStyle(color: Brand.muted, fontSize: 13),
-                ),
+          ),
+          if (style != null) ...[
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: StatusPill(
+                style.label,
+                color: style.color,
+                icon: style.icon,
+                background: style.color == Brand.muted
+                    ? Brand.neutral
+                    : style.color.withValues(alpha: 0.12),
               ),
-            if (o.canChange)
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  key: Key('cancel_${o.id}'),
-                  onPressed: onCancel,
-                  child: Text(t('Annuler la réservation')),
-                ),
-              ),
+            ),
           ],
-        ),
+          if (o.isActive && o.status != 'picked_up') ...[
+            const SizedBox(height: 10),
+            Text(
+              amount,
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+            ),
+          ],
+          if (o.pickupCode != null) ...[
+            const SizedBox(height: 14),
+            _PickupTicket(order: o),
+            if (o.pickupDeadline != null) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.timer_outlined, size: 16, color: Brand.muted),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      t('À retirer avant le {date}', {
+                        'date': formatDateTime(o.pickupDeadline!),
+                      }),
+                      style: TextStyle(color: Brand.muted, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+          if (o.status == 'reserved')
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                t(
+                  'Clôture le {date}. Le code de retrait arrive à ce moment-là.',
+                  {'date': formatDateTime(o.endsAt)},
+                ),
+                style: TextStyle(color: Brand.muted, fontSize: 13),
+              ),
+            ),
+          if (o.canChange)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                key: Key('cancel_${o.id}'),
+                style: TextButton.styleFrom(foregroundColor: Brand.danger),
+                onPressed: onCancel,
+                child: Text(t('Annuler la réservation')),
+              ),
+            ),
+        ],
       ),
     );
   }
+}
+
+/// Le code à montrer en boutique : grand, lisible de loin, avec le nom du retrait.
+class _PickupTicket extends StatelessWidget {
+  const _PickupTicket({required this.order});
+
+  final PurchaseOrder order;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(vertical: 16),
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Brand.mint, Color(0xFFCFE8DB)],
+      ),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: Brand.green.withValues(alpha: 0.2)),
+    ),
+    child: Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.qr_code_2_rounded, size: 18, color: Brand.green),
+            const SizedBox(width: 6),
+            Text(
+              t('Code de retrait'),
+              style: TextStyle(color: Brand.muted, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          order.pickupCode!,
+          key: const Key('pickup_code'),
+          style: const TextStyle(
+            fontSize: 34,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 4,
+            color: Brand.green,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          t('Au nom de {name}', {'name': order.pickupName}),
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+      ],
+    ),
+  );
 }

@@ -710,6 +710,14 @@ export class AdminService {
       this.db.query<{ broken: string | null }>('SELECT audit_verify_chain($1) AS broken', [chainId]),
       this.recentEvents(this.db, chainId, 50),
     ]);
+    // Travailleurs : les cotisations sont dans des chaînes privées, vérifiées une à une
+    const slots = await this.db.query<{ chain_id: string; broken: string | null }>(
+      `SELECT chain_id, audit_verify_chain(chain_id) AS broken
+       FROM (SELECT DISTINCT chain_id FROM audit_log WHERE group_id = $1 AND chain_id LIKE 'group:%:slot:%') s
+       ORDER BY chain_id`,
+      [groupId],
+    );
+    const brokenSlots = slots.rows.filter((s) => s.broken !== null).map((s) => ({ chainId: s.chain_id, firstInvalidSeq: s.broken }));
     const r = g.rows[0];
     return {
       id: r.id,
@@ -740,7 +748,13 @@ export class AdminService {
         confirmed: c.confirmed,
         expected: c.expected,
       })),
-      chain: { chainId, intact: broken.rows[0].broken === null, firstInvalidSeq: broken.rows[0].broken },
+      chain: {
+        chainId,
+        intact: broken.rows[0].broken === null && brokenSlots.length === 0,
+        firstInvalidSeq: broken.rows[0].broken,
+        privateChains: slots.rowCount,
+        brokenPrivateChains: brokenSlots,
+      },
       events,
       // Signatures du règlement, tant que la tontine est en préparation
       terms: r.status === 'draft' ? await termsState(this.db, groupId) : null,

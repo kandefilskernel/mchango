@@ -141,6 +141,9 @@ describe('Échanges de tour, objectifs, attestations, calendrier de paie (e2e)',
       const g = await startedGroup(3);
       const [furaha, jean] = g.members;
       await declare(g.groupId, 1, jean).expect(201);
+      // Le tableau dit qu'un paiement est déclaré (pas encore confirmé) : l'app n'offre plus l'échange
+      const b = await http().get(`/groups/${g.groupId}/cycles`).set(auth(furaha.session)).expect(200);
+      expect(b.body.cycles[0]).toMatchObject({ confirmedCount: 0, declaredCount: 1 });
       const res = await http()
         .post(`/groups/${g.groupId}/swaps`)
         .set(auth(furaha.session))
@@ -295,6 +298,13 @@ describe('Échanges de tour, objectifs, attestations, calendrier de paie (e2e)',
         .expect(201);
       expect(created.body).toMatchObject({ payday: 25, paydayShift: 'before' });
       await http().patch(`/groups/${created.body.id}`).set(auth(s)).send({ frequency: 'weekly' }).expect(400);
+      const shifted = await http().patch(`/groups/${created.body.id}`).set(auth(s)).send({ paydayShift: 'after' }).expect(200);
+      expect(shifted.body).toMatchObject({ payday: 25, paydayShift: 'after' });
+      const removed = await http().patch(`/groups/${created.body.id}`).set(auth(s)).send({ payday: null }).expect(200);
+      expect(removed.body).toMatchObject({ payday: null, paydayShift: null });
+      // Une règle de report sans jour de paie est ignorée (plus de 400 trompeur)
+      const ignored = await http().patch(`/groups/${created.body.id}`).set(auth(s)).send({ paydayShift: 'after' }).expect(200);
+      expect(ignored.body).toMatchObject({ payday: null, paydayShift: null });
 
       const g = await startedGroup(3, { category: 'workers', frequency: 'monthly', payday: 25, paydayShift: 'after' });
       const cycles = (await http().get(`/groups/${g.groupId}/cycles`).set(auth(g.members[1].session)).expect(200)).body
@@ -332,6 +342,67 @@ describe('Échanges de tour, objectifs, attestations, calendrier de paie (e2e)',
       expect(statusOf(await view(neema), neema)).toBe('declared');
       expect(statusOf(await view(jean), neema)).toBe('declared');
       expect(statusOf(await view(furaha), neema)).toBe('declared');
+
+      // Le journal du groupe, lu par tous, ne contient plus aucune cotisation
+      const history = await http().get(`/groups/${g.groupId}/history`).set(auth(kabila.session)).expect(200);
+      const actions: string[] = history.body.events.map((e: { action: string }) => e.action);
+      expect(actions.some((a) => /^(contributions|confirmations|disputes)\./.test(a))).toBe(false);
+      expect(actions).toContain('cycles.update'); // la clôture du tour 1 reste visible
+
+      type Chain = { chainId: string; cycleNumber: number; payer: { membershipId: string }; events: { seq: number; prev_hash: string; hash: string; action: string }[] };
+      const chainsOf = async (who: Member) =>
+        ((await http().get(`/groups/${g.groupId}/private-history`).set(auth(who.session)).expect(200)).body.chains as Chain[]);
+      const keys = (cs: Chain[]) => cs.map((c) => `${c.cycleNumber}:${c.payer.membershipId}`).sort();
+
+      // Kabila : seulement sa propre case (tour 1)
+      expect(keys(await chainsOf(kabila))).toEqual([`1:${kabila.membershipId}`]);
+      // Jean : sa case du tour 1, et la case de Neema au tour 2 dont il est bénéficiaire
+      expect(keys(await chainsOf(jean))).toEqual([`1:${jean.membershipId}`, `2:${neema.membershipId}`].sort());
+      // Le président voit tout
+      expect(await chainsOf(furaha)).toHaveLength(4);
+
+      // Chaque chaîne privée est complète et vérifiable : seq continu, chaînage, et la base confirme
+      for (const c of await chainsOf(furaha)) {
+        expect(c.chainId).toBe(`group:${g.groupId}:slot:${c.cycleNumber}:${c.payer.membershipId}`);
+        c.events.forEach((e, i) => {
+          expect(e.seq).toBe(i + 1);
+          expect(e.prev_hash).toBe(i === 0 ? '0'.repeat(64) : c.events[i - 1].hash);
+        });
+        expect(c.events[0].action).toBe('contributions.insert');
+        const v = await api.db.query<{ broken: string | null }>('SELECT audit_verify_chain($1) AS broken', [c.chainId]);
+        expect(v.rows[0].broken).toBeNull();
+      }
+
+      // Le reçu renvoie à l'événement de la chaîne privée
+      const cycle1 = (await http().get(`/groups/${g.groupId}/cycles/1`).set(auth(jean.session)).expect(200)).body;
+      const mine = cycle1.payers.find((p: { membershipId: string }) => p.membershipId === jean.membershipId);
+      const receipt = await http().get(`/contributions/${mine.contribution.id}/receipt`).set(auth(jean.session)).expect(200);
+      expect(receipt.body.audit.chainId).toBe(`group:${g.groupId}:slot:1:${jean.membershipId}`);
+
+      // Une écriture ne peut pas viser la chaîne privée d'un autre groupe
+      const other = await startedGroup(2);
+      await expect(
+        api.db.transaction({ type: 'system' }, (q) =>
+          q.query(
+            `INSERT INTO audit_log (chain_id, group_id, actor_type, action, payload) VALUES ($1, $2, 'system', 'x', '{}')`,
+            [`group:${g.groupId}:slot:1:${jean.membershipId}`, other.groupId],
+          ),
+        ),
+      ).resolves.toBeDefined();
+      const forged = await api.db.query<{ chain_id: string }>(
+        `SELECT chain_id FROM audit_log WHERE group_id = $1 AND action = 'x'`,
+        [other.groupId],
+      );
+      expect(forged.rows[0].chain_id).toBe(`group:${other.groupId}`);
+    });
+
+    it('une tontine communautaire garde ses cotisations dans la chaîne du groupe', async () => {
+      const g = await startedGroup(2);
+      await payAndConfirm(g.groupId, 1, g.members[1], g.members[0]);
+      const history = await http().get(`/groups/${g.groupId}/history`).set(auth(g.members[0].session)).expect(200);
+      expect(history.body.events.map((e: { action: string }) => e.action)).toContain('contributions.insert');
+      const priv = await http().get(`/groups/${g.groupId}/private-history`).set(auth(g.members[0].session)).expect(200);
+      expect(priv.body.chains).toEqual([]);
     });
   });
 });

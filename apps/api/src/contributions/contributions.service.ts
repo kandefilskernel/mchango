@@ -129,6 +129,7 @@ export class ContributionsService {
       beneficiary_membership_id: string;
       beneficiary_name: string;
       confirmed: number;
+      declared: number;
       expected: number;
       goal_kind: string | null;
       goal_label: string | null;
@@ -139,6 +140,9 @@ export class ContributionsService {
               s.kind AS goal_kind, s.label AS goal_label,
               (SELECT count(*)::int FROM contributions k
                WHERE k.cycle_id = c.id AND k.status = 'confirmed') AS confirmed,
+              -- Paiements déclarés, confirmés ou non : dès le premier, le tour ne s'échange plus
+              (SELECT count(*)::int FROM contributions k
+               WHERE k.cycle_id = c.id AND k.status <> 'rejected') AS declared,
               (SELECT count(*)::int - 1 FROM memberships x
                WHERE x.group_id = c.group_id AND x.status = 'active') AS expected
        FROM cycles c
@@ -161,6 +165,7 @@ export class ContributionsService {
           goal: r.goal_label ? { kind: r.goal_kind, label: r.goal_label } : null,
         },
         confirmedCount: r.confirmed,
+        declaredCount: r.declared,
         expectedCount: r.expected,
       })),
     };
@@ -550,16 +555,16 @@ export class ContributionsService {
       throw new ConflictException("Pas encore de reçu : la cotisation n'est pas confirmée.");
     }
 
-    const chainId = `group:${r.group_id}`;
-    const event = await this.db.query<{ seq: string; hash: string }>(
-      `SELECT seq, hash FROM audit_log
-       WHERE chain_id = $1 AND action = 'contributions.update'
+    // Chaîne du groupe, ou chaîne privée de la cotisation (Travailleurs, db/024)
+    const event = await this.db.query<{ chain_id: string; seq: string; hash: string }>(
+      `SELECT chain_id, seq, hash FROM audit_log
+       WHERE chain_id IN ($1, coalesce(audit_slot_chain($3::uuid), $1)) AND action = 'contributions.update'
          AND payload::jsonb ->> 'id' = $2 AND payload::jsonb ->> 'status' = 'confirmed'
        ORDER BY seq LIMIT 1`,
-      [chainId, r.id],
+      [`group:${r.group_id}`, r.id, r.id],
     );
     const receiptNumber = `MCH-${r.receipt_number.padStart(8, '0')}`;
-    const audit = { chainId, seq: Number(event.rows[0].seq), hash: event.rows[0].hash };
+    const audit = { chainId: event.rows[0].chain_id, seq: Number(event.rows[0].seq), hash: event.rows[0].hash };
     return {
       receiptNumber,
       contributionId: r.id,

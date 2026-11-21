@@ -25,6 +25,7 @@
 | `021_savings_goals.sql` | Objectifs d'épargne : un par adhésion, journalisés dans la chaîne du membre, partage facultatif |
 | `022_attestations.sql` | Attestations de régularité : contenu figé et empreinte vérifiée par la base, code de vérification, retrait seul |
 | `023_payday.sql` | Travailleurs : jour de paie et règle de report, jours fériés de la RDC (à valider), calcul des échéances |
+| `024_private_slot_chains.sql` | Travailleurs : déclarations, confirmations et contestations dans une chaîne privée par payeur et par tour, au lieu de la chaîne du groupe |
 | `tests/001_checks.sql` | Double regard, anti-fraude, journal en ajout seul, détection de falsification |
 | `tests/002_cash_witness.sql` | Règles du témoin (à lancer **après** `001_checks.sql`, sur la même base) |
 | `tests/003_turns_cycles.sql` | Ordre figé, bénéficiaire unique, receveur imposé (après `002`) |

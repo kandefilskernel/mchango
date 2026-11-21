@@ -1020,11 +1020,11 @@ const en = <String, String>{
   "Le dernier jour du mois (reporté si dimanche ou férié)":
       "The last day of the month (later if Sunday or a holiday)",
   "Le {day}":
-      "The {day}th",
+      "Day {day}",
   "Le {day} de chaque mois (avancé si dimanche ou férié)":
-      "The {day}th of each month (earlier if Sunday or a holiday)",
+      "Day {day} of each month (earlier if Sunday or a holiday)",
   "Le {day} de chaque mois (reporté si dimanche ou férié)":
-      "The {day}th of each month (later if Sunday or a holiday)",
+      "Day {day} of each month (later if Sunday or a holiday)",
   "Les membres le verront dans le tableau des tours. Le montant reste privé.":
       "Members will see it in the turn table. The amount stays private.",
   "Maison, loyer, toiture":
@@ -1123,4 +1123,15 @@ const en = <String, String>{
       "Equipment, motorbike, tools",
   "émise le {date}":
       "issued on {date}",
+  // Travailleurs : chaînes privées des cotisations
+  "Journal incohérent : prévenez le groupe et Mchango.":
+      "Inconsistent log: warn the group and Mchango.",
+  "Paiements confidentiels":
+      "Private payments",
+  "Tontine de travailleurs : chaque paiement a son propre journal, visible seulement du payeur, du bénéficiaire, du témoin et du président.":
+      "Workers' tontine: each payment has its own log, visible only to the payer, the recipient, the witness and the president.",
+  "Tour {n} · {name}":
+      "Turn {n} · {name}",
+  "{n} événement(s) vérifié(s)":
+      "{n} event(s) verified",
 };

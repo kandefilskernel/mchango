@@ -162,6 +162,8 @@ class CycleSummary {
           ? null
           : SharedGoal.fromJson((j['beneficiary'] as Json)['goal'] as Json),
       confirmedCount = j['confirmedCount'] as int,
+      // Absent d'une ancienne réponse : on retombe sur les confirmés
+      declaredCount = j['declaredCount'] as int? ?? j['confirmedCount'] as int,
       expectedCount = j['expectedCount'] as int;
 
   final int cycleNumber;
@@ -173,6 +175,9 @@ class CycleSummary {
   /// Objectif du bénéficiaire, s'il a choisi de le montrer au groupe.
   final SharedGoal? beneficiaryGoal;
   final int confirmedCount;
+
+  /// Paiements déclarés, confirmés ou non. Dès le premier, le tour ne s'échange plus.
+  final int declaredCount;
   final int expectedCount;
 }
 
@@ -627,4 +632,19 @@ class Attestation {
 
   /// « K7MPQ2XWAB » → « K7MPQ-2XWAB » : plus facile à dicter.
   String get displayCode => '${code.substring(0, 5)}-${code.substring(5)}';
+}
+
+/// Travailleurs : chaîne privée d'une cotisation (un payeur, un tour), lisible seulement par le
+/// payeur, le bénéficiaire, le témoin et le président (db/024_private_slot_chains.sql).
+class PrivateChain {
+  PrivateChain.fromJson(Json j)
+    : chainId = j['chainId'] as String,
+      cycleNumber = j['cycleNumber'] as int,
+      payerName = (j['payer'] as Json)['fullName'] as String,
+      events = [for (final e in j['events'] as List) HistoryEvent.fromJson(e as Json)];
+
+  final String chainId;
+  final int cycleNumber;
+  final String payerName;
+  final List<HistoryEvent> events;
 }

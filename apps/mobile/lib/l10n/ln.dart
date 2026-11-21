@@ -1123,4 +1123,15 @@ const ln = <String, String>{
       "Bisaleli, moto, bisaleli ya mosala",
   "émise le {date}":
       "ebimisami na {date}",
+  // Travailleurs : chaînes privées des cotisations
+  "Journal incohérent : prévenez le groupe et Mchango.":
+      "Buku ekokani te: yebisa lisanga mpe Mchango.",
+  "Paiements confidentiels":
+      "Bafuti ya sekele",
+  "Tontine de travailleurs : chaque paiement a son propre journal, visible seulement du payeur, du bénéficiaire, du témoin et du président.":
+      "Likelemba ya basali: lifuti moko na moko ezali na buku na yango, emonanaka kaka na mofuti, mozwi, motatoli mpe mokambi.",
+  "Tour {n} · {name}":
+      "Tango {n} · {name}",
+  "{n} événement(s) vérifié(s)":
+      "Makambo {n} etalelami",
 };

@@ -5,6 +5,8 @@ import 'package:mchango/services.dart';
 import 'package:mchango/ui/attestation/attestation_screen.dart';
 import 'package:mchango/ui/goals/goal_screen.dart';
 import 'package:mchango/ui/groups/group_screen.dart';
+import 'package:mchango/ui/history/history_screen.dart';
+import 'package:mchango_audit/mchango_audit.dart';
 
 import 'fake_backend.dart';
 
@@ -196,5 +198,70 @@ void main() {
     expect(backend.bodiesOf('POST', '/me/attestations').single, {'includeAmounts': true});
     expect(find.text('K7MPQ-2XWAB'), findsOneWidget);
     expect(find.text('Papa Jean'), findsOneWidget);
+  });
+
+  testWidgets('historique Travailleurs : chaînes privées vérifiées, falsification signalée', (tester) async {
+    /// Chaîne valide de [n] événements, hachée comme le fait PostgreSQL (spec/audit-hash.md).
+    List<Map<String, dynamic>> chain(String chainId, List<String> actions) {
+      final out = <Map<String, dynamic>>[];
+      var prev = '0' * 64;
+      for (final (i, action) in actions.indexed) {
+        final e = AuditEvent(
+          chainId: chainId,
+          seq: i + 1,
+          prevHash: prev,
+          actorType: 'system',
+          actorId: null,
+          deviceId: null,
+          action: action,
+          createdAt: '2026-11-21T10:00:0$i.000Z',
+          payload: action == 'contributions.update' ? '{"status":"confirmed","receipt_number":7}' : '{"method":"mpesa"}',
+          signature: null,
+          hash: '',
+        );
+        prev = computeHash(e);
+        out.add({
+          'chain_id': chainId,
+          'seq': i + 1,
+          'prev_hash': e.prevHash,
+          'actor_type': 'system',
+          'actor_id': null,
+          'device_id': null,
+          'action': action,
+          'created_at': e.createdAt,
+          'payload': e.payload,
+          'signature': null,
+          'hash': prev,
+          'actor_name': 'Papa Jean',
+        });
+      }
+      return out;
+    }
+
+    final group = chain('group:$groupId', ['groups.insert', 'cycles.update']);
+    final good = chain('group:$groupId:slot:1:$jean', ['contributions.insert', 'contributions.update']);
+    final bad = chain('group:$groupId:slot:1:$neema', ['contributions.insert', 'contributions.update']);
+    bad[1]['payload'] = '{"status":"rejected"}'; // contenu changé après coup : le hash ne correspond plus
+
+    Map<String, dynamic> slot(int n, String id, String name, List<Map<String, dynamic>> events) => {
+      'chainId': events.first['chain_id'],
+      'cycleNumber': n,
+      'payer': {'membershipId': id, 'fullName': name},
+      'events': events,
+    };
+    final backend = FakeBackend()
+      ..on('GET', '/groups/$groupId/history', (_, _) => {'chainId': 'group:$groupId', 'events': group})
+      ..on('GET', '/groups/$groupId/private-history', (_, _) => {
+        'chains': [slot(1, jean, 'Papa Jean', good), slot(1, neema, 'Mama Neema', bad)],
+      });
+    await tester.pumpWidget(host(backend, const HistoryScreen(groupId: groupId)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Paiements confidentiels'), findsOneWidget);
+    expect(find.text('Tour 1 · Papa Jean'), findsOneWidget);
+    expect(find.text('2 événement(s) vérifié(s)'), findsOneWidget);
+    expect(find.text('Journal incohérent : prévenez le groupe et Mchango.'), findsOneWidget);
+    // Une chaîne privée falsifiée suffit à lever l'alerte générale
+    expect(find.text('Problème détecté'), findsOneWidget);
   });
 }

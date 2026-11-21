@@ -1123,4 +1123,15 @@ const sw = <String, String>{
       "Vifaa, pikipiki, zana",
   "émise le {date}":
       "kimetolewa {date}",
+  // Travailleurs : chaînes privées des cotisations
+  "Journal incohérent : prévenez le groupe et Mchango.":
+      "Daftari halilingani: ijulishe kikundi na Mchango.",
+  "Paiements confidentiels":
+      "Malipo ya siri",
+  "Tontine de travailleurs : chaque paiement a son propre journal, visible seulement du payeur, du bénéficiaire, du témoin et du président.":
+      "Likelemba ya wafanyakazi: kila malipo yana daftari lake, linaloonekana tu na mlipaji, mpokeaji, shahidi na rais.",
+  "Tour {n} · {name}":
+      "Zamu {n} · {name}",
+  "{n} événement(s) vérifié(s)":
+      "Matukio {n} yamehakikiwa",
 };

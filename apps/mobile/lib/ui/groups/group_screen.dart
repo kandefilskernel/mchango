@@ -204,7 +204,7 @@ class _GroupScreenState extends State<GroupScreen> {
         g.status == 'active' &&
         myCycle != null &&
         (myCycle.status == 'open' || myCycle.status == 'upcoming') &&
-        myCycle.confirmedCount == 0 &&
+        myCycle.declaredCount == 0 &&
         !pending.any((s) => s.requesterMembershipId == me);
     CycleSummary? current;
     for (final c in board.cycles) {
@@ -272,13 +272,13 @@ class _GroupScreenState extends State<GroupScreen> {
     ];
   }
 
-  /// Choisir avec qui échanger son tour : un membre dont le tour n'est pas passé et sans paiement confirmé.
+  /// Choisir avec qui échanger son tour : un membre dont le tour n'est pas passé et sans paiement déclaré.
   Future<void> _requestSwap(BuildContext context, Group g, Board board) async {
     final candidates = [
       for (final c in board.cycles)
         if (c.beneficiaryMembershipId != board.myMembershipId &&
             (c.status == 'open' || c.status == 'upcoming') &&
-            c.confirmedCount == 0)
+            c.declaredCount == 0)
           c,
     ];
     final reason = TextEditingController();
@@ -331,8 +331,9 @@ class _GroupScreenState extends State<GroupScreen> {
         ),
       ),
     );
+    // Pas de dispose() ici : la feuille est encore en animation de fermeture et utilise le champ ;
+    // le contrôleur, sans écouteur, est libéré avec elle.
     final text = reason.text.trim();
-    reason.dispose();
     if (chosen == null || !context.mounted) return;
     try {
       await Services.of(context).api.requestSwap(g.id, chosen.beneficiaryMembershipId, reason: text.isEmpty ? null : text);

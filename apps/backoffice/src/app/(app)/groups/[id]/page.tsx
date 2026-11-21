@@ -21,7 +21,14 @@ interface GroupDetail {
   createdAt: string;
   members: { userId: string; fullName: string; phone: string; role: string; status: string; turnOrder: number | null }[];
   cycles: { cycleNumber: number; dueDate: string; status: string; beneficiary: string; confirmed: number; expected: number }[];
-  chain: { chainId: string; intact: boolean; firstInvalidSeq: string | null };
+  chain: {
+    chainId: string;
+    intact: boolean;
+    firstInvalidSeq: string | null;
+    // Travailleurs : cotisations dans des chaînes privées, une par payeur et par tour (db/024)
+    privateChains?: number;
+    brokenPrivateChains?: { chainId: string; firstInvalidSeq: string }[];
+  };
   events: AuditEventRow[];
   terms: {
     hash: string;
@@ -57,7 +64,13 @@ export default async function GroupPage({ params }: PageProps<"/groups/[id]">) {
 
       {!g.chain.intact && (
         <p className="msg msg-error" style={{ marginBottom: 16 }}>
-          Journal de cette tontine INCOHÉRENT à partir de l&apos;événement n°{g.chain.firstInvalidSeq}. À traiter en priorité.
+          {g.chain.firstInvalidSeq
+            ? <>Journal de cette tontine INCOHÉRENT à partir de l&apos;événement n°{g.chain.firstInvalidSeq}. </>
+            : null}
+          {(g.chain.brokenPrivateChains ?? []).map((c) => (
+            <span key={c.chainId}>Chaîne privée {c.chainId} INCOHÉRENTE à partir de l&apos;événement n°{c.firstInvalidSeq}. </span>
+          ))}
+          À traiter en priorité.
         </p>
       )}
 
@@ -147,6 +160,7 @@ export default async function GroupPage({ params }: PageProps<"/groups/[id]">) {
             <h2>Journal de la tontine (50 derniers événements)</h2>
             <p className="muted">
               Chaîne {g.chain.intact ? "intacte" : "INCOHÉRENTE"} · {g.chain.chainId}
+              {g.chain.privateChains ? ` · ${g.chain.privateChains} chaîne(s) privée(s) de cotisations` : ""}
             </p>
             <EventList events={g.events} />
           </div>

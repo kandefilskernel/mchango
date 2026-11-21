@@ -31,4 +31,6 @@ Une demande : `{ id, groupId, requester: { membershipId, fullName }, target: {�
 
 Erreurs : 409 si le groupe n'est pas en cours, si l'un des tours est passé ou a déjà un paiement déclaré, si une demande est déjà en attente, si la demande a expiré ou déjà reçu une réponse ; 403 si ce n'est pas au bon membre de répondre.
 
+`GET /groups/:id/cycles` donne pour chaque tour `declaredCount` (paiements déclarés, confirmés ou non) : l'app ne propose l'échange que pour des tours à 0.
+
 Après un échange, `GET /groups/:id` renvoie pour chaque membre son tour actuel (celui du tableau des tours), et plus l'ordre signé au démarrage.

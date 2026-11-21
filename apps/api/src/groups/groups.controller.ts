@@ -138,6 +138,12 @@ export class GroupsController {
     return this.historyService.history(auth.sub, id, afterSeq, limit);
   }
 
+  /** Travailleurs : chaînes privées des cotisations que je peux lire et vérifier. */
+  @Get(':id/private-history')
+  privateHistory(@CurrentAuth() auth: AccessTokenClaims, @Param('id', ParseUUIDPipe) id: string) {
+    return this.historyService.privateHistory(auth.sub, id);
+  }
+
   /** Déclaré avant ':id' pour que « join » ne soit pas pris pour un identifiant. */
   @Post('join')
   @HttpCode(200)

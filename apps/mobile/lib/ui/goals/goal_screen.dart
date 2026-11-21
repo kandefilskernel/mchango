@@ -68,12 +68,13 @@ class _GoalFormState extends State<_GoalForm> {
 
   Future<void> _pickDate() async {
     final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _date == null ? now.add(const Duration(days: 30)) : DateTime.parse(_date!),
-      firstDate: DateTime(now.year, now.month, now.day),
-      lastDate: now.add(const Duration(days: 365 * 3)),
-    );
+    final first = DateTime(now.year, now.month, now.day);
+    final last = first.add(const Duration(days: 365 * 3));
+    // Une date déjà passée (objectif ancien) ferait échouer le calendrier : on la ramène dans la plage
+    var initial = _date == null ? first.add(const Duration(days: 30)) : DateTime.parse(_date!);
+    if (initial.isBefore(first)) initial = first;
+    if (initial.isAfter(last)) initial = last;
+    final picked = await showDatePicker(context: context, initialDate: initial, firstDate: first, lastDate: last);
     if (picked != null) {
       setState(() => _date = picked.toIso8601String().substring(0, 10));
     }

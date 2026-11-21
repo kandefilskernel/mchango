@@ -171,6 +171,12 @@ class MchangoApi {
 
   Future<void> revokeAttestation(String id) => client.post('/me/attestations/$id/revoke');
 
+  /// Travailleurs : les chaînes privées des cotisations que je peux lire (vide pour les autres tontines).
+  Future<List<PrivateChain>> privateHistory(String groupId) async => [
+    for (final c in (await client.get('/groups/$groupId/private-history') as Json)['chains'] as List)
+      PrivateChain.fromJson(c as Json),
+  ];
+
   /// Tout l'historique du groupe, page par page.
   Future<List<HistoryEvent>> history(String groupId) async {
     final events = <HistoryEvent>[];

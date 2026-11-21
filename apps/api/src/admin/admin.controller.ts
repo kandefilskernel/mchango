@@ -27,7 +27,8 @@ const Note = z.object({
   closes: z.uuid().nullable().default(null),
 });
 /** Chaînes du journal : groupe, membre, équipe, système, et l'ancienne « global » (close). */
-const CHAIN_ID = /^(global|staff|system|(group|user):[0-9a-f-]{36})$/;
+// Chaînes privées des cotisations (Travailleurs, db/024) : group:<uuid>:slot:<n>:<uuid>
+const CHAIN_ID = /^(global|staff|system|(group|user):[0-9a-f-]{36}|group:[0-9a-f-]{36}:slot:[1-9][0-9]*:[0-9a-f-]{36})$/;
 const ExportQuery = z.object({
   kind: z.enum(['disputes', 'late', 'audit']),
   chain: z.string().regex(CHAIN_ID, 'Chaîne inconnue.').default('staff'),

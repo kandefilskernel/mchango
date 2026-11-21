@@ -34,10 +34,14 @@ class MchangoApi {
     required String startDate,
     required int maxMembers,
     String category = 'community',
+    int? payday,
+    String? paydayShift,
   }) async => Group.fromJson(
     await client.post('/groups', {
       'name': name,
       'category': category,
+      'payday': ?payday,
+      'paydayShift': ?paydayShift,
       'currency': currency,
       'contributionAmountMinor': contributionAmountMinor,
       'frequency': frequency,
@@ -122,6 +126,50 @@ class MchangoApi {
   Future<void> approvePinReset(String requestId) => client.post('/pin-resets/$requestId/approve');
 
   Future<void> rejectPinReset(String requestId) => client.post('/pin-resets/$requestId/reject');
+
+  /// Échanges de tour du groupe, les plus récents d'abord (spec/swaps.md).
+  Future<List<TurnSwap>> swaps(String groupId) async => [
+    for (final s in await client.get('/groups/$groupId/swaps') as List) TurnSwap.fromJson(s as Json),
+  ];
+
+  Future<TurnSwap> requestSwap(String groupId, String targetMembershipId, {String? reason}) async =>
+      TurnSwap.fromJson(
+        await client.post('/groups/$groupId/swaps', {'targetMembershipId': targetMembershipId, 'reason': ?reason})
+            as Json,
+      );
+
+  /// [decision] : accept, decline (le membre sollicité) ou cancel (le demandeur).
+  Future<TurnSwap> decideSwap(String swapId, String decision) async =>
+      TurnSwap.fromJson(await client.post('/swaps/$swapId/$decision') as Json);
+
+  /// Mon objectif d'épargne dans une tontine, ou null (spec/goals.md).
+  Future<SavingsGoal?> goal(String groupId) async {
+    final g = (await client.get('/groups/$groupId/goal') as Json)['goal'];
+    return g == null ? null : SavingsGoal.fromJson(g as Json);
+  }
+
+  Future<void> setGoal(String groupId, SavingsGoal goal) => client.put('/groups/$groupId/goal', {
+    'kind': goal.kind,
+    'label': goal.label,
+    'targetAmountMinor': goal.targetAmountMinor,
+    'targetDate': goal.targetDate,
+    'sharedWithGroup': goal.sharedWithGroup,
+  });
+
+  Future<void> removeGoal(String groupId) => client.delete('/groups/$groupId/goal');
+
+  /// Ce qui entrerait dans une attestation émise maintenant.
+  Future<AttestationStats> attestationStats() async =>
+      AttestationStats.fromJson(await client.get('/me/attestation-stats') as Json);
+
+  Future<List<Attestation>> myAttestations() async => [
+    for (final a in await client.get('/me/attestations') as List) Attestation.fromJson(a as Json),
+  ];
+
+  Future<Attestation> issueAttestation({required bool includeAmounts}) async =>
+      Attestation.fromJson(await client.post('/me/attestations', {'includeAmounts': includeAmounts}) as Json);
+
+  Future<void> revokeAttestation(String id) => client.post('/me/attestations/$id/revoke');
 
   /// Tout l'historique du groupe, page par page.
   Future<List<HistoryEvent>> history(String groupId) async {

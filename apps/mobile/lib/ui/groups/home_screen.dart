@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../attestation/attestation_screen.dart';
 import '../../api/models.dart';
 import '../../api/purchases_api.dart';
 import '../../services.dart';
@@ -103,6 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     'lock' => services.auth.lock(),
                     'biometric' => _toggleBiometric(context),
                     'feedback' => _open(context, FeedbackScreen(groups: data.$1)),
+                    'attestation' => _open(context, const AttestationScreen()),
                     // Les rappels SMS suivent aussi la langue choisie (enregistrée sur le serveur)
                     'language' => showLanguageDialog(
                       context,
@@ -250,6 +252,15 @@ class _Header extends StatelessWidget {
                           contentPadding: EdgeInsets.zero,
                           leading: Icon(Icons.fingerprint),
                           title: Text(t('Ouverture par empreinte')),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        key: const Key('menu_attestation'),
+                        value: 'attestation',
+                        child: ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.verified_outlined),
+                          title: Text(t('Attestation de régularité')),
                         ),
                       ),
                       PopupMenuItem(

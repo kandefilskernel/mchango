@@ -7,6 +7,7 @@ import '../../services.dart';
 import '../../util/format.dart';
 import '../common.dart';
 import '../cycles/cycle_screen.dart';
+import '../goals/goal_screen.dart';
 import '../history/history_screen.dart';
 import '../purchases/group_proposals_screen.dart';
 import '../theme.dart';
@@ -15,9 +16,12 @@ import 'turn_order_screen.dart';
 import '../../l10n/l10n.dart';
 
 class _GroupData {
-  _GroupData(this.group, this.board);
+  _GroupData(this.group, this.board, this.swaps);
   final Group group;
   final Board? board;
+
+  /// Échanges de tour du groupe (vide avant le démarrage).
+  final List<TurnSwap> swaps;
 }
 
 class GroupScreen extends StatefulWidget {
@@ -39,7 +43,13 @@ class _GroupScreenState extends State<GroupScreen> {
     final api = Services.of(context).api;
     final group = await api.group(widget.groupId);
     _groupName = group.name;
-    return _GroupData(group, group.isDraft ? null : await api.board(widget.groupId));
+    if (group.isDraft) return _GroupData(group, null, const []);
+    return _GroupData(
+      group,
+      await api.board(widget.groupId),
+      // Les échanges ne doivent pas empêcher d'afficher le tableau des tours
+      await api.swaps(widget.groupId).catchError((_) => <TurnSwap>[]),
+    );
   }
 
   Future<void> _push(Widget screen) async {
@@ -84,7 +94,7 @@ class _GroupScreenState extends State<GroupScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: data.group.isDraft
                       ? _draftSection(context, data.group, reload)
-                      : _boardSection(context, data.group, data.board!),
+                      : _boardSection(context, data.group, data.board!, data.swaps),
                 ),
               ),
             ],
@@ -180,7 +190,22 @@ class _GroupScreenState extends State<GroupScreen> {
     ];
   }
 
-  List<Widget> _boardSection(BuildContext context, Group g, Board board) {
+  List<Widget> _boardSection(BuildContext context, Group g, Board board, List<TurnSwap> swaps) {
+    final me = board.myMembershipId;
+    final pending = [
+      for (final s in swaps)
+        if (s.isPending && (s.targetMembershipId == me || s.requesterMembershipId == me)) s,
+    ];
+    CycleSummary? myCycle;
+    for (final c in board.cycles) {
+      if (c.beneficiaryMembershipId == me) myCycle = c;
+    }
+    final canSwap =
+        g.status == 'active' &&
+        myCycle != null &&
+        (myCycle.status == 'open' || myCycle.status == 'upcoming') &&
+        myCycle.confirmedCount == 0 &&
+        !pending.any((s) => s.requesterMembershipId == me);
     CycleSummary? current;
     for (final c in board.cycles) {
       if (c.status == 'open') {
@@ -193,6 +218,17 @@ class _GroupScreenState extends State<GroupScreen> {
         : t('Tour {n} : {name}', {'n': c.cycleNumber, 'name': c.beneficiaryName});
     final open = current;
     return [
+      for (final s in pending) ...[
+        _SwapCard(
+          swap: s,
+          incoming: s.targetMembershipId == me,
+          onDecide: (decision) async {
+            await Services.of(context).api.decideSwap(s.id, decision);
+            if (mounted) setState(() => _version++);
+          },
+        ),
+        const SizedBox(height: 12),
+      ],
       if (open != null) ...[
         _CurrentCycleCard(
           title: titleOf(open),
@@ -202,6 +238,28 @@ class _GroupScreenState extends State<GroupScreen> {
         ),
         const SizedBox(height: 20),
       ],
+      Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              key: const Key('open_goal'),
+              icon: const Icon(Icons.flag_outlined),
+              label: Text(t('Mon objectif')),
+              onPressed: () => _push(GoalScreen(groupId: g.id, groupName: g.name, currency: g.currency)),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: OutlinedButton.icon(
+              key: const Key('request_swap'),
+              icon: const Icon(Icons.swap_vert),
+              label: Text(t('Échanger mon tour')),
+              onPressed: canSwap ? () => _requestSwap(context, g, board) : null,
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 20),
       _SectionTitle(t('Tableau des tours')),
       for (final c in board.cycles)
         _CycleTile(
@@ -212,6 +270,77 @@ class _GroupScreenState extends State<GroupScreen> {
         ),
       _OrderInfo(group: g),
     ];
+  }
+
+  /// Choisir avec qui échanger son tour : un membre dont le tour n'est pas passé et sans paiement confirmé.
+  Future<void> _requestSwap(BuildContext context, Group g, Board board) async {
+    final candidates = [
+      for (final c in board.cycles)
+        if (c.beneficiaryMembershipId != board.myMembershipId &&
+            (c.status == 'open' || c.status == 'upcoming') &&
+            c.confirmedCount == 0)
+          c,
+    ];
+    final reason = TextEditingController();
+    final chosen = await showModalBottomSheet<CycleSummary>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => Padding(
+        padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + MediaQuery.of(context).viewInsets.bottom),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(t('Échanger mon tour avec…'), style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text(
+              t("L'autre membre doit accepter. Les dates ne changent pas : chacun reçoit à la date de l'autre."),
+              style: TextStyle(color: Brand.muted),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              key: const Key('swap_reason'),
+              controller: reason,
+              maxLength: 200,
+              decoration: InputDecoration(
+                labelText: t('Pourquoi ? (facultatif)'),
+                hintText: t('Ex. : minerval, deuil, loyer'),
+              ),
+            ),
+            if (candidates.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Text(t('Aucun tour ne peut être échangé pour le moment.'), textAlign: TextAlign.center),
+              ),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  for (final c in candidates)
+                    ListTile(
+                      key: Key('swap_with_${c.cycleNumber}'),
+                      leading: CircleAvatar(child: Text('${c.cycleNumber}')),
+                      title: Text(c.beneficiaryName),
+                      subtitle: Text(t('Tour {n} · {date}', {'n': c.cycleNumber, 'date': formatDate(c.dueDate)})),
+                      onTap: () => Navigator.pop(context, c),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    final text = reason.text.trim();
+    reason.dispose();
+    if (chosen == null || !context.mounted) return;
+    try {
+      await Services.of(context).api.requestSwap(g.id, chosen.beneficiaryMembershipId, reason: text.isEmpty ? null : text);
+      if (context.mounted) showInfo(context, t('Demande envoyée à {name}.', {'name': chosen.beneficiaryName}));
+    } catch (e) {
+      if (context.mounted) showError(context, e);
+    }
+    if (mounted) setState(() => _version++);
   }
 
   Future<void> _showInvitation(BuildContext context, Invitation invitation) => showDialog<void>(
@@ -310,6 +439,12 @@ class _Header extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text('${t('Premier tour')} · ${formatDate(g.startDate)}', style: TextStyle(color: soft)),
+          if (g.payday != null)
+            Text(
+              '${t('Jour de paie')} · ${paydayLabel(g.payday!, g.paydayShift)}',
+              key: const Key('group_payday'),
+              style: TextStyle(color: soft),
+            ),
           const SizedBox(height: 12),
           Wrap(
             spacing: 6,
@@ -436,12 +571,15 @@ class _CycleTile extends StatelessWidget {
           ],
         ),
         subtitle: Text(
-          t('{date} · {status} · {done}/{total} confirmé(s)', {
-            'date': formatDate(c.dueDate),
-            'status': cycleStatusLabels[c.status],
-            'done': c.confirmedCount,
-            'total': c.expectedCount,
-          }),
+          [
+            t('{date} · {status} · {done}/{total} confirmé(s)', {
+              'date': formatDate(c.dueDate),
+              'status': cycleStatusLabels[c.status],
+              'done': c.confirmedCount,
+              'total': c.expectedCount,
+            }),
+            if (c.beneficiaryGoal != null) t('Objectif : {label}', {'label': c.beneficiaryGoal!.label}),
+          ].join('\n'),
         ),
         trailing: const Icon(Icons.chevron_right),
         onTap: onTap,
@@ -513,6 +651,81 @@ class _OrderInfo extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Text(text, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Brand.muted)),
+    );
+  }
+}
+
+/// Demande d'échange en attente : à accepter ou refuser (reçue), ou à retirer (envoyée).
+class _SwapCard extends StatelessWidget {
+  const _SwapCard({required this.swap, required this.incoming, required this.onDecide});
+
+  final TurnSwap swap;
+  final bool incoming;
+  final Future<void> Function(String decision) onDecide;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = swap;
+    return Container(
+      key: Key(incoming ? 'swap_incoming' : 'swap_outgoing'),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: Brand.goldLight, borderRadius: BorderRadius.circular(18)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.swap_vert, color: Brand.goldDark),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  incoming
+                      ? t("{name} propose d'échanger son tour {a} contre votre tour {b}", {
+                          'name': s.requesterName,
+                          'a': s.requesterCycleNumber,
+                          'b': s.targetCycleNumber,
+                        })
+                      : t("Demande d'échange envoyée à {name} (votre tour {a} contre son tour {b})", {
+                          'name': s.targetName,
+                          'a': s.requesterCycleNumber,
+                          'b': s.targetCycleNumber,
+                        }),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+            ],
+          ),
+          if (s.reason != null) ...[
+            const SizedBox(height: 6),
+            Text('« ${s.reason} »', style: const TextStyle(fontStyle: FontStyle.italic)),
+          ],
+          const SizedBox(height: 4),
+          Text(
+            t('Sans réponse, la demande expire le {date}.', {'date': formatDateTime(s.expiresAt)}),
+            style: TextStyle(color: Brand.muted, fontSize: 13),
+          ),
+          const SizedBox(height: 10),
+          if (incoming)
+            Row(
+              children: [
+                Expanded(
+                  child: BusyButton(label: t('Refuser'), outlined: true, onPressed: () => onDecide('decline')),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: BusyButton(
+                    key: const Key('swap_accept'),
+                    label: t('Accepter'),
+                    icon: Icons.check,
+                    onPressed: () => onDecide('accept'),
+                  ),
+                ),
+              ],
+            )
+          else
+            BusyButton(label: t('Retirer ma demande'), outlined: true, onPressed: () => onDecide('cancel')),
+        ],
+      ),
     );
   }
 }

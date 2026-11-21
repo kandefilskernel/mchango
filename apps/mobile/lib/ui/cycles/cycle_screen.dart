@@ -226,6 +226,15 @@ class _CycleScreenState extends State<CycleScreen> {
                 if (myRow != null && beneficiary != null) _myPart(context, cycle, myRow, beneficiary),
                 const SizedBox(height: 16),
                 Text(t('Paiements'), style: Theme.of(context).textTheme.titleMedium),
+                if (cycle.privateStatuses)
+                  Padding(
+                    key: const Key('private_statuses_note'),
+                    padding: const EdgeInsets.only(top: 4, bottom: 4),
+                    child: Text(
+                      t('Tontine de travailleurs : seuls le payeur, le bénéficiaire et le président voient où en est chaque paiement.'),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
                 for (final p in cycle.payers) _payerTile(context, cycle, p),
               ],
             ),

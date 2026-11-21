@@ -958,4 +958,169 @@ const sw = <String, String>{
       "Ofa iliyochapishwa haibadilishwi tena.",
   "Enregistrer l'offre":
       "Hifadhi ofa",
+  // Échange de tour, objectifs, attestation, calendrier de paie
+  "Accepter":
+      "Kubali",
+  "Attestation":
+      "Cheti",
+  "Attestation de régularité":
+      "Cheti cha uaminifu wa malipo",
+  "Attestation de régularité Mchango de {name} : code {code}, valable jusqu'au {date}. Vérification dans l'application Mchango.":
+      "Cheti cha Mchango cha {name}: msimbo {code}, halali hadi {date}. Kihakiki ndani ya app ya Mchango.",
+  "Aucun tour ne peut être échangé pour le moment.":
+      "Hakuna zamu inayoweza kubadilishwa kwa sasa.",
+  "Autre projet":
+      "Mradi mwingine",
+  "Avancer au jour ouvré précédent":
+      "Sogeza siku ya kazi iliyotangulia",
+  "Chaque tour tombe le jour de la paie : on cotise quand le salaire est arrivé.":
+      "Kila zamu inaangukia siku ya mshahara: wanachama hulipa mshahara ukishaingia.",
+  "Commerce, stock":
+      "Biashara, bidhaa",
+  "Confidentiel":
+      "Siri",
+  "Copier le code":
+      "Nakili msimbo",
+  "Cotisations déclarées par ce membre et confirmées par leurs bénéficiaires. Ni score de crédit ni garantie. {notice}":
+      "Michango iliyotangazwa na mwanachama huyu na kuthibitishwa na wapokeaji. Si alama ya mkopo wala dhamana. {notice}",
+  "Créer une attestation":
+      "Unda cheti",
+  "Demande d'échange envoyée à {name} (votre tour {a} contre son tour {b})":
+      "Ombi la kubadilisha limetumwa kwa {name} (zamu yako {a} kwa zamu yake {b})",
+  "Demande envoyée à {name}.":
+      "Ombi limetumwa kwa {name}.",
+  "Disponible après votre premier paiement confirmé.":
+      "Inapatikana baada ya malipo yako ya kwanza kuthibitishwa.",
+  "Décrivez votre objectif en quelques mots.":
+      "Eleza lengo lako kwa maneno machache.",
+  "Enregistrer mon objectif":
+      "Hifadhi lengo langu",
+  "Entrez un montant en chiffres, ou laissez vide.":
+      "Andika kiasi kwa tarakimu, au acha wazi.",
+  "Ex. : minerval des enfants, stock de pagnes":
+      "Mf.: ada ya shule ya watoto, bidhaa za vitenge",
+  "Ex. : minerval, deuil, loyer":
+      "Mf.: ada ya shule, msiba, kodi ya nyumba",
+  "Famille, mariage, deuil":
+      "Familia, harusi, msiba",
+  "Fixer mon objectif":
+      "Weka lengo langu",
+  "Inclure les montants versés":
+      "Jumuisha kiasi kilicholipwa",
+  "Jour de paie":
+      "Siku ya mshahara",
+  "L'autre membre doit accepter. Les dates ne changent pas : chacun reçoit à la date de l'autre.":
+      "Mwanachama mwingine lazima akubali. Tarehe hazibadiliki: kila mmoja anapokea kwa tarehe ya mwenzake.",
+  "Le code ne montrera plus que « retirée ». Cela ne peut pas être annulé.":
+      "Msimbo utaonyesha tu « imeondolewa ». Hii haiwezi kutenduliwa.",
+  "Le dernier jour du mois":
+      "Siku ya mwisho ya mwezi",
+  "Le dernier jour du mois (avancé si dimanche ou férié)":
+      "Siku ya mwisho ya mwezi (mapema ikiwa ni Jumapili au sikukuu)",
+  "Le dernier jour du mois (reporté si dimanche ou férié)":
+      "Siku ya mwisho ya mwezi (baadaye ikiwa ni Jumapili au sikukuu)",
+  "Le {day}":
+      "Tarehe {day}",
+  "Le {day} de chaque mois (avancé si dimanche ou férié)":
+      "Tarehe {day} ya kila mwezi (mapema ikiwa ni Jumapili au sikukuu)",
+  "Le {day} de chaque mois (reporté si dimanche ou férié)":
+      "Tarehe {day} ya kila mwezi (baadaye ikiwa ni Jumapili au sikukuu)",
+  "Les membres le verront dans le tableau des tours. Le montant reste privé.":
+      "Wanachama wataiona kwenye jedwali la zamu. Kiasi kinabaki siri.",
+  "Maison, loyer, toiture":
+      "Nyumba, kodi, paa",
+  "Membre depuis":
+      "Mwanachama tangu",
+  "Mes attestations":
+      "Vyeti vyangu",
+  "Mon objectif":
+      "Lengo langu",
+  "Montant visé (facultatif)":
+      "Kiasi unacholenga (si lazima)",
+  "Montrer mon objectif au groupe":
+      "Onyesha kikundi lengo langu",
+  "Montrez vos paiements à temps à une IMF ou une coopec.":
+      "Onyesha malipo yako ya wakati kwa taasisi ya mikopo midogo au chama cha ushirika.",
+  "Objectif : {label}":
+      "Lengo: {label}",
+  "Objectif atteint : {amount} reçus":
+      "Lengo limefikiwa: {amount} zimepokelewa",
+  "Paiements confirmés":
+      "Malipo yaliyothibitishwa",
+  "Partager l'attestation":
+      "Shiriki cheti",
+  "Pas de date":
+      "Hakuna tarehe",
+  "Pas de jour de paie":
+      "Hakuna siku ya mshahara",
+  "Pour quand (facultatif)":
+      "Ifikapo lini (si lazima)",
+  "Pourquoi ? (facultatif)":
+      "Kwa nini? (si lazima)",
+  "Prouvez votre sérieux à une IMF, une coopec ou un bailleur : vos cotisations confirmées, vérifiables par un code.":
+      "Thibitisha uaminifu wako kwa taasisi ya mikopo, chama cha ushirika au mwenye nyumba: michango yako iliyothibitishwa, inayohakikiwa kwa msimbo.",
+  "QR code de l'attestation {code}":
+      "Msimbo wa QR wa cheti {code}",
+  "Rejetés":
+      "Yaliyokataliwa",
+  "Reporter au jour ouvré suivant":
+      "Sogeza siku ya kazi inayofuata",
+  "Retirer":
+      "Ondoa",
+  "Retirer cette attestation ?":
+      "Ondoa cheti hiki?",
+  "Retirer l'attestation":
+      "Ondoa cheti",
+  "Retirer ma demande":
+      "Ondoa ombi langu",
+  "Retirer mon objectif":
+      "Ondoa lengo langu",
+  "Sans réponse, la demande expire le {date}.":
+      "Bila jibu, ombi litaisha tarehe {date}.",
+  "Santé":
+      "Afya",
+  "Scolarité, minerval":
+      "Shule, ada",
+  "Si ce jour est un dimanche ou un jour férié":
+      "Ikiwa siku hiyo ni Jumapili au sikukuu",
+  "Sinon, seuls les nombres de paiements apparaissent.":
+      "Vinginevyo, idadi ya malipo tu ndiyo itaonekana.",
+  "Tontine de travailleurs : seuls le payeur, le bénéficiaire et le président voient où en est chaque paiement.":
+      "Likelemba ya wafanyakazi: mlipaji, mpokeaji na rais tu ndio wanaona hali ya kila malipo.",
+  "Tontines":
+      "Likelemba",
+  "Tour {n} · {date}":
+      "Zamu {n} · {date}",
+  "Tours reçus":
+      "Zamu zilizopokelewa",
+  "Une attestation reprend les faits enregistrés ; ce n'est pas un score de crédit. {notice}":
+      "Cheti kinarudia ukweli uliorekodiwa; si alama ya mkopo. {notice}",
+  "Valable":
+      "Halali",
+  "Valable jusqu'au {date} · empreinte {hash}…":
+      "Halali hadi {date} · alama {hash}…",
+  "Vide : la mise complète que vous recevrez.":
+      "Wazi: kiasi kamili utakachopokea.",
+  "des paiements confirmés faits à temps":
+      "ya malipo yaliyothibitishwa yamefanywa kwa wakati",
+  "jusqu'au {date}":
+      "hadi {date}",
+  "{done} sur {target} ({p} %)":
+      "{done} kati ya {target} ({p}%)",
+  "{name} propose d'échanger son tour {a} contre votre tour {b}":
+      "{name} anapendekeza kubadilisha zamu yake {a} na zamu yako {b}",
+  "{n} dont {done} terminée(s)":
+      "{n}, {done} zimekamilika",
+  "À quoi servira la mise que vous recevrez à votre tour ? Un objectif clair aide à tenir jusqu'au bout.":
+      "Utatumia kiasi utakachopokea kwenye zamu yako kwa nini? Lengo wazi husaidia kuvumilia hadi mwisho.",
+  "À temps":
+      "Kwa wakati",
+  "Échanger mon tour":
+      "Badilisha zamu yangu",
+  "Échanger mon tour avec…":
+      "Badilisha zamu yangu na…",
+  "Équipement, moto, outils":
+      "Vifaa, pikipiki, zana",
+  "émise le {date}":
+      "kimetolewa {date}",
 };

@@ -46,6 +46,8 @@ class Group {
     required this.members,
     this.terms,
     this.category = 'community',
+    this.payday,
+    this.paydayShift,
   });
 
   factory Group.fromJson(Json j) => Group(
@@ -65,6 +67,8 @@ class Group {
     terms: j['terms'] == null ? null : GroupTerms.fromJson(j['terms'] as Json),
     // Absente d'une ancienne réponse : « communautaire » (la tontine d'avant les catégories)
     category: j['category'] as String? ?? 'community',
+    payday: j['payday'] as int?,
+    paydayShift: j['paydayShift'] as String?,
   );
 
   final String id;
@@ -84,6 +88,11 @@ class Group {
 
   /// Signatures du règlement, tant que le groupe est en préparation (null ensuite).
   final GroupTerms? terms;
+
+  /// Travailleurs : jour de paie (1 à 31) ; l'échéance est avancée (before) ou reportée (after)
+  /// si elle tombe un dimanche ou un jour férié. null pour les autres tontines.
+  final int? payday;
+  final String? paydayShift;
 
   bool get isPresident => myRole == 'president';
   bool get isDraft => status == 'draft';
@@ -149,6 +158,9 @@ class CycleSummary {
       status = j['status'] as String,
       beneficiaryMembershipId = (j['beneficiary'] as Json)['membershipId'] as String,
       beneficiaryName = (j['beneficiary'] as Json)['fullName'] as String,
+      beneficiaryGoal = (j['beneficiary'] as Json)['goal'] == null
+          ? null
+          : SharedGoal.fromJson((j['beneficiary'] as Json)['goal'] as Json),
       confirmedCount = j['confirmedCount'] as int,
       expectedCount = j['expectedCount'] as int;
 
@@ -157,6 +169,9 @@ class CycleSummary {
   final String status;
   final String beneficiaryMembershipId;
   final String beneficiaryName;
+
+  /// Objectif du bénéficiaire, s'il a choisi de le montrer au groupe.
+  final SharedGoal? beneficiaryGoal;
   final int confirmedCount;
   final int expectedCount;
 }
@@ -246,6 +261,7 @@ class CycleDetail {
       dueDate = j['dueDate'] as String,
       status = j['status'] as String,
       beneficiaryMembershipId = j['beneficiaryMembershipId'] as String,
+      privateStatuses = j['privateStatuses'] as bool? ?? false,
       payers = [for (final p in j['payers'] as List) PayerRow.fromJson(p as Json)];
 
   final String myMembershipId;
@@ -253,6 +269,9 @@ class CycleDetail {
   final String dueDate;
   final String status;
   final String beneficiaryMembershipId;
+
+  /// Travailleurs : l'état des cotisations des collègues est masqué (statut « private »).
+  final bool privateStatuses;
   final List<PayerRow> payers;
 
   bool get iAmBeneficiary => myMembershipId == beneficiaryMembershipId;
@@ -408,6 +427,7 @@ class CarnetGroup {
     required this.receivedCount,
     required this.receivedMinor,
     required this.pendingCount,
+    this.goal,
   });
 
   factory CarnetGroup.fromJson(Json j) {
@@ -426,6 +446,7 @@ class CarnetGroup {
       receivedCount: j['receivedCount'] as int,
       receivedMinor: j['receivedMinor'] as int,
       pendingCount: j['pendingCount'] as int,
+      goal: j['goal'] == null ? null : GoalProgress.fromJson(j['goal'] as Json),
     );
   }
 
@@ -442,6 +463,9 @@ class CarnetGroup {
   final int receivedCount;
   final int receivedMinor;
   final int pendingCount;
+
+  /// Mon objectif d'épargne dans cette tontine et sa progression.
+  final GoalProgress? goal;
 }
 
 /// Le règlement que chaque membre signe avant le démarrage (montant, date, ordre des tours).
@@ -466,4 +490,141 @@ class GroupTerms {
   /// Noms des membres qui n'ont pas encore signé.
   final List<String> missing;
   final bool allSigned;
+}
+
+/// Objectif montré au groupe par un bénéficiaire (tableau des tours).
+class SharedGoal {
+  SharedGoal.fromJson(Json j) : kind = j['kind'] as String, label = j['label'] as String;
+
+  final String kind;
+  final String label;
+}
+
+/// Mon objectif d'épargne dans une tontine (spec/goals.md).
+class SavingsGoal {
+  SavingsGoal({
+    required this.kind,
+    required this.label,
+    this.targetAmountMinor,
+    this.targetDate,
+    this.sharedWithGroup = false,
+  });
+
+  factory SavingsGoal.fromJson(Json j) => SavingsGoal(
+    kind: j['kind'] as String,
+    label: j['label'] as String,
+    targetAmountMinor: j['targetAmountMinor'] as int?,
+    targetDate: j['targetDate'] as String?,
+    sharedWithGroup: j['sharedWithGroup'] as bool? ?? false,
+  );
+
+  final String kind;
+  final String label;
+  final int? targetAmountMinor;
+  final String? targetDate;
+  final bool sharedWithGroup;
+}
+
+/// Objectif et progression (carnet) : la mise reçue par rapport au montant visé.
+class GoalProgress extends SavingsGoal {
+  GoalProgress.fromJson(Json j)
+    : effectiveTargetMinor = j['effectiveTargetMinor'] as int,
+      progressMinor = j['progressMinor'] as int,
+      progressPercent = j['progressPercent'] as int,
+      reached = j['reached'] as bool,
+      super(
+        kind: j['kind'] as String,
+        label: j['label'] as String,
+        targetAmountMinor: j['targetAmountMinor'] as int?,
+        targetDate: j['targetDate'] as String?,
+        sharedWithGroup: j['sharedWithGroup'] as bool? ?? false,
+      );
+
+  final int effectiveTargetMinor;
+  final int progressMinor;
+  final int progressPercent;
+  final bool reached;
+}
+
+/// Demande d'échange de tour entre deux membres (spec/swaps.md).
+class TurnSwap {
+  TurnSwap.fromJson(Json j)
+    : id = j['id'] as String,
+      requesterMembershipId = (j['requester'] as Json)['membershipId'] as String,
+      requesterName = (j['requester'] as Json)['fullName'] as String? ?? '',
+      targetMembershipId = (j['target'] as Json)['membershipId'] as String,
+      targetName = (j['target'] as Json)['fullName'] as String? ?? '',
+      requesterCycleNumber = j['requesterCycleNumber'] as int,
+      targetCycleNumber = j['targetCycleNumber'] as int,
+      reason = j['reason'] as String?,
+      status = j['status'] as String,
+      expiresAt = DateTime.parse(j['expiresAt'] as String);
+
+  final String id;
+  final String requesterMembershipId;
+  final String requesterName;
+  final String targetMembershipId;
+  final String targetName;
+  final int requesterCycleNumber;
+  final int targetCycleNumber;
+  final String? reason;
+
+  /// pending, accepted, declined, cancelled, expired
+  final String status;
+  final DateTime expiresAt;
+
+  bool get isPending => status == 'pending';
+}
+
+/// Chiffres d'une attestation de régularité (GET /me/attestation-stats, ou contenu figé).
+class AttestationStats {
+  AttestationStats.fromJson(Json j)
+    : memberSince = j['memberSince'] as String,
+      tontinesJoined = (j['tontines'] as Json)['joined'] as int,
+      tontinesCompleted = (j['tontines'] as Json)['completed'] as int,
+      confirmed = (j['contributions'] as Json)['confirmed'] as int,
+      onTime = (j['contributions'] as Json)['onTime'] as int,
+      late = (j['contributions'] as Json)['late'] as int,
+      rejected = (j['contributions'] as Json)['rejected'] as int,
+      onTimeRatePercent = j['onTimeRatePercent'] as int?,
+      turnsReceived = j['turnsReceived'] as int;
+
+  final String memberSince;
+  final int tontinesJoined;
+  final int tontinesCompleted;
+  final int confirmed;
+  final int onTime;
+  final int late;
+  final int rejected;
+  final int? onTimeRatePercent;
+  final int turnsReceived;
+}
+
+/// Attestation émise : contenu figé, code de vérification, QR (spec/attestations.md).
+class Attestation {
+  Attestation.fromJson(Json j)
+    : id = j['id'] as String,
+      code = j['code'] as String,
+      status = j['status'] as String,
+      holderName = ((j['content'] as Json)['holder'] as Json)['fullName'] as String,
+      stats = AttestationStats.fromJson(j['content'] as Json),
+      contentHash = j['contentHash'] as String,
+      qrPayload = j['qrPayload'] as String,
+      issuedAt = DateTime.parse(j['issuedAt'] as String),
+      expiresAt = DateTime.parse(j['expiresAt'] as String);
+
+  final String id;
+  final String code;
+
+  /// valid, expired, revoked
+  final String status;
+  final String holderName;
+  final AttestationStats stats;
+  final String contentHash;
+  final String qrPayload;
+  final DateTime issuedAt;
+  final DateTime expiresAt;
+
+  /// « K7MPQ2XWAB » → « K7MPQ-2XWAB » : plus facile à dicter.
+  String get displayCode => '${code.substring(0, 5)}-${code.substring(5)}';
 }

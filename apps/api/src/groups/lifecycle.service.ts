@@ -20,7 +20,12 @@ export interface UpdateGroupInput {
   frequency?: 'daily' | 'weekly' | 'monthly';
   startDate?: string;
   maxMembers?: number;
+  payday?: number | null;
+  paydayShift?: 'before' | 'after';
 }
+
+/** Violation d'une contrainte CHECK de PostgreSQL. */
+const CHECK_VIOLATION = '23514';
 
 /** Préparation et démarrage d'un groupe : réservé au président, tant que le groupe est en brouillon. */
 @Injectable()
@@ -33,24 +38,45 @@ export class GroupLifecycleService {
       if (input.maxMembers !== undefined && input.maxMembers < (await this.activeIds(q, groupId)).length) {
         throw new ConflictException('Le groupe compte déjà plus de membres que ce maximum.');
       }
-      const { rows } = await q.query<GroupRow>(
-        `UPDATE groups AS g SET
-           name = coalesce($2, name),
-           contribution_amount_minor = coalesce($3::bigint, contribution_amount_minor),
-           frequency = coalesce($4::frequency_type, frequency),
-           start_date = coalesce($5::date, start_date),
-           max_members = coalesce($6::int, max_members)
-         WHERE id = $1
-         RETURNING ${GROUP_COLUMNS}`,
-        [
-          groupId,
-          input.name ?? null,
-          input.contributionAmountMinor ?? null,
-          input.frequency ?? null,
-          input.startDate ?? null,
-          input.maxMembers ?? null,
-        ],
-      );
+      // payday : absent = inchangé ; null = retiré ; nombre = fixé (avec la règle de report)
+      const paydayGiven = input.payday !== undefined;
+      const { rows } = await q
+        .query<GroupRow>(
+          `UPDATE groups AS g SET
+             name = coalesce($2, name),
+             contribution_amount_minor = coalesce($3::bigint, contribution_amount_minor),
+             frequency = coalesce($4::frequency_type, frequency),
+             start_date = coalesce($5::date, start_date),
+             max_members = coalesce($6::int, max_members),
+             payday = CASE WHEN $7::boolean THEN $8::smallint ELSE payday END,
+             payday_shift = CASE
+               WHEN $7::boolean AND $8::smallint IS NULL THEN NULL
+               WHEN $7::boolean OR $9::payday_shift IS NOT NULL
+                 THEN coalesce($9::payday_shift, payday_shift, 'before')
+               ELSE payday_shift END
+           WHERE id = $1
+           RETURNING ${GROUP_COLUMNS}`,
+          [
+            groupId,
+            input.name ?? null,
+            input.contributionAmountMinor ?? null,
+            input.frequency ?? null,
+            input.startDate ?? null,
+            input.maxMembers ?? null,
+            paydayGiven,
+            input.payday ?? null,
+            input.paydayShift ?? null,
+          ],
+        )
+        .catch((e: { code?: string; constraint?: string }) => {
+          if (e?.code === CHECK_VIOLATION && e.constraint === 'groups_payday_rules') {
+            throw new BadRequestException(
+              'Le jour de paie ne concerne que les tontines mensuelles de la catégorie « Travailleurs ». ' +
+                'Retirez-le avant de changer la fréquence.',
+            );
+          }
+          throw e;
+        });
       return toGroup(rows[0]);
     });
   }
@@ -165,12 +191,16 @@ export class GroupLifecycleService {
       await q.query(
         `INSERT INTO cycles (group_id, cycle_number, due_date, beneficiary_membership_id, status)
          SELECT m.group_id, m.turn_order,
-                (g.start_date + CASE g.frequency
-                   WHEN 'daily'  THEN make_interval(days   => m.turn_order - 1)
-                   WHEN 'weekly' THEN make_interval(weeks  => m.turn_order - 1)
-                   -- calculé depuis la date de début : 31 jan → 28 fév → 31 mars
-                   ELSE               make_interval(months => m.turn_order - 1)
-                 END)::date,
+                CASE WHEN g.payday IS NOT NULL
+                  -- Travailleurs : le jour de paie de chaque mois, avancé ou reporté s'il est chômé
+                  THEN payday_due_date(g.start_date, m.turn_order - 1, g.payday, g.payday_shift)
+                  ELSE (g.start_date + CASE g.frequency
+                     WHEN 'daily'  THEN make_interval(days   => m.turn_order - 1)
+                     WHEN 'weekly' THEN make_interval(weeks  => m.turn_order - 1)
+                     -- calculé depuis la date de début : 31 jan → 28 fév → 31 mars
+                     ELSE               make_interval(months => m.turn_order - 1)
+                   END)::date
+                END,
                 m.id,
                 (CASE WHEN m.turn_order = 1 THEN 'open' ELSE 'upcoming' END)::cycle_status
          FROM memberships m JOIN groups g ON g.id = m.group_id

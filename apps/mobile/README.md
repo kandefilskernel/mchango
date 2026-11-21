@@ -12,6 +12,10 @@ App Android des membres. Français uniquement à l'itération 1.
 | Préparation : inviter, ordre des tours (glisser ou tirage), démarrer | `lib/ui/groups/group_screen.dart`, `turn_order_screen.dart` |
 | Tableau des tours, « J'ai payé », « J'ai reçu », témoin, contestation | `lib/ui/cycles/` |
 | Reçu avec QR code, partage en image | `lib/ui/receipts/receipt_screen.dart` |
+| Échanger mon tour (demande, accepter, refuser, retirer) depuis l'écran du groupe | `lib/ui/groups/group_screen.dart` |
+| Mon objectif d'épargne (groupe et carnet, progression) | `lib/ui/goals/goal_screen.dart` |
+| Attestation de régularité : chiffres, création, code et QR, partage, retrait | `lib/ui/attestation/attestation_screen.dart` |
+| Travailleurs : jour de paie à la création, statuts des collègues masqués | `lib/ui/groups/create_group_screen.dart`, `lib/ui/cycles/cycle_screen.dart` |
 | Historique vérifié sur le téléphone | `lib/ui/history/history_screen.dart` |
 | Achats groupés : offres par zone, fiche (prix collectif, compteur, paliers), Participer, Inviter (groupe ou WhatsApp), Mes commandes et code de retrait | `lib/ui/purchases/` |
 | Achats proposés à un groupe (bouton panier de l'écran du groupe) | `lib/ui/purchases/group_proposals_screen.dart` |

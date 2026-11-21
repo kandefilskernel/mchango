@@ -1,9 +1,9 @@
 /**
  * Catégories de tontine (spec/categories.md). Un profil par catégorie, relu et versionné avec le code.
  *
- * Étape 1 (socle) : la catégorie est une étiquette de départ. Tous les profils ont les mêmes règles
- * qu'une tontine communautaire et `features` est vide ; les fonctions propres à chaque catégorie
- * arrivent aux étapes suivantes, sans changer ce contrat.
+ * Étape 1 (socle) : tous les profils ont les mêmes règles qu'une tontine communautaire.
+ * Étape 2 : « Travailleurs » reçoit le calendrier de paie et la confidentialité des cotisations.
+ * Les fonctions des autres catégories arrivent aux étapes suivantes, sans changer ce contrat.
  */
 
 export const GROUP_CATEGORIES = ['community', 'organization', 'workers', 'religion'] as const;
@@ -24,7 +24,11 @@ export interface CategoryProfile {
     frequencies: ('daily' | 'weekly' | 'monthly')[];
     payoutModes: 'direct_to_beneficiary'[];
   };
-  /** Fonctions propres à la catégorie, actives. Vide à l'étape 1. */
+  /**
+   * Fonctions propres à la catégorie, actives :
+   *   payday_calendar  échéances calées sur un jour de paie (tontine mensuelle) ;
+   *   private_statuses l'état des cotisations n'est visible que du payeur, du bénéficiaire et du président.
+   */
   features: string[];
 }
 
@@ -58,7 +62,7 @@ export const CATEGORY_PROFILES: readonly CategoryProfile[] = [
     name: 'Travailleurs',
     description: "Collègues d'un même employeur ou d'un même métier, fonctionnaires.",
     rules: BASE_RULES,
-    features: [],
+    features: ['payday_calendar', 'private_statuses'],
   },
   {
     code: 'religion',

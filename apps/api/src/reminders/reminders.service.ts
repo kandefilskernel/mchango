@@ -64,7 +64,8 @@ export interface ReminderRun {
 
 /**
  * Un rappel par membre et par tour, aux membres qui n'ont pas encore déclaré leur paiement :
- * la veille de l'échéance (tontines hebdomadaires et mensuelles) ou le matin même (quotidiennes).
+ * la veille de l'échéance (tontines hebdomadaires et mensuelles) ou le matin même (quotidiennes, et
+ * tontines calées sur le jour de paie).
  * Le bénéficiaire du tour ne reçoit rien : il ne paie pas.
  */
 @Injectable()
@@ -108,7 +109,10 @@ export class RemindersService {
        JOIN users u ON u.id = m.user_id AND NOT u.is_blocked
        WHERE g.status = 'active'
          AND c.status IN ('open', 'upcoming')
-         AND c.due_date = CASE g.frequency WHEN 'daily' THEN $1::date ELSE $1::date + 1 END
+         -- Quotidienne : le matin même. Calendrier de paie : le jour de paie, quand le salaire est
+         -- arrivé (spec/categories.md §3.5). Sinon : la veille.
+         AND c.due_date = CASE WHEN g.frequency = 'daily' OR g.payday IS NOT NULL THEN $1::date
+                               ELSE $1::date + 1 END
          AND NOT EXISTS (SELECT 1 FROM contributions k
                          WHERE k.cycle_id = c.id AND k.payer_membership_id = m.id AND k.status <> 'rejected')
          AND NOT EXISTS (SELECT 1 FROM notifications n

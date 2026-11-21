@@ -22,6 +22,12 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   String _category = 'community';
   String _currency = 'CDF';
   String _frequency = 'weekly';
+
+  /// Travailleurs, tontine mensuelle : jour de paie (null = pas de calendrier de paie).
+  int? _payday;
+  String _paydayShift = 'before';
+
+  bool get _paydayAllowed => _category == 'workers' && _frequency == 'monthly';
   DateTime _startDate = DateTime.now().add(const Duration(days: 7));
 
   /// Erreurs affichées sous chaque champ, après un premier essai de validation.
@@ -78,6 +84,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
       startDate: _startIso,
       maxMembers: max!,
       category: _category,
+      payday: _paydayAllowed ? _payday : null,
+      paydayShift: _paydayAllowed && _payday != null ? _paydayShift : null,
     );
     if (!mounted) return;
     await Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (_) => GroupScreen(groupId: group.id)));
@@ -200,6 +208,36 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 items: [for (final e in frequencyLabels.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
                 onChanged: (v) => setState(() => _frequency = v!),
               ),
+              if (_paydayAllowed) ...[
+                const SizedBox(height: 16),
+                DropdownButtonFormField<int?>(
+                  key: const Key('group_payday'),
+                  initialValue: _payday,
+                  decoration: InputDecoration(
+                    labelText: t('Jour de paie'),
+                    helperText: t("Chaque tour tombe le jour de la paie : on cotise quand le salaire est arrivé."),
+                  ),
+                  items: [
+                    DropdownMenuItem(value: null, child: Text(t('Pas de jour de paie'))),
+                    for (var d = 1; d <= 30; d++) DropdownMenuItem(value: d, child: Text(t('Le {day}', {'day': d}))),
+                    DropdownMenuItem(value: 31, child: Text(t('Le dernier jour du mois'))),
+                  ],
+                  onChanged: (v) => setState(() => _payday = v),
+                ),
+                if (_payday != null) ...[
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    key: const Key('group_payday_shift'),
+                    initialValue: _paydayShift,
+                    decoration: InputDecoration(labelText: t('Si ce jour est un dimanche ou un jour férié')),
+                    items: [
+                      DropdownMenuItem(value: 'before', child: Text(t('Avancer au jour ouvré précédent'))),
+                      DropdownMenuItem(value: 'after', child: Text(t('Reporter au jour ouvré suivant'))),
+                    ],
+                    onChanged: (v) => setState(() => _paydayShift = v!),
+                  ),
+                ],
+              ],
             ],
           ),
           _Section(

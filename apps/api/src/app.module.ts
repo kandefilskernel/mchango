@@ -2,15 +2,18 @@ import { Controller, Get, Inject, Module, ServiceUnavailableException } from '@n
 import type { Redis } from 'ioredis';
 import { AdminModule } from './admin/admin.module.js';
 import { AiModule } from './ai/ai.module.js';
+import { AttestationsModule } from './attestations/attestations.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { APP_CONFIG, loadConfig } from './config.js';
 import { ContributionsModule } from './contributions/contributions.module.js';
+import { GoalsModule } from './goals/goals.module.js';
 import { GroupsModule } from './groups/groups.module.js';
 import { PurchasesModule } from './purchases/purchases.module.js';
 import { Db, DatabaseModule } from './infra/database.js';
 import { RemindersModule } from './reminders/reminders.module.js';
 import { REDIS, RedisModule } from './infra/redis.js';
 import { SmsModule } from './infra/sms.js';
+import { SwapsModule } from './swaps/swaps.module.js';
 
 @Controller()
 class HealthController {
@@ -58,6 +61,9 @@ class ConfigModule {}
     GroupsModule,
     PurchasesModule,
     ContributionsModule,
+    SwapsModule,
+    GoalsModule,
+    AttestationsModule,
     RemindersModule,
     AdminModule,
     AiModule,

@@ -958,4 +958,169 @@ const ln = <String, String>{
       "Offre oyo ebimi ebongwanaka lisusu te.",
   "Enregistrer l'offre":
       "Kobomba offre",
+  // Échange de tour, objectifs, attestation, calendrier de paie
+  "Accepter":
+      "Ndima",
+  "Attestation":
+      "Ndingisa",
+  "Attestation de régularité":
+      "Ndingisa ya kofuta malamu",
+  "Attestation de régularité Mchango de {name} : code {code}, valable jusqu'au {date}. Vérification dans l'application Mchango.":
+      "Ndingisa ya Mchango ya {name}: kode {code}, ekosala tii {date}. Tala yango na app Mchango.",
+  "Aucun tour ne peut être échangé pour le moment.":
+      "Tango moko te ekoki kobongwana sikoyo.",
+  "Autre projet":
+      "Mosala mosusu",
+  "Avancer au jour ouvré précédent":
+      "Kozongisa na mokolo ya mosala oyo eleki",
+  "Chaque tour tombe le jour de la paie : on cotise quand le salaire est arrivé.":
+      "Tango nyonso ekokweya na mokolo ya lifuti: tokofuta soki lifuti ekoti.",
+  "Commerce, stock":
+      "Mombongo, biloko",
+  "Confidentiel":
+      "Ya sekele",
+  "Copier le code":
+      "Kopia kode",
+  "Cotisations déclarées par ce membre et confirmées par leurs bénéficiaires. Ni score de crédit ni garantie. {notice}":
+      "Mbongo oyo mosangani oyo ayebisaki mpe bazwi bandimaki. Ezali noti ya nyongo te, ezali garantie te. {notice}",
+  "Créer une attestation":
+      "Sala ndingisa",
+  "Demande d'échange envoyée à {name} (votre tour {a} contre son tour {b})":
+      "Bosenga ya kobongola etindami epai ya {name} (tango na yo {a} na tango na ye {b})",
+  "Demande envoyée à {name}.":
+      "Bosenga etindami epai ya {name}.",
+  "Disponible après votre premier paiement confirmé.":
+      "Ekozala soki lifuti na yo ya liboso endimami.",
+  "Décrivez votre objectif en quelques mots.":
+      "Limbola mokano na yo na maloba moke.",
+  "Enregistrer mon objectif":
+      "Bomba mokano na ngai",
+  "Entrez un montant en chiffres, ou laissez vide.":
+      "Koma motuya na mituya, to tika yango mpamba.",
+  "Ex. : minerval des enfants, stock de pagnes":
+      "Ndakisa: minerval ya bana, biloko ya bilamba",
+  "Ex. : minerval, deuil, loyer":
+      "Ndakisa: minerval, matanga, lokasio",
+  "Famille, mariage, deuil":
+      "Libota, libala, matanga",
+  "Fixer mon objectif":
+      "Tia mokano na ngai",
+  "Inclure les montants versés":
+      "Kotia mbongo oyo ofutaki",
+  "Jour de paie":
+      "Mokolo ya lifuti",
+  "L'autre membre doit accepter. Les dates ne changent pas : chacun reçoit à la date de l'autre.":
+      "Mosangani mosusu asengeli kondima. Mikolo ebongwanaka te: moko na moko akozwa na mokolo ya mosusu.",
+  "Le code ne montrera plus que « retirée ». Cela ne peut pas être annulé.":
+      "Kode ekolakisa kaka « elongolami ». Ekoki kozongisama te.",
+  "Le dernier jour du mois":
+      "Mokolo ya suka ya sanza",
+  "Le dernier jour du mois (avancé si dimanche ou férié)":
+      "Mokolo ya suka ya sanza (liboso soki ezali lomingo to fete)",
+  "Le dernier jour du mois (reporté si dimanche ou férié)":
+      "Mokolo ya suka ya sanza (sima soki ezali lomingo to fete)",
+  "Le {day}":
+      "Mokolo {day}",
+  "Le {day} de chaque mois (avancé si dimanche ou férié)":
+      "Mokolo {day} ya sanza nyonso (liboso soki ezali lomingo to fete)",
+  "Le {day} de chaque mois (reporté si dimanche ou férié)":
+      "Mokolo {day} ya sanza nyonso (sima soki ezali lomingo to fete)",
+  "Les membres le verront dans le tableau des tours. Le montant reste privé.":
+      "Basangani bakomona yango na etanda ya ba tango. Motuya ekotikala sekele.",
+  "Maison, loyer, toiture":
+      "Ndako, lokasio, motondo",
+  "Membre depuis":
+      "Mosangani banda",
+  "Mes attestations":
+      "Bandingisa na ngai",
+  "Mon objectif":
+      "Mokano na ngai",
+  "Montant visé (facultatif)":
+      "Motuya oyo olingi (ezali ya ntina te)",
+  "Montrer mon objectif au groupe":
+      "Lakisa lisanga mokano na ngai",
+  "Montrez vos paiements à temps à une IMF ou une coopec.":
+      "Lakisa bafuti na yo ya ntango na IMF to coopec.",
+  "Objectif : {label}":
+      "Mokano: {label}",
+  "Objectif atteint : {amount} reçus":
+      "Mokano ekokisami: {amount} ezwami",
+  "Paiements confirmés":
+      "Bafuti oyo endimami",
+  "Partager l'attestation":
+      "Kabola ndingisa",
+  "Pas de date":
+      "Mokolo te",
+  "Pas de jour de paie":
+      "Mokolo ya lifuti te",
+  "Pour quand (facultatif)":
+      "Mpo na mokolo nini (ezali ya ntina te)",
+  "Pourquoi ? (facultatif)":
+      "Mpo na nini? (ezali ya ntina te)",
+  "Prouvez votre sérieux à une IMF, une coopec ou un bailleur : vos cotisations confirmées, vérifiables par un code.":
+      "Lakisa ete ozali moto ya solo epai ya IMF, coopec to nkolo ndako: mbongo na yo oyo endimami, ekoki kotalelama na kode.",
+  "QR code de l'attestation {code}":
+      "QR code ya ndingisa {code}",
+  "Rejetés":
+      "Oyo eboyami",
+  "Reporter au jour ouvré suivant":
+      "Kotinda na mokolo ya mosala oyo elandi",
+  "Retirer":
+      "Longola",
+  "Retirer cette attestation ?":
+      "Olongola ndingisa oyo?",
+  "Retirer l'attestation":
+      "Longola ndingisa",
+  "Retirer ma demande":
+      "Longola bosenga na ngai",
+  "Retirer mon objectif":
+      "Longola mokano na ngai",
+  "Sans réponse, la demande expire le {date}.":
+      "Soki eyano te, bosenga ekosila na {date}.",
+  "Santé":
+      "Nzoto kolongono",
+  "Scolarité, minerval":
+      "Kelasi, minerval",
+  "Si ce jour est un dimanche ou un jour férié":
+      "Soki mokolo yango ezali lomingo to mokolo ya fete",
+  "Sinon, seuls les nombres de paiements apparaissent.":
+      "Soki te, kaka motango ya bafuti ekomonana.",
+  "Tontine de travailleurs : seuls le payeur, le bénéficiaire et le président voient où en est chaque paiement.":
+      "Likelemba ya basali: kaka mofuti, mozwi mpe mokambi nde bamonaka ndenge lifuti moko na moko ezali.",
+  "Tontines":
+      "Ba likelemba",
+  "Tour {n} · {date}":
+      "Tango {n} · {date}",
+  "Tours reçus":
+      "Ba tango oyo ozwaki",
+  "Une attestation reprend les faits enregistrés ; ce n'est pas un score de crédit. {notice}":
+      "Ndingisa ezongisaka kaka makambo oyo ekomami; ezali noti ya nyongo te. {notice}",
+  "Valable":
+      "Ekosala",
+  "Valable jusqu'au {date} · empreinte {hash}…":
+      "Ekosala tii {date} · elembo {hash}…",
+  "Vide : la mise complète que vous recevrez.":
+      "Mpamba: mbongo mobimba oyo okozwa.",
+  "des paiements confirmés faits à temps":
+      "ya bafuti oyo endimami esalemi na ntango",
+  "jusqu'au {date}":
+      "tii {date}",
+  "{done} sur {target} ({p} %)":
+      "{done} na {target} ({p} %)",
+  "{name} propose d'échanger son tour {a} contre votre tour {b}":
+      "{name} alingi kobongola tango na ye {a} na tango na yo {b}",
+  "{n} dont {done} terminée(s)":
+      "{n}, {done} esili",
+  "À quoi servira la mise que vous recevrez à votre tour ? Un objectif clair aide à tenir jusqu'au bout.":
+      "Okosala nini na mbongo oyo okozwa na tango na yo? Mokano ya polele esalisaka kokoba tii na suka.",
+  "À temps":
+      "Na ntango",
+  "Échanger mon tour":
+      "Bongola tango na ngai",
+  "Échanger mon tour avec…":
+      "Bongola tango na ngai na…",
+  "Équipement, moto, outils":
+      "Bisaleli, moto, bisaleli ya mosala",
+  "émise le {date}":
+      "ebimisami na {date}",
 };

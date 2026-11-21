@@ -432,6 +432,8 @@ describe('Tours, cycles et cotisations (e2e)', () => {
         frequency: 'weekly',
         payoutMode: 'direct_to_beneficiary',
         startDate: inDays(1),
+        payday: null,
+        paydayShift: null,
         status: 'draft',
         maxMembers: 30,
         memberCount: 2,

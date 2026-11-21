@@ -7,7 +7,7 @@ import pg from 'pg';
 
 export const TEST_DB = 'mchango_test';
 /** Redis : base n°1 pour les tests (la n°0 reste au développement). */
-export const TEST_REDIS_URL = 'redis://127.0.0.1:6379/1';
+export const TEST_REDIS_URL = process.env.TEST_REDIS_URL ?? 'redis://127.0.0.1:6379/1';
 
 // Superutilisateur de la base de développement (docker-compose.yml) : sert seulement à recréer la base de test
 const ADMIN_URL = process.env.TEST_ADMIN_DATABASE_URL ?? 'postgres://postgres:postgres_dev@127.0.0.1:5432/postgres';

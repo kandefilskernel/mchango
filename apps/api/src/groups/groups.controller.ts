@@ -33,17 +33,28 @@ const startDate = z.iso
   .date()
   .refine((d) => d >= todayInDrc(), 'La date de début ne peut pas être dans le passé.');
 const maxMembers = z.number().int().min(2).max(100);
+// Jour de paie (Travailleurs) : 1 à 31, 31 = dernier jour du mois
+const payday = z.number().int().min(1).max(31);
+const paydayShift = z.enum(['before', 'after']);
+const PAYDAY_RULE = 'Le jour de paie ne concerne que les tontines mensuelles de la catégorie « Travailleurs ».';
 
-const CreateGroup = z.object({
-  name,
-  type: z.enum(['formel', 'informel']).default('informel'),
-  category: z.enum(GROUP_CATEGORIES).default(DEFAULT_CATEGORY),
-  currency: z.enum(['CDF', 'USD']),
-  contributionAmountMinor: amountMinor,
-  frequency,
-  startDate,
-  maxMembers: maxMembers.default(30),
-});
+const CreateGroup = z
+  .object({
+    name,
+    type: z.enum(['formel', 'informel']).default('informel'),
+    category: z.enum(GROUP_CATEGORIES).default(DEFAULT_CATEGORY),
+    currency: z.enum(['CDF', 'USD']),
+    contributionAmountMinor: amountMinor,
+    frequency,
+    startDate,
+    maxMembers: maxMembers.default(30),
+    payday: payday.nullable().optional(),
+    paydayShift: paydayShift.optional(),
+  })
+  .refine((g) => g.payday == null || (g.category === 'workers' && g.frequency === 'monthly'), {
+    message: PAYDAY_RULE,
+    path: ['payday'],
+  });
 
 // La devise, le type et la catégorie ne changent pas : ce serait un autre groupe
 const UpdateGroup = z
@@ -53,6 +64,9 @@ const UpdateGroup = z
     frequency,
     startDate,
     maxMembers,
+    // null : retirer le calendrier de paie
+    payday: payday.nullable(),
+    paydayShift,
   })
   .partial()
   .refine((v) => Object.keys(v).length > 0, 'Aucune modification demandée.');

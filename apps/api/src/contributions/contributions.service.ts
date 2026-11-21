@@ -85,6 +85,36 @@ function toContribution(row: ContributionRow) {
   };
 }
 
+/**
+ * Objectif d'épargne et sa progression : la mise reçue (paiements confirmés à mon tour) par rapport
+ * au montant visé, ou, s'il n'est pas fixé, à la mise complète attendue.
+ */
+function goalProgress(g: {
+  goal_kind: string | null;
+  goal_label: string | null;
+  goal_target: string | null;
+  goal_date: string | null;
+  goal_shared: boolean | null;
+  amount: string;
+  expected: number;
+  received: string;
+}) {
+  const pot = Number(g.amount) * g.expected;
+  const target = g.goal_target === null ? pot : Number(g.goal_target);
+  const received = Number(g.received);
+  return {
+    kind: g.goal_kind,
+    label: g.goal_label,
+    targetAmountMinor: g.goal_target === null ? null : Number(g.goal_target),
+    targetDate: g.goal_date,
+    sharedWithGroup: Boolean(g.goal_shared),
+    effectiveTargetMinor: target,
+    progressMinor: received,
+    progressPercent: target <= 0 ? 0 : Math.min(100, Math.floor((100 * received) / target)),
+    reached: received >= target,
+  };
+}
+
 @Injectable()
 export class ContributionsService {
   constructor(private readonly db: Db) {}
@@ -100,9 +130,13 @@ export class ContributionsService {
       beneficiary_name: string;
       confirmed: number;
       expected: number;
+      goal_kind: string | null;
+      goal_label: string | null;
     }>(
       `SELECT c.cycle_number, c.due_date::text AS due_date, c.status, c.beneficiary_membership_id,
               u.full_name AS beneficiary_name,
+              -- Objectif du bénéficiaire, s'il a choisi de le montrer au groupe
+              s.kind AS goal_kind, s.label AS goal_label,
               (SELECT count(*)::int FROM contributions k
                WHERE k.cycle_id = c.id AND k.status = 'confirmed') AS confirmed,
               (SELECT count(*)::int - 1 FROM memberships x
@@ -110,6 +144,7 @@ export class ContributionsService {
        FROM cycles c
        JOIN memberships m ON m.id = c.beneficiary_membership_id
        JOIN users u ON u.id = m.user_id
+       LEFT JOIN savings_goals s ON s.membership_id = m.id AND s.shared_with_group AND s.archived_at IS NULL
        WHERE c.group_id = $1
        ORDER BY c.cycle_number`,
       [groupId],
@@ -120,7 +155,11 @@ export class ContributionsService {
         cycleNumber: r.cycle_number,
         dueDate: r.due_date,
         status: r.status,
-        beneficiary: { membershipId: r.beneficiary_membership_id, fullName: r.beneficiary_name },
+        beneficiary: {
+          membershipId: r.beneficiary_membership_id,
+          fullName: r.beneficiary_name,
+          goal: r.goal_label ? { kind: r.goal_kind, label: r.goal_label } : null,
+        },
         confirmedCount: r.confirmed,
         expectedCount: r.expected,
       })),
@@ -131,6 +170,11 @@ export class ContributionsService {
   async cycle(userId: string, groupId: string, cycleNumber: number) {
     const me = await this.requireMember(this.db, userId, groupId);
     const cycle = await this.findCycle(this.db, groupId, cycleNumber);
+    const category = await this.db.query<{ category: string }>('SELECT category FROM groups WHERE id = $1', [groupId]);
+    // Travailleurs : les collègues ne voient pas qui a payé ou qui est en retard. Seuls le payeur,
+    // le bénéficiaire du tour, le président (et le témoin d'une remise en espèces) voient une ligne.
+    const privateStatuses =
+      category.rows[0].category === 'workers' && me.role !== 'president' && me.id !== cycle.beneficiary_membership_id;
     const { rows } = await this.db.query<
       Partial<ContributionRow> & {
         membership_id: string;
@@ -169,24 +213,29 @@ export class ContributionsService {
       dueDate: cycle.due_date,
       status: cycle.status,
       beneficiaryMembershipId: cycle.beneficiary_membership_id,
-      payers: rows.map((r) => ({
-        membershipId: r.membership_id,
-        fullName: r.full_name,
-        // Pas de déclaration : « attendue », ou « en retard » après l'échéance
-        status: r.status ?? (r.overdue ? 'late' : 'expected'),
-        contribution: r.id
-          ? {
-              ...toContribution(r as ContributionRow),
-              // Niveau de risque : pour le bénéficiaire et le témoin seulement. Le payeur ne doit pas
-              // apprendre quelles règles l'ont signalé.
-              risk:
-                r.risk_level && (me.id === r.receiver_membership_id || me.id === r.witness_membership_id)
-                  ? { level: r.risk_level, reasons: (r.risk_reasons ?? []).map((x) => x.code) }
-                  : null,
-            }
-          : null,
-        decisions: r.decisions ?? [],
-      })),
+      privateStatuses,
+      payers: rows.map((r) =>
+        privateStatuses && r.membership_id !== me.id && r.witness_membership_id !== me.id
+          ? { membershipId: r.membership_id, fullName: r.full_name, status: 'private', contribution: null, decisions: [] }
+          : {
+              membershipId: r.membership_id,
+              fullName: r.full_name,
+              // Pas de déclaration : « attendue », ou « en retard » après l'échéance
+              status: r.status ?? (r.overdue ? 'late' : 'expected'),
+              contribution: r.id
+                ? {
+                    ...toContribution(r as ContributionRow),
+                    // Niveau de risque : pour le bénéficiaire et le témoin seulement. Le payeur ne doit pas
+                    // apprendre quelles règles l'ont signalé.
+                    risk:
+                      r.risk_level && (me.id === r.receiver_membership_id || me.id === r.witness_membership_id)
+                        ? { level: r.risk_level, reasons: (r.risk_reasons ?? []).map((x) => x.code) }
+                        : null,
+                  }
+                : null,
+              decisions: r.decisions ?? [],
+            },
+      ),
     };
   }
 
@@ -556,6 +605,11 @@ export class ContributionsService {
       received: string;
       received_count: number;
       pending: number;
+      goal_kind: string | null;
+      goal_label: string | null;
+      goal_target: string | null;
+      goal_date: string | null;
+      goal_shared: boolean | null;
     }>(
       `SELECT g.id AS group_id, g.name, g.status, g.currency, g.contribution_amount_minor AS amount, g.frequency,
               m.id AS membership_id,
@@ -569,10 +623,13 @@ export class ContributionsService {
               (SELECT count(*)::int FROM contributions k
                 WHERE k.receiver_membership_id = m.id AND k.status = 'confirmed') AS received_count,
               (SELECT count(*)::int FROM contributions k
-                WHERE k.payer_membership_id = m.id AND k.status IN ('declared', 'disputed')) AS pending
+                WHERE k.payer_membership_id = m.id AND k.status IN ('declared', 'disputed')) AS pending,
+              s.kind AS goal_kind, s.label AS goal_label, s.target_amount_minor AS goal_target,
+              s.target_date::text AS goal_date, s.shared_with_group AS goal_shared
        FROM memberships m
        JOIN groups g ON g.id = m.group_id
        LEFT JOIN cycles mc ON mc.group_id = g.id AND mc.beneficiary_membership_id = m.id
+       LEFT JOIN savings_goals s ON s.membership_id = m.id AND s.archived_at IS NULL
        WHERE m.user_id = $1 AND m.status = 'active'
        ORDER BY g.created_at DESC`,
       [userId],
@@ -652,6 +709,7 @@ export class ContributionsService {
         receivedCount: g.received_count,
         receivedMinor: Number(g.received),
         pendingCount: g.pending,
+        goal: g.goal_label === null ? null : goalProgress(g),
       })),
     };
   }

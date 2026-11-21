@@ -958,4 +958,169 @@ const en = <String, String>{
       "A published offer can no longer be changed.",
   "Enregistrer l'offre":
       "Save the offer",
+  // Échange de tour, objectifs, attestation, calendrier de paie
+  "Accepter":
+      "Accept",
+  "Attestation":
+      "Certificate",
+  "Attestation de régularité":
+      "Payment record certificate",
+  "Attestation de régularité Mchango de {name} : code {code}, valable jusqu'au {date}. Vérification dans l'application Mchango.":
+      "Mchango payment record certificate for {name}: code {code}, valid until {date}. Check it in the Mchango app.",
+  "Aucun tour ne peut être échangé pour le moment.":
+      "No turn can be swapped right now.",
+  "Autre projet":
+      "Other project",
+  "Avancer au jour ouvré précédent":
+      "Move to the previous working day",
+  "Chaque tour tombe le jour de la paie : on cotise quand le salaire est arrivé.":
+      "Each turn falls on payday: members pay once the salary has arrived.",
+  "Commerce, stock":
+      "Business, stock",
+  "Confidentiel":
+      "Private",
+  "Copier le code":
+      "Copy the code",
+  "Cotisations déclarées par ce membre et confirmées par leurs bénéficiaires. Ni score de crédit ni garantie. {notice}":
+      "Contributions declared by this member and confirmed by their recipients. Neither a credit score nor a guarantee. {notice}",
+  "Créer une attestation":
+      "Create a certificate",
+  "Demande d'échange envoyée à {name} (votre tour {a} contre son tour {b})":
+      "Swap request sent to {name} (your turn {a} for their turn {b})",
+  "Demande envoyée à {name}.":
+      "Request sent to {name}.",
+  "Disponible après votre premier paiement confirmé.":
+      "Available after your first confirmed payment.",
+  "Décrivez votre objectif en quelques mots.":
+      "Describe your goal in a few words.",
+  "Enregistrer mon objectif":
+      "Save my goal",
+  "Entrez un montant en chiffres, ou laissez vide.":
+      "Enter an amount in figures, or leave it empty.",
+  "Ex. : minerval des enfants, stock de pagnes":
+      "E.g. children's school fees, stock of fabrics",
+  "Ex. : minerval, deuil, loyer":
+      "E.g. school fees, funeral, rent",
+  "Famille, mariage, deuil":
+      "Family, wedding, funeral",
+  "Fixer mon objectif":
+      "Set my goal",
+  "Inclure les montants versés":
+      "Include the amounts paid",
+  "Jour de paie":
+      "Payday",
+  "L'autre membre doit accepter. Les dates ne changent pas : chacun reçoit à la date de l'autre.":
+      "The other member must accept. Dates do not change: each of you receives on the other's date.",
+  "Le code ne montrera plus que « retirée ». Cela ne peut pas être annulé.":
+      "The code will only show « withdrawn ». This cannot be undone.",
+  "Le dernier jour du mois":
+      "The last day of the month",
+  "Le dernier jour du mois (avancé si dimanche ou férié)":
+      "The last day of the month (earlier if Sunday or a holiday)",
+  "Le dernier jour du mois (reporté si dimanche ou férié)":
+      "The last day of the month (later if Sunday or a holiday)",
+  "Le {day}":
+      "The {day}th",
+  "Le {day} de chaque mois (avancé si dimanche ou férié)":
+      "The {day}th of each month (earlier if Sunday or a holiday)",
+  "Le {day} de chaque mois (reporté si dimanche ou férié)":
+      "The {day}th of each month (later if Sunday or a holiday)",
+  "Les membres le verront dans le tableau des tours. Le montant reste privé.":
+      "Members will see it in the turn table. The amount stays private.",
+  "Maison, loyer, toiture":
+      "House, rent, roof",
+  "Membre depuis":
+      "Member since",
+  "Mes attestations":
+      "My certificates",
+  "Mon objectif":
+      "My goal",
+  "Montant visé (facultatif)":
+      "Target amount (optional)",
+  "Montrer mon objectif au groupe":
+      "Show my goal to the group",
+  "Montrez vos paiements à temps à une IMF ou une coopec.":
+      "Show your on-time payments to a microfinance institution or credit union.",
+  "Objectif : {label}":
+      "Goal: {label}",
+  "Objectif atteint : {amount} reçus":
+      "Goal reached: {amount} received",
+  "Paiements confirmés":
+      "Confirmed payments",
+  "Partager l'attestation":
+      "Share the certificate",
+  "Pas de date":
+      "No date",
+  "Pas de jour de paie":
+      "No payday",
+  "Pour quand (facultatif)":
+      "By when (optional)",
+  "Pourquoi ? (facultatif)":
+      "Why? (optional)",
+  "Prouvez votre sérieux à une IMF, une coopec ou un bailleur : vos cotisations confirmées, vérifiables par un code.":
+      "Prove your reliability to a microfinance institution, credit union or landlord: your confirmed contributions, checkable with a code.",
+  "QR code de l'attestation {code}":
+      "QR code of certificate {code}",
+  "Rejetés":
+      "Rejected",
+  "Reporter au jour ouvré suivant":
+      "Move to the next working day",
+  "Retirer":
+      "Withdraw",
+  "Retirer cette attestation ?":
+      "Withdraw this certificate?",
+  "Retirer l'attestation":
+      "Withdraw the certificate",
+  "Retirer ma demande":
+      "Withdraw my request",
+  "Retirer mon objectif":
+      "Remove my goal",
+  "Sans réponse, la demande expire le {date}.":
+      "Without an answer, the request expires on {date}.",
+  "Santé":
+      "Health",
+  "Scolarité, minerval":
+      "School, fees",
+  "Si ce jour est un dimanche ou un jour férié":
+      "If that day is a Sunday or a public holiday",
+  "Sinon, seuls les nombres de paiements apparaissent.":
+      "Otherwise, only the number of payments is shown.",
+  "Tontine de travailleurs : seuls le payeur, le bénéficiaire et le président voient où en est chaque paiement.":
+      "Workers' tontine: only the payer, the recipient and the president see the status of each payment.",
+  "Tontines":
+      "Tontines",
+  "Tour {n} · {date}":
+      "Turn {n} · {date}",
+  "Tours reçus":
+      "Turns received",
+  "Une attestation reprend les faits enregistrés ; ce n'est pas un score de crédit. {notice}":
+      "A certificate restates the recorded facts; it is not a credit score. {notice}",
+  "Valable":
+      "Valid",
+  "Valable jusqu'au {date} · empreinte {hash}…":
+      "Valid until {date} · fingerprint {hash}…",
+  "Vide : la mise complète que vous recevrez.":
+      "Empty: the full pot you will receive.",
+  "des paiements confirmés faits à temps":
+      "of confirmed payments made on time",
+  "jusqu'au {date}":
+      "until {date}",
+  "{done} sur {target} ({p} %)":
+      "{done} of {target} ({p}%)",
+  "{name} propose d'échanger son tour {a} contre votre tour {b}":
+      "{name} offers to swap their turn {a} for your turn {b}",
+  "{n} dont {done} terminée(s)":
+      "{n}, {done} completed",
+  "À quoi servira la mise que vous recevrez à votre tour ? Un objectif clair aide à tenir jusqu'au bout.":
+      "What will you do with the pot you receive at your turn? A clear goal helps you see it through.",
+  "À temps":
+      "On time",
+  "Échanger mon tour":
+      "Swap my turn",
+  "Échanger mon tour avec…":
+      "Swap my turn with…",
+  "Équipement, moto, outils":
+      "Equipment, motorbike, tools",
+  "émise le {date}":
+      "issued on {date}",
 };

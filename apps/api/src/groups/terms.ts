@@ -28,6 +28,8 @@ export function termsHash(t: {
   startDate: string;
   payoutMode: string;
   order: { membershipId: string; turnOrder: number | null }[];
+  /** Calendrier de paie (Travailleurs). Absent : l'empreinte reste celle d'avant cette option. */
+  payday?: { day: number; shift: string } | null;
 }): string {
   const canonical = JSON.stringify({
     amount_minor: String(t.amountMinor),
@@ -38,6 +40,8 @@ export function termsHash(t: {
       .sort((a, b) => (a.turnOrder ?? 1e9) - (b.turnOrder ?? 1e9) || a.membershipId.localeCompare(b.membershipId))
       .map((m) => [m.turnOrder, m.membershipId]),
     payout_mode: t.payoutMode,
+    // Clé seulement si un jour de paie est fixé : les règlements sans calendrier gardent leur empreinte
+    ...(t.payday ? { payday: [t.payday.day, t.payday.shift] } : {}),
     start_date: t.startDate,
     version: TERMS_VERSION,
   });
@@ -46,8 +50,17 @@ export function termsHash(t: {
 
 /** État des signatures du règlement actuel d'un groupe. */
 export async function termsState(q: Queryable, groupId: string): Promise<TermsState> {
-  const g = await q.query<{ currency: string; amount: string; frequency: string; start_date: string; payout_mode: string }>(
-    `SELECT currency, contribution_amount_minor AS amount, frequency, start_date::text AS start_date, payout_mode
+  const g = await q.query<{
+    currency: string;
+    amount: string;
+    frequency: string;
+    start_date: string;
+    payout_mode: string;
+    payday: number | null;
+    payday_shift: string | null;
+  }>(
+    `SELECT currency, contribution_amount_minor AS amount, frequency, start_date::text AS start_date, payout_mode,
+            payday, payday_shift
      FROM groups WHERE id = $1`,
     [groupId],
   );
@@ -64,6 +77,7 @@ export async function termsState(q: Queryable, groupId: string): Promise<TermsSt
     frequency: row.frequency,
     startDate: row.start_date,
     payoutMode: row.payout_mode,
+    payday: row.payday === null ? null : { day: row.payday, shift: row.payday_shift! },
     order: members.rows.map((m) => ({ membershipId: m.id, turnOrder: m.turn_order })),
   });
   const n = members.rows.length;

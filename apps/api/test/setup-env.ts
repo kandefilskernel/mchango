@@ -4,7 +4,8 @@ process.env.NODE_ENV = 'test';
 // TEST_DATABASE_URL : pour une base de développement sur un autre port (le 5432 est parfois pris)
 process.env.DATABASE_URL =
   process.env.TEST_DATABASE_URL ?? 'postgres://mchango_api:mchango_api_dev@127.0.0.1:5432/mchango_test';
-process.env.REDIS_URL = 'redis://127.0.0.1:6379/1';
+// TEST_REDIS_URL : Redis sur un autre port (le 6379 est parfois celui d'un autre projet)
+process.env.REDIS_URL = process.env.TEST_REDIS_URL ?? 'redis://127.0.0.1:6379/1';
 process.env.JWT_SECRET ??= 'test-only-secret-test-only-secret-000000';
 process.env.OTP_PEPPER ??= 'test-only-pepper-test-only-pepper-000000';
 // Toutes les requêtes de test viennent de 127.0.0.1

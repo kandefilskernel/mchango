@@ -95,7 +95,39 @@ Map<String, StatusStyle> get contributionStatusStyles => {
   'declared': StatusStyle(t('À confirmer'), Colors.amber, Icons.pending_outlined),
   'disputed': StatusStyle(t('Contestée'), Colors.red, Icons.report_gmailerrorred),
   'confirmed': StatusStyle(t('Confirmée'), Colors.green, Icons.check_circle),
+  // Travailleurs : l'état d'un collègue n'est pas montré
+  'private': StatusStyle(t('Confidentiel'), Colors.grey, Icons.lock_outline),
 };
+
+/// Objectifs d'épargne : à quoi servira la mise reçue (codes de l'API, spec/goals.md).
+Map<String, String> get goalKindLabels => {
+  'school': t('Scolarité, minerval'),
+  'business': t('Commerce, stock'),
+  'housing': t('Maison, loyer, toiture'),
+  'health': t('Santé'),
+  'family': t('Famille, mariage, deuil'),
+  'equipment': t('Équipement, moto, outils'),
+  'other': t('Autre projet'),
+};
+
+const goalKindIcons = <String, IconData>{
+  'school': Icons.school_outlined,
+  'business': Icons.storefront_outlined,
+  'housing': Icons.home_outlined,
+  'health': Icons.health_and_safety_outlined,
+  'family': Icons.family_restroom,
+  'equipment': Icons.two_wheeler,
+  'other': Icons.flag_outlined,
+};
+
+/// Échéance d'une tontine calée sur la paie : « le 25 de chaque mois (avancé si dimanche ou férié) ».
+String paydayLabel(int payday, String? shift) => payday >= 31
+    ? (shift == 'after'
+          ? t('Le dernier jour du mois (reporté si dimanche ou férié)')
+          : t('Le dernier jour du mois (avancé si dimanche ou férié)'))
+    : (shift == 'after'
+          ? t('Le {day} de chaque mois (reporté si dimanche ou férié)', {'day': payday})
+          : t('Le {day} de chaque mois (avancé si dimanche ou férié)', {'day': payday}));
 
 /// UUID v4 aléatoire (identifiant hors ligne d'une déclaration).
 String uuidV4() {

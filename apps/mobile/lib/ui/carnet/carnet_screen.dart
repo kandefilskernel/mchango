@@ -4,6 +4,8 @@ import '../../api/models.dart';
 import '../../services.dart';
 import '../../util/format.dart';
 import '../common.dart';
+import '../attestation/attestation_screen.dart';
+import '../goals/goal_screen.dart';
 import '../groups/group_screen.dart';
 import '../theme.dart';
 import '../../l10n/l10n.dart';
@@ -34,6 +36,21 @@ class CarnetScreen extends StatelessWidget {
                   ),
                 ),
               for (final t in c.totals) TotalsCard(total: t),
+              if (c.groups.isNotEmpty)
+                Card(
+                  color: Brand.mint,
+                  child: ListTile(
+                    key: const Key('open_attestation'),
+                    leading: const Icon(Icons.verified_outlined, color: Brand.green),
+                    title: Text(t('Attestation de régularité'), style: const TextStyle(fontWeight: FontWeight.w700)),
+                    subtitle: Text(t('Montrez vos paiements à temps à une IMF ou une coopec.')),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(builder: (_) => const AttestationScreen()),
+                    ),
+                  ),
+                ),
               if (c.upcoming.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 Text(t('À venir'), style: Theme.of(context).textTheme.titleMedium),
@@ -44,7 +61,7 @@ class CarnetScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(t('Par tontine'), style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
-                for (final g in c.groups) _GroupLine(group: g),
+                for (final g in c.groups) _GroupLine(group: g, onChanged: reload),
               ],
               const SizedBox(height: 16),
               Text(
@@ -160,9 +177,18 @@ class StepTile extends StatelessWidget {
 }
 
 class _GroupLine extends StatelessWidget {
-  const _GroupLine({required this.group});
+  const _GroupLine({required this.group, required this.onChanged});
 
   final CarnetGroup group;
+  final Future<void> Function() onChanged;
+
+  Future<void> _editGoal(BuildContext context, CarnetGroup g) async {
+    final changed = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => GoalScreen(groupId: g.groupId, groupName: g.name, currency: g.currency)),
+    );
+    if (changed == true) await onChanged();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -195,6 +221,22 @@ class _GroupLine extends StatelessWidget {
               InfoRow(t('Versé ({n} paiement(s))', {'n': g.paidCount}), formatAmount(g.paidMinor, g.currency)),
               InfoRow(t('Reçu ({n} paiement(s))', {'n': g.receivedCount}), formatAmount(g.receivedMinor, g.currency)),
               if (g.pendingCount > 0) InfoRow(t('En attente de confirmation'), '${g.pendingCount}'),
+              const SizedBox(height: 8),
+              if (g.goal != null)
+                InkWell(
+                  onTap: () => _editGoal(context, g),
+                  child: GoalProgressBar(goal: g.goal!, currency: g.currency),
+                )
+              else if (g.status != 'closed')
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    key: Key('set_goal_${g.groupId}'),
+                    icon: const Icon(Icons.flag_outlined),
+                    label: Text(t('Fixer mon objectif')),
+                    onPressed: () => _editGoal(context, g),
+                  ),
+                ),
             ],
           ),
         ),

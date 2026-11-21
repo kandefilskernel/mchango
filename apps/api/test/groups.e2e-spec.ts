@@ -122,7 +122,8 @@ describe('Groupes et invitations (e2e)', () => {
       expect(res.body.map((c: { level: number }) => c.level)).toEqual([1, 2, 3, 4]);
       for (const c of res.body) {
         expect(c.rules.maxMembersLimit).toBe(100);
-        expect(c.features).toEqual([]);
+        // Étape 2 : seule « Travailleurs » a ses fonctions propres (calendrier de paie, confidentialité)
+        expect(c.features).toEqual(c.code === 'workers' ? ['payday_calendar', 'private_statuses'] : []);
       }
       await api.http().get('/group-categories').expect(401);
     });

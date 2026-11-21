@@ -21,6 +21,10 @@
 | `017_audit_chain_shards.sql` | Journal : la chaîne « global » est répartie par auteur (`user:<uuid>`, `staff`, `system`) pour ne plus être un goulot ; « global » est close |
 | `018_group_category.sql` | Catégorie de tontine (`community`, `organization`, `workers`, `religion`), fixée à la création |
 | `019_achats.sql` | Achats groupés : boutiques, zones, offres à paliers, commandes, paiements et retraits en boutique, partages ; chaîne de journal `offer:<uuid>` (voir `spec/achats.md`) |
+| `020_turn_swaps.sql` | Échange de tour entre deux membres : demande, accord, bénéficiaires échangés ; unicité du bénéficiaire différée ; le bénéficiaire d'un tour ne change que par un échange accepté, avant tout paiement |
+| `021_savings_goals.sql` | Objectifs d'épargne : un par adhésion, journalisés dans la chaîne du membre, partage facultatif |
+| `022_attestations.sql` | Attestations de régularité : contenu figé et empreinte vérifiée par la base, code de vérification, retrait seul |
+| `023_payday.sql` | Travailleurs : jour de paie et règle de report, jours fériés de la RDC (à valider), calcul des échéances |
 | `tests/001_checks.sql` | Double regard, anti-fraude, journal en ajout seul, détection de falsification |
 | `tests/002_cash_witness.sql` | Règles du témoin (à lancer **après** `001_checks.sql`, sur la même base) |
 | `tests/003_turns_cycles.sql` | Ordre figé, bénéficiaire unique, receveur imposé (après `002`) |

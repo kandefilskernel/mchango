@@ -29,6 +29,9 @@ export interface CreateGroupInput {
   frequency: 'daily' | 'weekly' | 'monthly';
   startDate: string;
   maxMembers: number;
+  /** Travailleurs, tontine mensuelle : jour de paie (1 à 31) et report s'il tombe un jour chômé. */
+  payday?: number | null;
+  paydayShift?: 'before' | 'after' | null;
 }
 
 export interface GroupRow {
@@ -45,13 +48,15 @@ export interface GroupRow {
   max_members: number;
   turn_order_mode: string | null;
   draw_seed: string | null;
+  payday: number | null;
+  payday_shift: 'before' | 'after' | null;
   started_at: Date | null;
   created_at: Date;
 }
 
 export const GROUP_COLUMNS = `g.id, g.name, g.type, g.category, g.currency, g.contribution_amount_minor,
   g.frequency, g.payout_mode, g.start_date::text AS start_date, g.status, g.max_members,
-  g.turn_order_mode, g.draw_seed, g.started_at, g.created_at`;
+  g.turn_order_mode, g.draw_seed, g.payday, g.payday_shift, g.started_at, g.created_at`;
 
 export function toGroup(row: GroupRow) {
   return {
@@ -70,6 +75,9 @@ export function toGroup(row: GroupRow) {
     turnOrderMode: row.turn_order_mode,
     // Publiée pour que chaque membre puisse refaire le tirage (spec/draw.md)
     drawSeed: row.draw_seed,
+    // Calendrier de paie (Travailleurs) : null pour les autres tontines
+    payday: row.payday,
+    paydayShift: row.payday_shift,
     startedAt: row.started_at?.toISOString() ?? null,
     createdAt: row.created_at.toISOString(),
   };
@@ -88,8 +96,8 @@ export class GroupsService {
     return this.db.transaction(actor, async (q) => {
       const { rows } = await q.query<GroupRow>(
         `INSERT INTO groups AS g (name, type, category, currency, contribution_amount_minor, frequency,
-                                  start_date, max_members, created_by)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                                  start_date, max_members, created_by, payday, payday_shift)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
          RETURNING ${GROUP_COLUMNS}`,
         [
           input.name,
@@ -101,6 +109,8 @@ export class GroupsService {
           input.startDate,
           input.maxMembers,
           actor.id,
+          input.payday ?? null,
+          input.payday == null ? null : (input.paydayShift ?? 'before'),
         ],
       );
       await q.query(
@@ -143,10 +153,13 @@ export class GroupsService {
       joined_at: Date;
     }>(
       `SELECT m.id AS membership_id, u.id AS user_id, u.full_name, u.phone, m.role,
-              m.turn_order, m.joined_at
+              -- Après le démarrage, le tour est celui du tableau des tours (un échange a pu le changer)
+              coalesce((SELECT c.cycle_number FROM cycles c WHERE c.beneficiary_membership_id = m.id),
+                       m.turn_order) AS turn_order,
+              m.joined_at
        FROM memberships m JOIN users u ON u.id = m.user_id
        WHERE m.group_id = $1 AND m.status = 'active'
-       ORDER BY m.turn_order NULLS LAST, m.joined_at`,
+       ORDER BY 6 NULLS LAST, m.joined_at`,
       [groupId],
     );
     const g = toGroup(group.rows[0]);
@@ -266,6 +279,8 @@ export class GroupsService {
       frequency: g.frequency,
       payoutMode: g.payoutMode,
       startDate: g.startDate,
+      payday: g.payday,
+      paydayShift: g.paydayShift,
       status: g.status,
       maxMembers: g.maxMembers,
       memberCount: r.member_count,

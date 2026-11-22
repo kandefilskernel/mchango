@@ -109,4 +109,31 @@ void main() {
     expect(find.text('PIN incorrect.'), findsOneWidget);
     expect(backend.bodiesOf('POST', '/groups/g-1/sign'), isEmpty);
   });
+
+  testWidgets("PIN en pause : l'écran le dit, au lieu de « PIN incorrect »", (tester) async {
+    tester.view.physicalSize = const Size(1080, 2600);
+    tester.view.devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+
+    final backend = FakeBackend()..on('GET', '/groups/g-1', (_, _) => groupJson(signedBy: ['m-1']));
+    final store = MemoryKeyValueStore();
+    await tester.runAsync(() async => store.data['pin_hash'] = await LocalPin.hash('482915'));
+    store.data['pin_locked_until'] = '${DateTime.now().add(const Duration(minutes: 3)).millisecondsSinceEpoch}';
+    final services = backend.services(store)..auth.userId = 'u-2';
+    await tester.pumpWidget(Services(services: services, child: const MaterialApp(home: GroupScreen(groupId: 'g-1'))));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('sign_terms')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('sign_pin')), '482915');
+    await tester.runAsync(() async {
+      await tester.tap(find.byKey(const Key('confirm_sign')));
+      await Future<void>.delayed(const Duration(seconds: 2));
+    });
+    await tester.pumpAndSettle();
+
+    expect(find.text('PIN incorrect.'), findsNothing);
+    expect(find.textContaining("Trop d'essais. Réessayez dans"), findsOneWidget);
+    expect(backend.bodiesOf('POST', '/groups/g-1/sign'), isEmpty);
+  });
 }

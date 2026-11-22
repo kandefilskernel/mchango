@@ -5,6 +5,7 @@ import 'package:mchango/services.dart';
 import 'package:mchango/ui/attestation/attestation_screen.dart';
 import 'package:mchango/ui/goals/goal_screen.dart';
 import 'package:mchango/ui/groups/group_screen.dart';
+import 'package:mchango/ui/groups/home_screen.dart';
 import 'package:mchango/ui/history/history_screen.dart';
 import 'package:mchango_audit/mchango_audit.dart';
 
@@ -266,5 +267,52 @@ void main() {
     expect(find.text('Journal incohérent : prévenez le groupe et Mchango.'), findsOneWidget);
     // Une chaîne privée falsifiée suffit à lever l'alerte générale
     expect(find.text('Problème détecté'), findsOneWidget);
+  });
+
+  testWidgets("accueil : un achat proposé au groupe s'affiche tout seul, et disparaît une fois réservé", (tester) async {
+    var reserved = false;
+    final proposal = {
+      'offerId': 'o-9',
+      'title': 'Farine de maïs',
+      'unitLabel': 'sac de 25 kg',
+      'currency': 'CDF',
+      'regularPriceMinor': 45000,
+      'reachedUnitPriceMinor': null,
+      'endsAt': DateTime.now().add(const Duration(days: 4)).toUtc().toIso8601String(),
+      'status': 'open',
+      'proposedByName': 'Maman Furaha',
+      'confirmedMembers': 1,
+      'confirmedUnits': 3,
+      'thresholdUnits': 10,
+    };
+    final backend = FakeBackend()
+      ..on('GET', '/groups', (_, _) => [
+        {...groupJson, 'myRole': 'member'},
+      ])
+      ..on('GET', '/pin-resets/pending', (_, _) => <Object>[])
+      ..on('GET', '/me/carnet', (_, _) => {'totals': <Object>[], 'upcoming': <Object>[], 'groups': <Object>[]})
+      ..on('GET', '/me/merchants', (_, _) => <Object>[])
+      ..on('GET', '/me/orders', (_, _) => [
+        if (reserved)
+          {
+            'id': 'ord-1', 'offerId': 'o-9', 'quantity': 1, 'pickupName': 'Maman Neema', 'status': 'reserved',
+            'title': 'Farine de maïs', 'unitLabel': 'sac de 25 kg', 'currency': 'CDF', 'offerStatus': 'open',
+            'endsAt': proposal['endsAt'], 'merchantName': 'Boutique', 'merchantAddress': 'Marché Kenya',
+            'paymentStatus': null, 'pickupCode': null,
+          },
+      ])
+      ..on('GET', '/groups/$groupId/proposals', (_, _) => [proposal]);
+    await tester.pumpWidget(host(backend, const HomeScreen()));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('invitation_o-9')), findsOneWidget);
+    expect(find.text('Maman Furaha vous invite à acheter'), findsOneWidget);
+    expect(find.text('Farine de maïs'), findsOneWidget);
+
+    reserved = true;
+    await tester.pumpWidget(host(backend, const SizedBox()));
+    await tester.pumpWidget(host(backend, const HomeScreen()));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('invitation_o-9')), findsNothing);
   });
 }

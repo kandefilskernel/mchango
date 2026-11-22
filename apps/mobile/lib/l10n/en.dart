@@ -1148,4 +1148,10 @@ const en = <String, String>{
       "francs",
   "Écouter":
       "Listen",
+  "{name} vous invite à acheter":
+      "{name} invites you to buy",
+  "Groupe : {name} · fin le {date}":
+      "Group: {name} · ends {date}",
+  "Voir et réserver":
+      "View and reserve",
 };

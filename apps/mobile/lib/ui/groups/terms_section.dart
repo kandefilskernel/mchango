@@ -151,7 +151,15 @@ class _SignDialogState extends State<_SignDialog> {
           : await services.auth.confirmWithPin(_pin.text);
       if (!confirmed) {
         _pin.clear();
-        setState(() => _error = withBiometric ? t('Empreinte non reconnue.') : t('PIN incorrect.'));
+        // Après trop d'essais ratés, le PIN est mis en pause : on le dit, au lieu de « PIN incorrect »
+        final wait = await services.auth.lockRemaining();
+        setState(
+          () => _error = wait != null
+              ? t("Trop d'essais. Réessayez dans {n} minute(s).", {'n': wait.inMinutes + 1})
+              : withBiometric
+              ? t('Empreinte non reconnue.')
+              : t('PIN incorrect.'),
+        );
         return;
       }
       await services.api.signTerms(widget.group.id, widget.group.terms!.hash);

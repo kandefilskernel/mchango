@@ -1148,4 +1148,10 @@ const sw = <String, String>{
       "faranga",
   "Écouter":
       "Sikiliza",
+  "{name} vous invite à acheter":
+      "{name} anakualika kununua",
+  "Groupe : {name} · fin le {date}":
+      "Kikundi: {name} · inaisha {date}",
+  "Voir et réserver":
+      "Tazama na uhifadhi",
 };

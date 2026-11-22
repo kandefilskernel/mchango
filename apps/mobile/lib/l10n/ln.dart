@@ -1148,4 +1148,10 @@ const ln = <String, String>{
       "falanga",
   "Écouter":
       "Yoka",
+  "{name} vous invite à acheter":
+      "{name} abengi yo mpo na kosomba",
+  "Groupe : {name} · fin le {date}":
+      "Lisanga: {name} · esili na {date}",
+  "Voir et réserver":
+      "Tala mpe bomba",
 };

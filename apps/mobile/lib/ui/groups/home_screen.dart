@@ -10,6 +10,7 @@ import '../common.dart';
 import '../feedback/feedback_screen.dart';
 import '../language_picker.dart';
 import '../purchases/merchant_screen.dart';
+import '../purchases/offer_screen.dart';
 import '../purchases/offers_screen.dart';
 import '../theme.dart';
 import 'create_group_screen.dart';
@@ -87,16 +88,21 @@ class _HomeScreenState extends State<HomeScreen> {
         ? '${words[0]} ${words[1]}'
         : words.first;
     return Scaffold(
-      body: Loader<(List<Group>, List<PinResetRequest>, Carnet?, List<Merchant>)>(
+      body: Loader<(List<Group>, List<PinResetRequest>, Carnet?, List<Merchant>, List<PurchaseInvitation>)>(
         key: ValueKey(_version),
-        load: () async => (
-          await services.api.myGroups(),
-          // Les demandes à confirmer et le carnet ne doivent pas empêcher d'afficher les tontines
-          await services.api.pendingPinResets().catchError((_) => <PinResetRequest>[]),
-          await services.api.carnet().then<Carnet?>((c) => c).catchError((_) => null),
-          // Boutiques dont je suis employé : l'espace boutique n'apparaît que pour elles
-          await services.purchases.myMerchants().catchError((_) => <Merchant>[]),
-        ),
+        load: () async {
+          final groups = await services.api.myGroups();
+          return (
+            groups,
+            // Les demandes à confirmer et le carnet ne doivent pas empêcher d'afficher les tontines
+            await services.api.pendingPinResets().catchError((_) => <PinResetRequest>[]),
+            await services.api.carnet().then<Carnet?>((c) => c).catchError((_) => null),
+            // Boutiques dont je suis employé : l'espace boutique n'apparaît que pour elles
+            await services.purchases.myMerchants().catchError((_) => <Merchant>[]),
+            // Achats proposés à mes groupes : ils s'affichent d'eux-mêmes, sans chercher
+            await _invitations(services, groups).catchError((_) => <PurchaseInvitation>[]),
+          );
+        },
         builder: (context, data, reload) => RefreshIndicator(
           onRefresh: reload,
           child: CustomScrollView(
@@ -158,6 +164,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             trailing: const Icon(Icons.chevron_right),
                             onTap: () => _open(context, const ApprovalsScreen()),
                           ),
+                        ),
+                      ),
+                    for (final inv in data.$5)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _InvitationCard(
+                          invitation: inv,
+                          onTap: () => _open(context, OfferScreen(offerId: inv.proposal.offerId)),
                         ),
                       ),
                     _PurchasesBanner(onTap: () => _open(context, const OffersScreen())),
@@ -505,4 +519,88 @@ List<Group> _byUrgency(List<Group> groups) {
     _ => 2,
   };
   return [...groups]..sort((a, b) => rank(a).compareTo(rank(b)));
+}
+
+/// Un achat proposé à l'un de mes groupes, que je n'ai pas encore réservé.
+class PurchaseInvitation {
+  PurchaseInvitation(this.groupName, this.proposal);
+  final String groupName;
+  final GroupProposal proposal;
+}
+
+/// Achats ouverts proposés à mes groupes, sans ceux que j'ai déjà réservés. Au plus 3, les plus
+/// proches de leur fin d'abord : l'accueil montre ce qui presse, pas un catalogue.
+Future<List<PurchaseInvitation>> _invitations(AppServices services, List<Group> groups) async {
+  final mine = await services.purchases.myOrders().catchError((_) => <PurchaseOrder>[]);
+  final reserved = {
+    for (final o in mine)
+      if (o.status != 'cancelled' && o.status != 'expired') o.offerId,
+  };
+  final seen = <String>{};
+  final out = <PurchaseInvitation>[];
+  for (final g in groups) {
+    final proposals = await services.purchases.groupProposals(g.id).catchError((_) => <GroupProposal>[]);
+    for (final p in proposals) {
+      if (p.status != 'open' || reserved.contains(p.offerId) || !seen.add(p.offerId)) continue;
+      out.add(PurchaseInvitation(g.name, p));
+    }
+  }
+  out.sort((a, b) => a.proposal.endsAt.compareTo(b.proposal.endsAt));
+  return out.take(3).toList();
+}
+
+/// « Maman Neema vous invite à acheter : Farine de maïs » : un gros bouton, rien à chercher.
+class _InvitationCard extends StatelessWidget {
+  const _InvitationCard({required this.invitation, required this.onTap});
+
+  final PurchaseInvitation invitation;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = invitation.proposal;
+    return Container(
+      key: Key('invitation_${p.offerId}'),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Brand.goldLight,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Brand.goldDark.withValues(alpha: 0.4), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.mail_outline_rounded, color: Brand.goldDark),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  t('{name} vous invite à acheter', {'name': p.proposedByName}),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(p.title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+          Text(
+            t('Groupe : {name} · fin le {date}', {
+              'name': invitation.groupName,
+              'date': formatDate(p.endsAt.toIso8601String().substring(0, 10)),
+            }),
+            style: TextStyle(color: Brand.muted),
+          ),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            key: Key('open_invitation_${p.offerId}'),
+            style: FilledButton.styleFrom(backgroundColor: Brand.goldDark),
+            onPressed: onTap,
+            icon: const Icon(Icons.shopping_basket_outlined),
+            label: Text(t('Voir et réserver')),
+          ),
+        ],
+      ),
+    );
+  }
 }

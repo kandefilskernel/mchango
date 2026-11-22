@@ -115,6 +115,7 @@ class AuthRepository extends ChangeNotifier {
       await _store.write(_kDeviceId, res['deviceId'] as String);
       await _store.write(_kSeed, (await _store.read(_kResetSeed))!);
       await _store.write(_kPinHash, (await _store.read(_kResetPinHash))!);
+      await _clearPinLock();
       await _clearReset();
       await _openSession();
       final me = await _api.get('/me') as Map;
@@ -281,7 +282,15 @@ class AuthRepository extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Un PIN qu'on vient de choisir ou de prouver repart de zéro : les essais ratés et la pause d'un
+  /// ancien compte, ou d'un ancien PIN, ne doivent pas bloquer le nouveau.
+  Future<void> _clearPinLock() async {
+    await _store.write(_kPinFailures, '0');
+    await _store.delete(_kLockedUntil);
+  }
+
   Future<void> _saveDevice(Map session, DeviceIdentity identity, String pin, String name) async {
+    await _clearPinLock();
     await _store.write(_kDeviceId, session['deviceId'] as String);
     await _store.write(_kSeed, await identity.seedBase64());
     await _store.write(_kPinHash, await LocalPin.hash(pin));

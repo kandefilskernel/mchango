@@ -141,7 +141,7 @@ class _ProposalCard extends StatelessWidget {
                           ),
                           Text(
                             t('Proposé par {name}', {'name': p.proposedByName}),
-                            style: TextStyle(color: Brand.muted, fontSize: 13),
+                            style: TextStyle(color: Brand.muted, fontSize: 14),
                           ),
                         ],
                       ),
@@ -151,7 +151,7 @@ class _ProposalCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 StatusPill(
-                  t('{n} membre(s) du groupe ont réservé', {
+                  t("Membres du groupe qui ont réservé : {n}", {
                     'n': p.confirmedMembers,
                   }),
                   icon: Icons.group_outlined,
@@ -160,12 +160,12 @@ class _ProposalCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  t('{n} / {threshold} confirmé(s) · fin le {date}', {
+                  t("Réservé : {n} sur {threshold} · fin le {date}", {
                     'n': p.confirmedUnits,
                     'threshold': p.thresholdUnits,
                     'date': formatDateTime(p.endsAt),
                   }),
-                  style: TextStyle(color: Brand.muted, fontSize: 13),
+                  style: TextStyle(color: Brand.muted, fontSize: 14),
                 ),
               ],
             ),

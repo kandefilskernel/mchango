@@ -144,7 +144,7 @@ class _OrderCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       '${o.merchantName} · ${o.merchantAddress}',
-                      style: TextStyle(color: Brand.muted, fontSize: 13),
+                      style: TextStyle(color: Brand.muted, fontSize: 14),
                     ),
                   ],
                 ),
@@ -186,7 +186,7 @@ class _OrderCard extends StatelessWidget {
                       t('À retirer avant le {date}', {
                         'date': formatDateTime(o.pickupDeadline!),
                       }),
-                      style: TextStyle(color: Brand.muted, fontSize: 13),
+                      style: TextStyle(color: Brand.muted, fontSize: 14),
                     ),
                   ),
                 ],
@@ -201,7 +201,7 @@ class _OrderCard extends StatelessWidget {
                   'Clôture le {date}. Le code de retrait arrive à ce moment-là.',
                   {'date': formatDateTime(o.endsAt)},
                 ),
-                style: TextStyle(color: Brand.muted, fontSize: 13),
+                style: TextStyle(color: Brand.muted, fontSize: 14),
               ),
             ),
           if (o.canChange)

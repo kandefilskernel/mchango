@@ -35,6 +35,9 @@ class _MchangoAppState extends State<MchangoApp> with WidgetsBindingObserver {
 
   bool _splashDone = false;
   bool? _onboardingDone;
+
+  /// Langue déjà choisie sur ce téléphone : sinon, le tout premier écran la demande.
+  bool? _languageChosen;
   Timer? _splashTimer;
 
   AuthRepository get _auth => widget.services.auth;
@@ -47,6 +50,7 @@ class _MchangoAppState extends State<MchangoApp> with WidgetsBindingObserver {
     Lang.instance.addListener(_onLanguageChanged);
     _splashTimer = Timer(MchangoApp.splashDuration, () => setState(() => _splashDone = true));
     widget.services.store.read(_kOnboardingDone).then((v) => setState(() => _onboardingDone = v == '1'));
+    widget.services.store.read('language').then((v) => setState(() => _languageChosen = v != null));
   }
 
   @override
@@ -86,11 +90,15 @@ class _MchangoAppState extends State<MchangoApp> with WidgetsBindingObserver {
   }
 
   Widget _home() {
-    if (!_splashDone || _onboardingDone == null || _auth.status == AuthStatus.loading) {
+    if (!_splashDone || _onboardingDone == null || _languageChosen == null || _auth.status == AuthStatus.loading) {
       return const SplashScreen();
     }
     return switch (_auth.status) {
-      AuthStatus.signedOut when !_onboardingDone! => OnboardingScreen(onDone: _finishOnboarding),
+      AuthStatus.signedOut when !_onboardingDone! => OnboardingScreen(
+        onDone: _finishOnboarding,
+        askLanguage: !_languageChosen!,
+        onLanguageChosen: () => setState(() => _languageChosen = true),
+      ),
       AuthStatus.signedOut => const SignInFlow(),
       AuthStatus.locked => const UnlockScreen(),
       AuthStatus.recoveryPending => const PendingResetScreen(),

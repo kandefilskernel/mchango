@@ -80,7 +80,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final services = Services.of(context);
-    final firstName = (services.auth.fullName ?? '').split(' ').first;
+    // « Maman Neema » → « Maman Neema », pas seulement « Maman » : on garde le titre avec le prénom
+    final words = (services.auth.fullName ?? '').trim().split(RegExp(r'\s+'));
+    const titles = {'maman', 'mama', 'mam', 'papa', 'mme', 'mr', 'mère', 'sœur', 'frère', 'pasteur', 'abbé'};
+    final firstName = words.length > 1 && titles.contains(words.first.toLowerCase())
+        ? '${words[0]} ${words[1]}'
+        : words.first;
     return Scaffold(
       body: Loader<(List<Group>, List<PinResetRequest>, Carnet?, List<Merchant>)>(
         key: ValueKey(_version),
@@ -100,6 +105,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: _Header(
                   greeting: firstName.isEmpty ? t('Bonjour') : t('Bonjour {name}', {'name': firstName}),
                   groups: data.$1,
+                  speech: () {
+                    final greeting = firstName.isEmpty ? t('Bonjour') : t('Bonjour {name}', {'name': firstName});
+                    final next = data.$3?.upcoming.firstOrNull;
+                    return spoken([
+                      greeting,
+                      if (next != null && next.isPayment)
+                        t('Payer {amount} à {name}', {
+                          'amount': formatAmount(next.amountMinor, next.currency),
+                          'name': next.counterpart,
+                        }),
+                      if (next != null && !next.isPayment)
+                        t('Mon tour : je reçois {amount}', {'amount': formatAmount(next.amountMinor, next.currency)}),
+                      if (next != null) t('le {date}', {'date': formatDate(next.dueDate)}),
+                    ]);
+                  },
                   onMenu: (v) => switch (v) {
                     'lock' => services.auth.lock(),
                     'biometric' => _toggleBiometric(context),
@@ -196,7 +216,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(t('Mes tontines'), style: Theme.of(context).textTheme.titleLarge),
                     const SizedBox(height: 8),
                     if (data.$1.isEmpty) const _EmptyState(),
-                    for (final g in data.$1)
+                    // Ce qui demande une action d'abord : en cours, puis en préparation, puis terminées
+                    for (final g in _byUrgency(data.$1))
                       _GroupCard(
                         group: g,
                         onTap: () => _open(context, GroupScreen(groupId: g.id)),
@@ -215,7 +236,10 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.greeting, required this.groups, required this.onMenu});
+  const _Header({required this.greeting, required this.groups, required this.onMenu, required this.speech});
+
+  /// Ce que le bouton « Écouter » lit : bonjour, et la prochaine chose à faire.
+  final String Function() speech;
 
   final String greeting;
   final List<Group> groups;
@@ -232,6 +256,7 @@ class _Header extends StatelessWidget {
                 children: [
                   const BrandMark(size: 30, light: true),
                   const Spacer(),
+                  ListenButton(text: speech, light: true),
                   PopupMenuButton<String>(
                     icon: const Icon(Icons.more_vert, color: Colors.white),
                     onSelected: onMenu,
@@ -287,7 +312,7 @@ class _Header extends StatelessWidget {
               Text(
                 groups.isEmpty
                     ? t('Rejoignez ou créez votre première tontine.')
-                    : t('{n} tontine(s) · {active} en cours', {'n': groups.length, 'active': active}),
+                    : t("Tontines : {n} · en cours : {active}", {'n': groups.length, 'active': active}),
                 style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 15),
               ),
             ],
@@ -389,7 +414,7 @@ class _GroupCard extends StatelessWidget {
                       runSpacing: 6,
                       children: [
                         StatusPill(groupStatusLabels[g.status] ?? g.status, color: color, background: bg),
-                        StatusPill(t('{n} membre(s)', {'n': g.memberCount}), color: Brand.muted, icon: Icons.people_outline),
+                        StatusPill(t("Membres : {n}", {'n': g.memberCount}), color: Brand.muted, icon: Icons.people_outline),
                         if (g.isPresident) StatusPill(t('Président(e)'), color: Brand.goldDark, background: Brand.goldLight, icon: Icons.star_rounded),
                       ],
                     ),
@@ -470,4 +495,14 @@ class _PurchasesBanner extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Tontines en cours d'abord, puis en préparation, puis les autres (terminées, suspendues).
+List<Group> _byUrgency(List<Group> groups) {
+  int rank(Group g) => switch (g.status) {
+    'active' => 0,
+    'draft' => 1,
+    _ => 2,
+  };
+  return [...groups]..sort((a, b) => rank(a).compareTo(rank(b)));
 }

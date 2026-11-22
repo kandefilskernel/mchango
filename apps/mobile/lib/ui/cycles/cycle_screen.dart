@@ -166,7 +166,7 @@ class _CycleScreenState extends State<CycleScreen> {
     return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(t('Contester')),
+        title: Text(t('Il y a un problème')),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -179,20 +179,43 @@ class _CycleScreenState extends State<CycleScreen> {
             onPressed: () {
               if (controller.text.trim().isNotEmpty) Navigator.pop(context, controller.text.trim());
             },
-            child: Text(t('Contester')),
+            child: Text(t('Il y a un problème')),
           ),
         ],
       ),
     );
   }
 
+  /// Dernier tour chargé : ce que le bouton « Écouter » lit.
+  CycleDetail? _cycle;
+
+  /// Qui reçoit, quand, ce que je dois faire, où en sont les paiements.
+  String _speech() {
+    final c = _cycle;
+    if (c == null) return t('Tour {n}', {'n': widget.cycleNumber});
+    final mine = c.myRow;
+    final paid = c.payers.where((p) => p.status == 'confirmed').length;
+    return spoken([
+      t('Tour {n}', {'n': c.cycleNumber}),
+      c.iAmBeneficiary
+          ? t('Vous recevez ce tour')
+          : t('Qui reçoit : {name}', {'name': _member(c.beneficiaryMembershipId)?.fullName}),
+      '${t('Date du tour')} : ${formatDate(c.dueDate)}',
+      if (mine != null) '${t('Vous')} : ${contributionStatusStyles[mine.status]?.label ?? ''}',
+      t('Payé : {done} sur {total}', {'done': paid, 'total': c.payers.length}),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(t('Tour {n}', {'n': widget.cycleNumber}))),
+      appBar: AppBar(
+        title: Text(t('Tour {n}', {'n': widget.cycleNumber})),
+        actions: [ListenButton(text: _speech)],
+      ),
       body: Loader<CycleDetail>(
         key: ValueKey(_version),
-        load: () => Services.of(context).api.cycle(g.id, widget.cycleNumber),
+        load: () async => _cycle = await Services.of(context).api.cycle(g.id, widget.cycleNumber),
         builder: (context, cycle, reload) {
           final beneficiary = _member(cycle.beneficiaryMembershipId);
           final myRow = cycle.myRow;
@@ -208,11 +231,11 @@ class _CycleScreenState extends State<CycleScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          cycle.iAmBeneficiary ? t('Vous recevez ce tour') : t('Bénéficiaire : {name}', {'name': beneficiary?.fullName}),
+                          cycle.iAmBeneficiary ? t('Vous recevez ce tour') : t('Qui reçoit : {name}', {'name': beneficiary?.fullName}),
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 8),
-                        InfoRow(t('Échéance'), formatDate(cycle.dueDate), icon: Icons.event),
+                        InfoRow(t("Date du tour"), formatDate(cycle.dueDate), icon: Icons.event),
                         InfoRow(t('Statut'), cycleStatusLabels[cycle.status] ?? cycle.status, icon: Icons.flag_outlined),
                         InfoRow(
                           t('Chaque membre verse'),
@@ -259,7 +282,7 @@ class _CycleScreenState extends State<CycleScreen> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               Text(t('Numéro : {phone}', {'phone': beneficiary.phone})),
-              if (me.status == 'late') Text(t('⚠ Échéance dépassée')),
+              if (me.status == 'late') Text(t("⚠ La date est passée")),
               const SizedBox(height: 12),
               BusyButton(
                 label: t("J'ai payé"),
@@ -352,7 +375,7 @@ class _CycleScreenState extends State<CycleScreen> {
                     if (canDispute)
                       OutlinedButton.icon(
                         icon: const Icon(Icons.report_outlined),
-                        label: Text(t('Contester')),
+                        label: Text(t('Il y a un problème')),
                         onPressed: () => _guard(() => _decide(c!, 'dispute')),
                       ),
                   ],

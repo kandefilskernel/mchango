@@ -71,6 +71,6 @@ void main() {
 
     await tester.scrollUntilVisible(find.text('En attente de confirmation'), 200, scrollable: find.byType(Scrollable).first);
     expect(find.text('Mon tour : 4, le 27/10/2026'), findsOneWidget);
-    expect(find.text('Versé (2 paiement(s))'), findsOneWidget);
+    expect(find.text('Versé · paiements : 2'), findsOneWidget);
   });
 }

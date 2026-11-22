@@ -43,10 +43,10 @@ export function reminderMessage(
   const amount = smsAmount(r.amountMinor, r.currency);
   const to = `${clip(r.beneficiaryName, 18)} (${r.beneficiaryPhone})`;
   const text = {
-    fr: `Mchango : ${group}, tour ${r.cycleNumber}. Payez ${amount} à ${to} ${r.dueToday ? "aujourd'hui" : `d'ici le ${date}`}, puis déclarez-le dans l'app.`,
-    sw: `Mchango: ${group}, zamu ${r.cycleNumber}. Lipa ${amount} kwa ${to} ${r.dueToday ? 'leo' : `kabla ya ${date}`}, kisha utangaze malipo kwenye app.`,
-    ln: `Mchango: ${group}, tango ${r.cycleNumber}. Futa ${amount} na ${to} ${r.dueToday ? 'lelo' : `liboso ya ${date}`}, sima yebisa lifuti na app.`,
-    en: `Mchango: ${group}, turn ${r.cycleNumber}. Pay ${amount} to ${to} ${r.dueToday ? 'today' : `by ${date}`}, then declare it in the app.`,
+    fr: `Mchango : ${group}, tour ${r.cycleNumber}. Payez ${amount} à ${to} ${r.dueToday ? "aujourd'hui" : `d'ici le ${date}`}, puis touchez J'ai payé dans l'app.`,
+    sw: `Mchango: ${group}, zamu ${r.cycleNumber}. Lipa ${amount} kwa ${to} ${r.dueToday ? 'leo' : `kabla ya ${date}`}, kisha bonyeza Nimelipa kwenye app.`,
+    ln: `Mchango: ${group}, tango ${r.cycleNumber}. Futa ${amount} na ${to} ${r.dueToday ? 'lelo' : `liboso ya ${date}`}, sima finá Nafuti na app.`,
+    en: `Mchango: ${group}, turn ${r.cycleNumber}. Pay ${amount} to ${to} ${r.dueToday ? 'today' : `by ${date}`}, then tap I have paid in the app.`,
   }[language];
   return toGsm7(text);
 }

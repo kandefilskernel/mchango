@@ -166,7 +166,7 @@ class StatsCard extends StatelessWidget {
             InfoRow(t('Tours reçus'), '${s.turnsReceived}'),
             InfoRow(
               t('Tontines'),
-              t('{n} dont {done} terminée(s)', {'n': s.tontinesJoined, 'done': s.tontinesCompleted}),
+              t("{n} · terminées : {done}", {'n': s.tontinesJoined, 'done': s.tontinesCompleted}),
             ),
             InfoRow(t('Membre depuis'), formatDate(s.memberSince)),
           ],

@@ -86,10 +86,9 @@ class HistoryScreen extends StatelessWidget {
               const SizedBox(height: 12),
               for (final e in check.events.reversed)
                 ListTile(
-                  dense: true,
-                  leading: CircleAvatar(
-                    radius: 16,
-                    child: Text('${e.audit.seq}', style: const TextStyle(fontSize: 12)),
+                    leading: CircleAvatar(
+                    radius: 18,
+                    child: Text('${e.audit.seq}', style: const TextStyle(fontSize: 14)),
                   ),
                   title: Text(describeEvent(e.audit.action, e.audit.payload, e.actorName ?? 'Mchango')),
                   subtitle: Text(
@@ -118,14 +117,13 @@ class HistoryScreen extends StatelessWidget {
                       title: Text(t('Tour {n} · {name}', {'n': p.chain.cycleNumber, 'name': p.chain.payerName})),
                       subtitle: Text(
                         p.check.trusted
-                            ? t('{n} événement(s) vérifié(s)', {'n': p.chain.events.length})
+                            ? t("Événements vérifiés : {n}", {'n': p.chain.events.length})
                             : t('Journal incohérent : prévenez le groupe et Mchango.'),
                       ),
                       children: [
                         for (final e in p.chain.events.reversed)
                           ListTile(
-                            dense: true,
-                            title: Text(describeEvent(e.audit.action, e.audit.payload, e.actorName ?? 'Mchango')),
+                                        title: Text(describeEvent(e.audit.action, e.audit.payload, e.actorName ?? 'Mchango')),
                             subtitle: Text(
                               '${formatDateTime(DateTime.parse(e.audit.createdAt))} · ${e.audit.hash.substring(0, 12)}…',
                             ),

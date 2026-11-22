@@ -114,6 +114,11 @@ void main() {
     expect(find.text('Chaque cotisation, vérifiable.'), findsOneWidget);
     await tester.pump(MchangoApp.splashDuration);
     await tester.pumpAndSettle();
+    // Tout premier écran : la langue, en gros boutons
+    expect(find.text('Choisissez votre langue'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('English'), 100, scrollable: find.byType(Scrollable).first);
+    await tester.tap(find.byKey(const Key('first_lang_fr')));
+    await tester.pumpAndSettle();
     expect(find.text("Seul, c'est long"), findsOneWidget);
     for (final title in ['Ensemble, on cotise', 'À chaque tour, un membre reçoit tout', 'Tout est vérifiable']) {
       await tester.tap(find.byKey(const Key('onboarding_next')));
@@ -179,7 +184,7 @@ void main() {
 
     expect(find.text('Vous recevez ce tour'), findsOneWidget);
     expect(find.text('Papa Jean'), findsOneWidget);
-    expect(find.textContaining('À confirmer'), findsOneWidget);
+    expect(find.textContaining('À vérifier'), findsOneWidget);
     await tester.tap(find.text("J'ai reçu"));
     await tester.pumpAndSettle();
 

@@ -47,7 +47,7 @@ Map<String, String> get frequencyLabels => {
 
 /// Raisons du score de risque d'une déclaration (codes de l'API, apps/api/src/contributions/risk.ts).
 Map<String, String> get riskReasonLabels => {
-  'tx_reused_after_rejection': t('Cet ID de transaction a déjà été présenté puis rejeté.'),
+  'tx_reused_after_rejection': t('Ce numéro de transaction a déjà été présenté puis rejeté.'),
   'tx_date_mismatch': t("La date inscrite dans l'ID ne correspond pas au jour du paiement."),
   'sms_amount_mismatch': t('Le SMS du payeur ne montre pas le montant de la cotisation.'),
   'payer_rejected_before': t('Ce membre a eu des paiements rejetés récemment.'),
@@ -90,11 +90,11 @@ class StatusStyle {
 }
 
 Map<String, StatusStyle> get contributionStatusStyles => {
-  'expected': StatusStyle(t('Attendue'), Colors.blueGrey, Icons.hourglass_empty),
+  'expected': StatusStyle(t("Pas encore payé"), Colors.blueGrey, Icons.hourglass_empty),
   'late': StatusStyle(t('En retard'), Colors.deepOrange, Icons.warning_amber_rounded),
-  'declared': StatusStyle(t('À confirmer'), Colors.amber, Icons.pending_outlined),
-  'disputed': StatusStyle(t('Contestée'), Colors.red, Icons.report_gmailerrorred),
-  'confirmed': StatusStyle(t('Confirmée'), Colors.green, Icons.check_circle),
+  'declared': StatusStyle(t("À vérifier"), Colors.amber, Icons.pending_outlined),
+  'disputed': StatusStyle(t("Problème signalé"), Colors.red, Icons.report_gmailerrorred),
+  'confirmed': StatusStyle(t("Payé"), Colors.green, Icons.check_circle),
   // Travailleurs : l'état d'un collègue n'est pas montré
   'private': StatusStyle(t('Confidentiel'), Colors.grey, Icons.lock_outline),
 };

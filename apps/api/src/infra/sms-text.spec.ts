@@ -48,7 +48,7 @@ describe('texte du rappel', () => {
 
   it('dit qui payer, combien, où et quand', () => {
     expect(reminderMessage(base)).toBe(
-      "Mchango : Kwetu, tour 3. Payez 20 000 FC à Mama Furaha (+243991234567) d'ici le 02/11/2026, puis déclarez-le dans l'app.",
+      "Mchango : Kwetu, tour 3. Payez 20 000 FC à Mama Furaha (+243991234567) d'ici le 02/11/2026, puis touchez J'ai payé dans l'app.",
     );
     expect(reminderMessage({ ...base, dueToday: true })).toContain("aujourd'hui");
   });
@@ -61,7 +61,7 @@ describe('texte du rappel', () => {
 
   it('dans la langue du membre', () => {
     expect(reminderMessage(base, 'sw')).toBe(
-      'Mchango: Kwetu, zamu 3. Lipa 20 000 FC kwa Mama Furaha (+243991234567) kabla ya 02/11/2026, kisha utangaze malipo kwenye app.',
+      'Mchango: Kwetu, zamu 3. Lipa 20 000 FC kwa Mama Furaha (+243991234567) kabla ya 02/11/2026, kisha bonyeza Nimelipa kwenye app.',
     );
     expect(reminderMessage({ ...base, dueToday: true }, 'ln')).toContain('Futa 20 000 FC na Mama Furaha (+243991234567) lelo');
     expect(reminderMessage(base, 'en')).toContain('Pay 20 000 FC to Mama Furaha (+243991234567) by 02/11/2026');

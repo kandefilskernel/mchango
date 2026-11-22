@@ -129,7 +129,7 @@ class _CounterTabState extends State<_CounterTab> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  t('{n} commande(s) à encaisser ou à remettre', {
+                  t("Commandes à encaisser ou à remettre : {n}", {
                     'n': orders.length,
                   }),
                   style: TextStyle(color: Brand.muted),
@@ -221,7 +221,7 @@ class _CounterSheetState extends State<_CounterSheet> {
   Future<void> _pay() async {
     final ref = _txRef.text.trim();
     if (_method != 'cash' && ref.isEmpty) {
-      showInfo(context, t('Saisissez l\'ID de transaction du mobile money.'));
+      showInfo(context, t('Saisissez le numéro de la transaction du mobile money.'));
       return;
     }
     final updated = await Services.of(context).purchases.confirmPayment(
@@ -322,7 +322,7 @@ class _CounterSheetState extends State<_CounterSheet> {
                   controller: _txRef,
                   textCapitalization: TextCapitalization.characters,
                   decoration: InputDecoration(
-                    labelText: t('ID de transaction'),
+                    labelText: t('Numéro de la transaction'),
                   ),
                 ),
               ],

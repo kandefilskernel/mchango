@@ -23,9 +23,7 @@ const ln = <String, String>{
       'Benga to kende komona moto moko kati na bato oyo:',
   'Appuyez longuement sur le SMS de votre opérateur, copiez-le, puis touchez ce bouton. Le SMS reste sur votre téléphone.':
       'Finá ntango molai na SMS ya opérateur na yo, kopia yango, sima simbá bouton oyo. SMS etikali na telefone na yo.',
-  'Attendue':
-      'Ezali kozelama',
-  'Aucun ID de transaction trouvé. Copiez d\'abord le SMS de confirmation de votre opérateur.':
+  'Aucun numéro de transaction trouvé. Copiez d\'abord le SMS de confirmation de votre opérateur.':
       'Nimero ya transaction emonani te. Kopia liboso SMS ya kondima ya opérateur na yo.',
   'Aucun ID trouvé. Copiez d\'abord le SMS de l\'argent reçu, puis touchez à nouveau ce bouton.':
       'Nimero emonani te. Kopia liboso SMS ya mbongo ozwi, sima simbá bouton oyo lisusu.',
@@ -43,8 +41,8 @@ const ln = <String, String>{
       'Mbote',
   'Bonjour {name}':
       'Mbote {name}',
-  'Bénéficiaire : {name}':
-      'Moto oyo azwi: {name}',
+  "Qui reçoit : {name}":
+      "Oyo azwi: {name}",
   'Ce SMS est de l\'argent reçu, pas envoyé. Copiez le SMS de l\'argent envoyé au bénéficiaire.':
       'SMS oyo ezali ya mbongo ozwi, ezali ya kotinda te. Kopia SMS ya mbongo otindeli moto oyo azwi.',
   'Ce SMS est un retrait chez un agent, pas un envoi. Copiez le SMS de l\'argent envoyé au bénéficiaire.':
@@ -99,14 +97,10 @@ const ln = <String, String>{
       'Ndima kaka soki osololi na {name} mbala moko (miso na miso, to oyebi mongongo na ye na telefone) mpe ayebisi yo ete abosani PIN na ye.\n\nSoki moto mosusu azwi nimero na ye, kondima ekopesa moto yango kont na ye.',
   'Confirmé le':
       'Endimami mokolo',
-  'Confirmée':
-      'Endimami',
   'Contestation enregistrée. Le groupe la voit.':
       'Koboya ekomami. Lisanga ezali komona yango.',
-  'Contester':
-      'Boya',
-  'Contestée':
-      'Eboyami',
+  "Il y a un problème":
+      "Ezali na mokakatano",
   'Continuer':
       'Kobá',
   'Copier':
@@ -189,7 +183,7 @@ const ln = <String, String>{
       'Elongo, tozali kokaba',
   'Entre 2 et 100 membres.':
       'Kati na basangani 2 mpe 100.',
-  'Entrez l\'ID de transaction reçu par SMS.':
+  'Entrez le numéro de la transaction reçu par SMS.':
       'Koma nimero ya transaction oyo ozwi na SMS.',
   'Entrez un montant en chiffres, par exemple {example}.':
       'Koma motango na bitángo, ndakisa {example}.',
@@ -221,8 +215,8 @@ const ln = <String, String>{
       'Lisolo',
   'Historique vérifié':
       'Lisolo etalami',
-  'ID de transaction':
-      'Nimero ya transaction',
+  "Numéro de la transaction":
+      "Nimero ya transaction",
   'ID trouvé : {id}':
       'Nimero emonani: {id}',
   'Intact':
@@ -265,8 +259,6 @@ const ln = <String, String>{
       'Mbongo ya basangani nyonso: ekoki mpo na kosomba moto, kofungola butiki, kofuta kelasi.',
   'La tontine':
       'Likelemba',
-  'La catégorie':
-      'Lolenge',
   'Communautaire':
       'Ya lisanga',
   'Organisation':
@@ -283,8 +275,6 @@ const ln = <String, String>{
       'Baninga ya mosala ya patron moko to ya mosala moko, basali ya Leta.',
   'Églises, paroisses, mosquées, communautés et leurs groupes.':
       'Ba-église, ba-paroisse, ba-mosquée, ba-communauté mpe bisanga na bango.',
-  'Choisissez ce qui ressemble le plus à votre groupe. Pour l\'instant, toutes les catégories fonctionnent de la même façon.':
-      'Palela oyo ekokani mingi na lisanga na bino. Mpo na sikoyo, ba-catégorie nyonso esalaka ndenge moko.',
   'La tontine est terminée : tous les tours sont payés':
       'Likelemba esili: tango nyonso efutami',
   'Langue':
@@ -327,8 +317,6 @@ const ln = <String, String>{
       'Motango ya SMS: {amount}, ndenge moko na likabo.',
   'Montant du SMS : {amount}. La cotisation est de {expected} : vérifiez.':
       'Motango ya SMS: {amount}. Likabo ezali {expected}: tala malamu.',
-  'Montant versé par chaque membre à chaque tour':
-      'Motango oyo mosangani nyonso afutaka na tango nyonso',
   'Montants des paiements confirmés par les bénéficiaires. {notice}':
       'Motango ya mafuti oyo bato bazwi bandimi. {notice}',
   'Moyen':
@@ -337,8 +325,6 @@ const ln = <String, String>{
       'Kosalela PIN ya mobile money na yo te.',
   'Nom de la tontine':
       'Nkombo ya likelemba',
-  'Nombre de membres prévu':
-      'Motango ya basangani oyo ekanami',
   'Nouveau PIN (6 chiffres)':
       'PIN ya sika (bitángo 6)',
   'Nouvelle tontine':
@@ -359,8 +345,6 @@ const ln = <String, String>{
       'Molongo ya ba tango elongwami',
   'Ordre des tours pas encore fixé.':
       'Molongo ya ba tango ekatami naino te.',
-  'Ordre tiré au sort. Graine publique : {seed}…':
-      'Molongo na zeke. Mboto ya polele: {seed}…',
   'Oublier':
       'Bosana',
   'Oublier ce téléphone ?':
@@ -447,8 +431,6 @@ const ln = <String, String>{
       'Azwaka na tango {n}',
   'Reçu':
       'Ezwami',
-  'Reçu ({n} paiement(s))':
-      'Nazwi (mafuti {n})',
   'Reçu Mchango':
       'Resi ya Mchango',
   'Reçu Mchango {number} : {payer} a payé {amount} à {beneficiary} ({group}, tour {n}), confirmé le {date}.':
@@ -523,10 +505,6 @@ const ln = <String, String>{
       'Mosangani mosusu asengeli komona bopesi. Akondima, elongo na moto oyo azwi.',
   'Un membre reçoit au tour {n}':
       'Mosangani moko azwaka na tango {n}',
-  'Un membre reçoit à chaque tour : autant de tours que de membres.':
-      'Mosangani moko azwaka na tango nyonso: ba tango ekokani na motango ya basangani.',
-  'Un tour':
-      'Tango moko',
   'Une erreur est survenue. Réessayez.':
       'Libunga moko esalemi. Meka lisusu.',
   'Utiliser mon empreinte':
@@ -537,8 +515,6 @@ const ln = <String, String>{
       'Ndima',
   'Verrouiller':
       'Kanga',
-  'Versé ({n} paiement(s))':
-      'Nafuti (mafuti {n})',
   'Voir la tontine':
       'Tala likelemba',
   'Voir mon reçu':
@@ -635,8 +611,6 @@ const ln = <String, String>{
       '{actor} atatoli bopesi ya mbongo na loboko',
   '{actor} est président(e)':
       '{actor} azali prezida',
-  '{date} · {status} · {done}/{total} confirmé(s)':
-      '{date} · {status} · {done}/{total} endimami',
   '{group} · tour {n} · {when}':
       '{group} · tango {n} · {when}',
   '{name} (vous)':
@@ -649,10 +623,6 @@ const ln = <String, String>{
       '{name} akoki sikoyo kosalela PIN na ye ya sika.',
   '{n} demandes de nouveau PIN':
       'Bosengi {n} ya PIN ya sika',
-  '{n} membre(s)':
-      'Basangani {n}',
-  '{n} tontine(s) · {active} en cours':
-      'Bilikelemba {n} · {active} ezali kokende',
   '{n} tours seront créés à partir du {date}. Ensuite, l\'ordre, le montant et la liste des membres ne pourront plus changer.':
       'Ba tango {n} ekosalema kobanda {date}. Sima na yango, molongo, motango mpe liste ya basangani ekoki lisusu kobongwana te.',
   '{phone} · tontine {group}':
@@ -663,16 +633,10 @@ const ln = <String, String>{
       'Na tango nyonso, mosangani nyonso afutaka motango moke moko, mbala moko na mosangani oyo azali na tango na ye.',
   'À chaque tour, un membre reçoit tout':
       'Na tango nyonso, mosangani moko azwaka nyonso',
-  'À confirmer':
-      'Ya kondima',
   'À venir':
       'Ekoya',
-  'Échéance':
-      'Mokolo ekatami',
   'à {name} · {phone}':
       'na {name} · {phone}',
-  '⚠ Échéance dépassée':
-      '⚠ Mokolo ekatami eleki',
   'Donner mon avis':
       'Pesá likanisi na ngai',
   'Écrivez votre avis.':
@@ -691,11 +655,11 @@ const ln = <String, String>{
       'Likanisi na yo',
   'Exemple : le bénéficiaire ne confirme pas mon paiement.':
       'Ndakisa: mozwi andimi te lifuti na ngai.',
-  'N\'écrivez jamais votre PIN ni un code reçu par SMS. Pour un litige sur un paiement, utilisez « Contester » dans le tour concerné.':
+  'N\'écrivez jamais votre PIN ni un code reçu par SMS. Pour un litige sur un paiement, utilisez « Il y a un problème » dans le tour concerné.':
       'Kokoma soki moke te PIN na yo to kode oyo ozwi na SMS. Mpo na ntembe na lifuti, salelá « Boya » na tour oyo etali yango.',
   'Envoyer':
       'Tinda',
-  'Cet ID de transaction a déjà été présenté puis rejeté.':
+  'Ce numéro de transaction a déjà été présenté puis rejeté.':
       'ID oyo ya transaction emonisamaki liboso mpe eboyamaki.',
   'La date inscrite dans l\'ID ne correspond pas au jour du paiement.':
       'Dati oyo ekomami na ID ekokani te na mokolo ya lifuti.',
@@ -788,14 +752,10 @@ const ln = <String, String>{
       "Ekangami",
   "Terminée":
       "Esili",
-  "{n} manquant(s) pour atteindre le prix collectif":
-      "Etikali {n} mpo na kokokisa ntalo ya lisanga",
   "Meilleur prix atteint":
       "Ntalo ya malamu ekoki",
   "Encore {n} pour passer à {price}":
       "Etikali {n} mpo ntalo ekita na {price}",
-  "{n} / {threshold} {unit} confirmé(s)":
-      "{n} / {threshold} {unit} endimami",
   "Fin : {date}":
       "Suka: {date}",
   "Détail de l'offre":
@@ -874,10 +834,6 @@ const ln = <String, String>{
       "Eloko moko te etindami. Na offre moko, finá « Kobenga » mpo na kotinda yango awa.",
   "Proposé par {name}":
       "Etindami na {name}",
-  "{n} membre(s) du groupe ont réservé":
-      "Basangani {n} ya lisanga babombi",
-  "{n} / {threshold} confirmé(s) · fin le {date}":
-      "{n} / {threshold} endimami · suka {date}",
   "Ma boutique : {name}":
       "Butiki na ngai: {name}",
   "Encaisser, remettre, publier une offre":
@@ -888,13 +844,11 @@ const ln = <String, String>{
       "Ba offre na ngai",
   "Code de retrait ou nom du client":
       "Code ya kozwa to kombo ya mosombi",
-  "{n} commande(s) à encaisser ou à remettre":
-      "Bakomandi {n} ya kozwa mbongo to kopesa",
   "Payée":
       "Efutami",
   "À encaisser":
       "Ya kozwa mbongo",
-  "Saisissez l'ID de transaction du mobile money.":
+  "Saisissez le numéro de la transaction du mobile money.":
       "Koma nimero ya transaction ya mobile money.",
   "Produit remis. Merci !":
       "Eloko epesami. Matondo!",
@@ -1109,8 +1063,6 @@ const ln = <String, String>{
       "{done} na {target} ({p} %)",
   "{name} propose d'échanger son tour {a} contre votre tour {b}":
       "{name} alingi kobongola tango na ye {a} na tango na yo {b}",
-  "{n} dont {done} terminée(s)":
-      "{n}, {done} esili",
   "À quoi servira la mise que vous recevrez à votre tour ? Un objectif clair aide à tenir jusqu'au bout.":
       "Okosala nini na mbongo oyo okozwa na tango na yo? Mokano ya polele esalisaka kokoba tii na suka.",
   "À temps":
@@ -1132,6 +1084,68 @@ const ln = <String, String>{
       "Likelemba ya basali: lifuti moko na moko ezali na buku na yango, emonanaka kaka na mofuti, mozwi, motatoli mpe mokambi.",
   "Tour {n} · {name}":
       "Tango {n} · {name}",
-  "{n} événement(s) vérifié(s)":
-      "Makambo {n} etalelami",
+  "Membres : {n}":
+      "Basangani: {n}",
+  "{date} · {status} · payé : {done} sur {total}":
+      "{date} · {status} · bafuti: {done} na {total}",
+  "Tontines : {n} · en cours : {active}":
+      "Ba likelemba: {n} · ezali kokende: {active}",
+  "Versé · paiements : {n}":
+      "Nafuti · bafuti: {n}",
+  "Reçu · paiements : {n}":
+      "Nazwi · bafuti: {n}",
+  "{n} · terminées : {done}":
+      "{n} · esili: {done}",
+  "Événements vérifiés : {n}":
+      "Makambo etalelami: {n}",
+  "Date du tour":
+      "Mokolo ya tango",
+  "⚠ La date est passée":
+      "⚠ Mokolo eleki",
+  "Pas encore payé":
+      "Naino afuti te",
+  "À vérifier":
+      "Ya kotala",
+  "Problème signalé":
+      "Mokakatano eyebisami",
+  "Payé":
+      "Afuti",
+  "Ordre tiré au sort : personne ne l'a choisi.":
+      "Molongo ebendami na zeke: moto moko te aponaki yango.",
+  "Combien chacun paie à chaque tour":
+      "Moto na moto afutaka boni na tango nyonso",
+  "Tous les combien ?":
+      "Mbala boni?",
+  "Combien de personnes ?":
+      "Bato boni?",
+  "À chaque tour, une personne reçoit.":
+      "Na tango nyonso, moto moko azwaka.",
+  "Choisissez ce qui ressemble le plus à votre groupe. Dans le doute : Communautaire.":
+      "Pona oyo ekokani mingi na lisanga na yo. Soki ozali na ntembe: Ya bato ya quartier.",
+  "Membres du groupe qui ont réservé : {n}":
+      "Basangani oyo babombi: {n}",
+  "Réservé : {n} sur {threshold} · fin le {date}":
+      "Ebombami: {n} na {threshold} · esili na {date}",
+  "Encore {n} pour avoir le prix du groupe":
+      "Etikali {n} mpo na ntalo ya lisanga",
+  "Réservé : {n} sur {threshold} {unit}":
+      "Ebombami: {n} na {threshold} {unit}",
+  "Commandes à encaisser ou à remettre : {n}":
+      "Bakomande ya kozwa mbongo to ya kopesa: {n}",
+  "Achats du groupe":
+      "Bisombeli ya lisanga",
+  "Toutes les offres":
+      "Bibongiseli nyonso",
+  "Payé : {done} sur {total}":
+      "Bafuti: {done} na {total}",
+  "Le type de groupe":
+      "Lolenge ya lisanga",
+  "Vous":
+      "Yo",
+  "dollars":
+      "dolare",
+  "francs":
+      "falanga",
+  "Écouter":
+      "Yoka",
 };

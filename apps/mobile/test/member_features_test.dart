@@ -122,6 +122,9 @@ void main() {
     await tester.pumpWidget(host(backend, const GroupScreen(groupId: groupId)));
     await tester.pumpAndSettle();
 
+    expect(find.byKey(const Key('group_purchases')), findsOneWidget);
+    expect(find.text('Achats du groupe'), findsOneWidget);
+    expect(find.text('Toutes les offres'), findsOneWidget);
     expect(find.textContaining('Le 25 de chaque mois (avancé si dimanche ou férié)'), findsOneWidget);
     expect(find.textContaining("Mama Neema propose d'échanger son tour 3 contre votre tour 2"), findsOneWidget);
     expect(find.text('« Deuil dans la famille »'), findsOneWidget);
@@ -259,7 +262,7 @@ void main() {
 
     expect(find.text('Paiements confidentiels'), findsOneWidget);
     expect(find.text('Tour 1 · Papa Jean'), findsOneWidget);
-    expect(find.text('2 événement(s) vérifié(s)'), findsOneWidget);
+    expect(find.text('Événements vérifiés : 2'), findsOneWidget);
     expect(find.text('Journal incohérent : prévenez le groupe et Mchango.'), findsOneWidget);
     // Une chaîne privée falsifiée suffit à lever l'alerte générale
     expect(find.text('Problème détecté'), findsOneWidget);

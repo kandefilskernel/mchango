@@ -257,7 +257,7 @@ class OfferProgress extends StatelessWidget {
     final reached = o.missingUnits == 0;
     final next = o.nextTier;
     final caption = o.missingUnits > 0
-        ? t('{n} manquant(s) pour atteindre le prix collectif', {
+        ? t("Encore {n} pour avoir le prix du groupe", {
             'n': o.missingUnits,
           })
         : next == null
@@ -271,7 +271,7 @@ class OfferProgress extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          t('{n} / {threshold} {unit} confirmé(s)', {
+          t("Réservé : {n} sur {threshold} {unit}", {
             'n': o.confirmedUnits,
             'threshold': o.thresholdUnits,
             'unit': o.unitLabel,
@@ -311,7 +311,7 @@ class OfferProgress extends StatelessWidget {
                 style: TextStyle(
                   color: accent,
                   fontWeight: FontWeight.w600,
-                  fontSize: 13,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -380,7 +380,7 @@ class OfferCard extends StatelessWidget {
                             o.unitLabel,
                             style: TextStyle(
                               color: Brand.muted,
-                              fontSize: 13.5,
+                              fontSize: 14,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -399,7 +399,7 @@ class OfferCard extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     color: Brand.muted,
-                                    fontSize: 13,
+                                    fontSize: 14,
                                   ),
                                 ),
                               ),

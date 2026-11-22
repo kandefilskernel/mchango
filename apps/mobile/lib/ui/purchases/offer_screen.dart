@@ -257,7 +257,7 @@ class _OfferScreenState extends State<OfferScreen> {
                         ),
                         style: TextStyle(
                           color: Brand.ink.withValues(alpha: 0.8),
-                          fontSize: 13,
+                          fontSize: 14,
                           height: 1.4,
                         ),
                       ),
@@ -556,7 +556,7 @@ class _ReserveSheetState extends State<ReserveSheet> {
                 Text(
                   t('Le prix final dépend du palier atteint à la date de fin.'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Brand.muted, fontSize: 13),
+                  style: TextStyle(color: Brand.muted, fontSize: 14),
                 ),
               ],
             ),

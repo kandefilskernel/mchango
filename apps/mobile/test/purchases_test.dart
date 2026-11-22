@@ -86,8 +86,8 @@ void main() {
     expect(find.text('Riz'), findsOneWidget);
     expect(find.text('54 000 FC'), findsOneWidget);
     expect(find.text('-10 %'), findsOneWidget);
-    expect(find.text('16 / 20 sac de 25 kg confirmé(s)'), findsOneWidget);
-    expect(find.text('4 manquant(s) pour atteindre le prix collectif'), findsOneWidget);
+    expect(find.text('Réservé : 16 sur 20 sac de 25 kg'), findsOneWidget);
+    expect(find.text('Encore 4 pour avoir le prix du groupe'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('offer_o-1')));
     await tester.pumpAndSettle();
@@ -227,7 +227,7 @@ void main() {
     final merchant = Merchant(id: 'm-1', name: 'Boutique Nyota', address: 'Av. Kinzazi 12', status: 'active', commune: 'Matete');
     await tester.pumpWidget(_app(backend, MerchantScreen(merchant: merchant)));
     await tester.pumpAndSettle();
-    expect(find.text('2 commande(s) à encaisser ou à remettre'), findsOneWidget);
+    expect(find.text('Commandes à encaisser ou à remettre : 2'), findsOneWidget);
 
     await tester.enterText(find.byKey(const Key('counter_code')), 'mc-48');
     await tester.pumpAndSettle();

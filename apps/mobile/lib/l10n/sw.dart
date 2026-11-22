@@ -23,9 +23,7 @@ const sw = <String, String>{
       'Mpigie simu au umtembelee mmoja wa watu hawa:',
   'Appuyez longuement sur le SMS de votre opérateur, copiez-le, puis touchez ce bouton. Le SMS reste sur votre téléphone.':
       'Bonyeza kwa muda SMS ya mtandao wako, inakili, kisha gusa kitufe hiki. SMS inabaki kwenye simu yako.',
-  'Attendue':
-      'Inasubiriwa',
-  'Aucun ID de transaction trouvé. Copiez d\'abord le SMS de confirmation de votre opérateur.':
+  'Aucun numéro de transaction trouvé. Copiez d\'abord le SMS de confirmation de votre opérateur.':
       'Hakuna namba ya muamala iliyopatikana. Kwanza nakili SMS ya uthibitisho ya mtandao wako.',
   'Aucun ID trouvé. Copiez d\'abord le SMS de l\'argent reçu, puis touchez à nouveau ce bouton.':
       'Hakuna namba iliyopatikana. Kwanza nakili SMS ya pesa uliyopokea, kisha gusa kitufe hiki tena.',
@@ -43,8 +41,8 @@ const sw = <String, String>{
       'Jambo',
   'Bonjour {name}':
       'Jambo {name}',
-  'Bénéficiaire : {name}':
-      'Mpokeaji: {name}',
+  "Qui reçoit : {name}":
+      "Anayepokea: {name}",
   'Ce SMS est de l\'argent reçu, pas envoyé. Copiez le SMS de l\'argent envoyé au bénéficiaire.':
       'SMS hii ni ya pesa uliyopokea, si uliyotuma. Nakili SMS ya pesa uliyomtumia mpokeaji.',
   'Ce SMS est un retrait chez un agent, pas un envoi. Copiez le SMS de l\'argent envoyé au bénéficiaire.':
@@ -99,14 +97,10 @@ const sw = <String, String>{
       'Thibitisha tu ikiwa umeongea na {name} moja kwa moja (ana kwa ana, au ukiitambua sauti yake kwenye simu) na amekuambia amesahau PIN yake.\n\nIkiwa mtu mwingine amechukua namba yake, kuthibitisha kutampa mtu huyo akaunti yake.',
   'Confirmé le':
       'Imethibitishwa tarehe',
-  'Confirmée':
-      'Imethibitishwa',
   'Contestation enregistrée. Le groupe la voit.':
       'Malalamiko yameandikwa. Kikundi kinayaona.',
-  'Contester':
-      'Lalamika',
-  'Contestée':
-      'Imelalamikiwa',
+  "Il y a un problème":
+      "Kuna tatizo",
   'Continuer':
       'Endelea',
   'Copier':
@@ -189,7 +183,7 @@ const sw = <String, String>{
       'Pamoja, tunachanga',
   'Entre 2 et 100 membres.':
       'Kati ya wanachama 2 na 100.',
-  'Entrez l\'ID de transaction reçu par SMS.':
+  'Entrez le numéro de la transaction reçu par SMS.':
       'Andika namba ya muamala uliyopokea kwa SMS.',
   'Entrez un montant en chiffres, par exemple {example}.':
       'Andika kiasi kwa tarakimu, kwa mfano {example}.',
@@ -221,8 +215,8 @@ const sw = <String, String>{
       'Historia',
   'Historique vérifié':
       'Historia iliyothibitishwa',
-  'ID de transaction':
-      'Namba ya muamala',
+  "Numéro de la transaction":
+      "Namba ya muamala",
   'ID trouvé : {id}':
       'Namba iliyopatikana: {id}',
   'Intact':
@@ -265,8 +259,6 @@ const sw = <String, String>{
       'Jumla ya wanachama wote: inatosha kununua pikipiki, kufungua duka, kulipa masomo.',
   'La tontine':
       'Likelemba',
-  'La catégorie':
-      'Kundi',
   'Communautaire':
       'Jamii',
   'Organisation':
@@ -283,8 +275,6 @@ const sw = <String, String>{
       'Wafanyakazi wenzako wa mwajiri mmoja au kazi moja, watumishi wa serikali.',
   'Églises, paroisses, mosquées, communautés et leurs groupes.':
       'Makanisa, parokia, misikiti, jumuiya na vikundi vyao.',
-  'Choisissez ce qui ressemble le plus à votre groupe. Pour l\'instant, toutes les catégories fonctionnent de la même façon.':
-      'Chagua kinachofanana zaidi na kikundi chenu. Kwa sasa, makundi yote hufanya kazi kwa njia ileile.',
   'La tontine est terminée : tous les tours sont payés':
       'Likelemba limekamilika: zamu zote zimelipwa',
   'Langue':
@@ -327,8 +317,6 @@ const sw = <String, String>{
       'Kiasi cha SMS: {amount}, sawa na mchango.',
   'Montant du SMS : {amount}. La cotisation est de {expected} : vérifiez.':
       'Kiasi cha SMS: {amount}. Mchango ni {expected}: kagua.',
-  'Montant versé par chaque membre à chaque tour':
-      'Kiasi kinacholipwa na kila mwanachama kila zamu',
   'Montants des paiements confirmés par les bénéficiaires. {notice}':
       'Kiasi cha malipo yaliyothibitishwa na wapokeaji. {notice}',
   'Moyen':
@@ -337,8 +325,6 @@ const sw = <String, String>{
       'Usitumie PIN ya pesa yako ya simu.',
   'Nom de la tontine':
       'Jina la likelemba',
-  'Nombre de membres prévu':
-      'Idadi ya wanachama inayotarajiwa',
   'Nouveau PIN (6 chiffres)':
       'PIN mpya (tarakimu 6)',
   'Nouvelle tontine':
@@ -359,8 +345,6 @@ const sw = <String, String>{
       'Mpangilio wa zamu umefutwa',
   'Ordre des tours pas encore fixé.':
       'Mpangilio wa zamu bado haujawekwa.',
-  'Ordre tiré au sort. Graine publique : {seed}…':
-      'Mpangilio kwa kura. Mbegu ya wazi: {seed}…',
   'Oublier':
       'Sahau',
   'Oublier ce téléphone ?':
@@ -447,8 +431,6 @@ const sw = <String, String>{
       'Anapokea zamu ya {n}',
   'Reçu':
       'Imepokelewa',
-  'Reçu ({n} paiement(s))':
-      'Nimepokea (malipo {n})',
   'Reçu Mchango':
       'Risiti ya Mchango',
   'Reçu Mchango {number} : {payer} a payé {amount} à {beneficiary} ({group}, tour {n}), confirmé le {date}.':
@@ -523,10 +505,6 @@ const sw = <String, String>{
       'Mwanachama mwingine lazima awe ameona makabidhiano. Atathibitisha, pamoja na mpokeaji.',
   'Un membre reçoit au tour {n}':
       'Mwanachama anapokea zamu ya {n}',
-  'Un membre reçoit à chaque tour : autant de tours que de membres.':
-      'Mwanachama mmoja anapokea kila zamu: zamu ni sawa na idadi ya wanachama.',
-  'Un tour':
-      'Zamu moja',
   'Une erreur est survenue. Réessayez.':
       'Hitilafu imetokea. Jaribu tena.',
   'Utiliser mon empreinte':
@@ -537,8 +515,6 @@ const sw = <String, String>{
       'Thibitisha',
   'Verrouiller':
       'Funga',
-  'Versé ({n} paiement(s))':
-      'Nimelipa (malipo {n})',
   'Voir la tontine':
       'Ona likelemba',
   'Voir mon reçu':
@@ -635,8 +611,6 @@ const sw = <String, String>{
       '{actor} ameshuhudia makabidhiano ya pesa taslimu',
   '{actor} est président(e)':
       '{actor} ni rais',
-  '{date} · {status} · {done}/{total} confirmé(s)':
-      '{date} · {status} · {done}/{total} yamethibitishwa',
   '{group} · tour {n} · {when}':
       '{group} · zamu {n} · {when}',
   '{name} (vous)':
@@ -649,10 +623,6 @@ const sw = <String, String>{
       '{name} sasa anaweza kutumia PIN yake mpya.',
   '{n} demandes de nouveau PIN':
       'Maombi {n} ya PIN mpya',
-  '{n} membre(s)':
-      'Wanachama {n}',
-  '{n} tontine(s) · {active} en cours':
-      'Likelemba {n} · {active} zinaendelea',
   '{n} tours seront créés à partir du {date}. Ensuite, l\'ordre, le montant et la liste des membres ne pourront plus changer.':
       'Zamu {n} zitaundwa kuanzia {date}. Baada ya hapo, mpangilio, kiasi na orodha ya wanachama haviwezi kubadilishwa tena.',
   '{phone} · tontine {group}':
@@ -663,16 +633,10 @@ const sw = <String, String>{
       'Kila zamu, kila mwanachama analipa kiasi kidogo kilekile, moja kwa moja kwa mwanachama ambaye ni zamu yake.',
   'À chaque tour, un membre reçoit tout':
       'Kila zamu, mwanachama mmoja anapokea vyote',
-  'À confirmer':
-      'Ya kuthibitisha',
   'À venir':
       'Inakuja',
-  'Échéance':
-      'Tarehe ya mwisho',
   'à {name} · {phone}':
       'kwa {name} · {phone}',
-  '⚠ Échéance dépassée':
-      '⚠ Tarehe ya mwisho imepita',
   'Donner mon avis':
       'Toa maoni yangu',
   'Écrivez votre avis.':
@@ -691,11 +655,11 @@ const sw = <String, String>{
       'Maoni yako',
   'Exemple : le bénéficiaire ne confirme pas mon paiement.':
       'Mfano: mpokeaji hathibitishi malipo yangu.',
-  'N\'écrivez jamais votre PIN ni un code reçu par SMS. Pour un litige sur un paiement, utilisez « Contester » dans le tour concerné.':
+  'N\'écrivez jamais votre PIN ni un code reçu par SMS. Pour un litige sur un paiement, utilisez « Il y a un problème » dans le tour concerné.':
       'Usiandike kamwe PIN yako wala nambari uliyopokea kwa SMS. Kwa ubishi kuhusu malipo, tumia « Lalamika » katika zamu husika.',
   'Envoyer':
       'Tuma',
-  'Cet ID de transaction a déjà été présenté puis rejeté.':
+  'Ce numéro de transaction a déjà été présenté puis rejeté.':
       'Kitambulisho hiki cha muamala kilishatolewa kisha kikakataliwa.',
   'La date inscrite dans l\'ID ne correspond pas au jour du paiement.':
       'Tarehe iliyo kwenye kitambulisho hailingani na siku ya malipo.',
@@ -788,14 +752,10 @@ const sw = <String, String>{
       "Imefungwa",
   "Terminée":
       "Imekamilika",
-  "{n} manquant(s) pour atteindre le prix collectif":
-      "Zimebaki {n} kufikia bei ya pamoja",
   "Meilleur prix atteint":
       "Bei bora imefikiwa",
   "Encore {n} pour passer à {price}":
       "Zimebaki {n} kufikia {price}",
-  "{n} / {threshold} {unit} confirmé(s)":
-      "{n} / {threshold} {unit} zimethibitishwa",
   "Fin : {date}":
       "Mwisho: {date}",
   "Détail de l'offre":
@@ -874,10 +834,6 @@ const sw = <String, String>{
       "Hakuna manunuzi yaliyopendekezwa. Kwenye ofa, gusa « Alika » ili kuipendekeza hapa.",
   "Proposé par {name}":
       "Imependekezwa na {name}",
-  "{n} membre(s) du groupe ont réservé":
-      "Wanachama {n} wa kikundi wamehifadhi",
-  "{n} / {threshold} confirmé(s) · fin le {date}":
-      "{n} / {threshold} zimethibitishwa · mwisho {date}",
   "Ma boutique : {name}":
       "Duka langu: {name}",
   "Encaisser, remettre, publier une offre":
@@ -888,13 +844,11 @@ const sw = <String, String>{
       "Ofa zangu",
   "Code de retrait ou nom du client":
       "Namba ya kuchukua au jina la mteja",
-  "{n} commande(s) à encaisser ou à remettre":
-      "Oda {n} za kupokea malipo au kukabidhi",
   "Payée":
       "Imelipwa",
   "À encaisser":
       "Ya kupokea malipo",
-  "Saisissez l'ID de transaction du mobile money.":
+  "Saisissez le numéro de la transaction du mobile money.":
       "Andika namba ya muamala wa pesa ya simu.",
   "Produit remis. Merci !":
       "Bidhaa imekabidhiwa. Asante!",
@@ -1109,8 +1063,6 @@ const sw = <String, String>{
       "{done} kati ya {target} ({p}%)",
   "{name} propose d'échanger son tour {a} contre votre tour {b}":
       "{name} anapendekeza kubadilisha zamu yake {a} na zamu yako {b}",
-  "{n} dont {done} terminée(s)":
-      "{n}, {done} zimekamilika",
   "À quoi servira la mise que vous recevrez à votre tour ? Un objectif clair aide à tenir jusqu'au bout.":
       "Utatumia kiasi utakachopokea kwenye zamu yako kwa nini? Lengo wazi husaidia kuvumilia hadi mwisho.",
   "À temps":
@@ -1132,6 +1084,68 @@ const sw = <String, String>{
       "Likelemba ya wafanyakazi: kila malipo yana daftari lake, linaloonekana tu na mlipaji, mpokeaji, shahidi na rais.",
   "Tour {n} · {name}":
       "Zamu {n} · {name}",
-  "{n} événement(s) vérifié(s)":
-      "Matukio {n} yamehakikiwa",
+  "Membres : {n}":
+      "Wanachama: {n}",
+  "{date} · {status} · payé : {done} sur {total}":
+      "{date} · {status} · wamelipa: {done} kati ya {total}",
+  "Tontines : {n} · en cours : {active}":
+      "Likelemba: {n} · zinaendelea: {active}",
+  "Versé · paiements : {n}":
+      "Nimelipa · malipo: {n}",
+  "Reçu · paiements : {n}":
+      "Nimepokea · malipo: {n}",
+  "{n} · terminées : {done}":
+      "{n} · zimekamilika: {done}",
+  "Événements vérifiés : {n}":
+      "Matukio yaliyohakikiwa: {n}",
+  "Date du tour":
+      "Tarehe ya zamu",
+  "⚠ La date est passée":
+      "⚠ Tarehe imepita",
+  "Pas encore payé":
+      "Bado hajalipa",
+  "À vérifier":
+      "Ya kuhakiki",
+  "Problème signalé":
+      "Tatizo limeripotiwa",
+  "Payé":
+      "Amelipa",
+  "Ordre tiré au sort : personne ne l'a choisi.":
+      "Mpangilio umepigiwa kura: hakuna aliyeuchagua.",
+  "Combien chacun paie à chaque tour":
+      "Kila mtu analipa kiasi gani kila zamu",
+  "Tous les combien ?":
+      "Mara ngapi?",
+  "Combien de personnes ?":
+      "Watu wangapi?",
+  "À chaque tour, une personne reçoit.":
+      "Kila zamu, mtu mmoja anapokea.",
+  "Choisissez ce qui ressemble le plus à votre groupe. Dans le doute : Communautaire.":
+      "Chagua kinachofanana zaidi na kikundi chako. Ukiwa na shaka: Jamii.",
+  "Membres du groupe qui ont réservé : {n}":
+      "Wanachama waliohifadhi: {n}",
+  "Réservé : {n} sur {threshold} · fin le {date}":
+      "Imehifadhiwa: {n} kati ya {threshold} · inaisha {date}",
+  "Encore {n} pour avoir le prix du groupe":
+      "Bado {n} kupata bei ya kikundi",
+  "Réservé : {n} sur {threshold} {unit}":
+      "Imehifadhiwa: {n} kati ya {threshold} {unit}",
+  "Commandes à encaisser ou à remettre : {n}":
+      "Oda za kupokea pesa au kukabidhi: {n}",
+  "Achats du groupe":
+      "Manunuzi ya kikundi",
+  "Toutes les offres":
+      "Ofa zote",
+  "Payé : {done} sur {total}":
+      "Wamelipa: {done} kati ya {total}",
+  "Le type de groupe":
+      "Aina ya kikundi",
+  "Vous":
+      "Wewe",
+  "dollars":
+      "dola",
+  "francs":
+      "faranga",
+  "Écouter":
+      "Sikiliza",
 };

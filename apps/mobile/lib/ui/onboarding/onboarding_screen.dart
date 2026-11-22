@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../theme.dart';
 import '../../l10n/l10n.dart';
+import '../../services.dart';
 import '../language_picker.dart';
+import '../theme.dart';
 
 class _Slide {
   const _Slide(this.image, this.title, this.text);
@@ -38,9 +39,13 @@ List<_Slide> get _slides => [
 ];
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key, required this.onDone});
+  const OnboardingScreen({super.key, required this.onDone, this.askLanguage = false, this.onLanguageChosen});
 
   final VoidCallback onDone;
+
+  /// Montrer d'abord le choix de la langue (premier lancement, aucune langue enregistrée).
+  final bool askLanguage;
+  final VoidCallback? onLanguageChosen;
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -49,6 +54,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _pages = PageController();
   int _index = 0;
+
 
   bool get _last => _index == _slides.length - 1;
 
@@ -64,6 +70,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.askLanguage) {
+      return _LanguageFirst(
+        onChosen: (l) async {
+          // Changer de langue redessine toute l'app : le choix est retenu par l'app elle-même
+          widget.onLanguageChosen?.call();
+          await Lang.instance.set(l, Services.of(context).store);
+        },
+      );
+    }
     final text = Theme.of(context).textTheme;
     return Scaffold(
       backgroundColor: Brand.cream,
@@ -137,6 +152,90 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       ),
     );
   }
+}
+
+/// Tout premier écran : la langue, en gros boutons, chaque langue écrite dans sa langue avec un mot
+/// de salut qu'on reconnaît sans lire. Swahili et lingala d'abord : ce sont les langues des mamans
+/// (Lubumbashi, Kinshasa) ; le français et l'anglais suivent.
+class _LanguageFirst extends StatelessWidget {
+  const _LanguageFirst({required this.onChosen});
+
+  final ValueChanged<AppLanguage> onChosen;
+
+  static const _choices = [
+    (AppLanguage.sw, 'Habari'),
+    (AppLanguage.ln, 'Mbote'),
+    (AppLanguage.fr, 'Bonjour'),
+    (AppLanguage.en, 'Hello'),
+  ];
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor: Brand.cream,
+    body: SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+        children: [
+          const Center(child: BrandMark(size: 36)),
+          const SizedBox(height: 20),
+          SizedBox(height: 150, child: Illustration('ensemble', semanticLabel: 'Mchango')),
+          const SizedBox(height: 20),
+          // La question dans les quatre langues : chacune la trouve dans la sienne
+          for (final line in const ['Chagua lugha yako', 'Pona lokota na yo', 'Choisissez votre langue', 'Choose your language'])
+            Text(
+              line,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Brand.ink, height: 1.5),
+            ),
+          const SizedBox(height: 24),
+          for (final (language, hello) in _choices)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Material(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                  side: BorderSide(color: Brand.green.withValues(alpha: 0.25), width: 1.5),
+                ),
+                child: InkWell(
+                  key: Key('first_lang_${language.code}'),
+                  borderRadius: BorderRadius.circular(18),
+                  onTap: () => onChosen(language),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 52,
+                          height: 52,
+                          alignment: Alignment.center,
+                          decoration: const BoxDecoration(color: Brand.mint, shape: BoxShape.circle),
+                          child: Text(
+                            language.code.toUpperCase(),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Brand.green),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(language.label, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+                              Text(hello, style: TextStyle(fontSize: 16, color: Brand.muted)),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_rounded, color: Brand.green, size: 28),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
 }
 
 /// Écran de démarrage : logo et image de la tontine, pendant le chargement.

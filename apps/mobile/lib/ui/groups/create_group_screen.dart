@@ -138,27 +138,6 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
           _Section(
-            title: t('La catégorie'),
-            children: [
-              for (final c in _categories)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _CategoryTile(
-                    key: Key('category_${c.code}'),
-                    icon: c.icon,
-                    title: t(c.name),
-                    subtitle: t(c.description),
-                    selected: _category == c.code,
-                    onTap: () => setState(() => _category = c.code),
-                  ),
-                ),
-              Text(
-                t("Choisissez ce qui ressemble le plus à votre groupe. Pour l'instant, toutes les catégories fonctionnent de la même façon."),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
-          _Section(
             title: t('La tontine'),
             children: [
               TextField(
@@ -195,7 +174,7 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 keyboardType: TextInputType.numberWithOptions(decimal: isUsd),
                 inputFormatters: [FilteringTextInputFormatter.allow(isUsd ? RegExp(r'[0-9.,]') : RegExp(r'[0-9 ]'))],
                 decoration: InputDecoration(
-                  labelText: t('Montant versé par chaque membre à chaque tour'),
+                  labelText: t("Combien chacun paie à chaque tour"),
                   hintText: isUsd ? t('Ex. : 20') : t('Ex. : 20 000'),
                   suffixText: isUsd ? '\$' : 'FC',
                   errorText: _amountError,
@@ -204,9 +183,62 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 initialValue: _frequency,
-                decoration: InputDecoration(labelText: t('Un tour')),
+                decoration: InputDecoration(labelText: t("Tous les combien ?")),
                 items: [for (final e in frequencyLabels.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
                 onChanged: (v) => setState(() => _frequency = v!),
+              ),
+            ],
+          ),
+          _Section(
+            title: t('Les membres'),
+            children: [
+              TextField(
+                key: const Key('group_max_members'),
+                controller: _maxMembers,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(3)],
+                decoration: InputDecoration(
+                  labelText: t("Combien de personnes ?"),
+                  helperText: t("À chaque tour, une personne reçoit."),
+                  errorText: _membersError,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Material(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: BorderSide(color: Brand.ink.withValues(alpha: 0.15)),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.event, color: Brand.green),
+                  title: Text(t('Premier tour')),
+                  subtitle: Text(formatDate(_startIso)),
+                  trailing: const Icon(Icons.edit_calendar_outlined),
+                  onTap: _pickDate,
+                ),
+              ),
+              _payoutPreview(context),
+            ],
+          ),
+          _Section(
+            title: t('Le type de groupe'),
+            children: [
+              for (final c in _categories)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _CategoryTile(
+                    key: Key('category_${c.code}'),
+                    icon: c.icon,
+                    title: t(c.name),
+                    subtitle: t(c.description),
+                    selected: _category == c.code,
+                    onTap: () => setState(() => _category = c.code),
+                  ),
+                ),
+              Text(
+                t("Choisissez ce qui ressemble le plus à votre groupe. Dans le doute : Communautaire."),
+                style: Theme.of(context).textTheme.bodySmall,
               ),
               if (_paydayAllowed) ...[
                 const SizedBox(height: 16),
@@ -238,38 +270,6 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                   ),
                 ],
               ],
-            ],
-          ),
-          _Section(
-            title: t('Les membres'),
-            children: [
-              TextField(
-                key: const Key('group_max_members'),
-                controller: _maxMembers,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(3)],
-                decoration: InputDecoration(
-                  labelText: t('Nombre de membres prévu'),
-                  helperText: t('Un membre reçoit à chaque tour : autant de tours que de membres.'),
-                  errorText: _membersError,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Material(
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  side: BorderSide(color: Brand.ink.withValues(alpha: 0.15)),
-                ),
-                child: ListTile(
-                  leading: const Icon(Icons.event, color: Brand.green),
-                  title: Text(t('Premier tour')),
-                  subtitle: Text(formatDate(_startIso)),
-                  trailing: const Icon(Icons.edit_calendar_outlined),
-                  onTap: _pickDate,
-                ),
-              ),
-              _payoutPreview(context),
             ],
           ),
           const SizedBox(height: 8),

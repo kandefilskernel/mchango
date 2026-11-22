@@ -23,9 +23,7 @@ const en = <String, String>{
       'Call or go and see one of these people:',
   'Appuyez longuement sur le SMS de votre opérateur, copiez-le, puis touchez ce bouton. Le SMS reste sur votre téléphone.':
       'Press and hold your operator\'s SMS, copy it, then tap this button. The SMS stays on your phone.',
-  'Attendue':
-      'Expected',
-  'Aucun ID de transaction trouvé. Copiez d\'abord le SMS de confirmation de votre opérateur.':
+  'Aucun numéro de transaction trouvé. Copiez d\'abord le SMS de confirmation de votre opérateur.':
       'No transaction ID found. First copy your operator\'s confirmation SMS.',
   'Aucun ID trouvé. Copiez d\'abord le SMS de l\'argent reçu, puis touchez à nouveau ce bouton.':
       'No ID found. First copy the SMS for the money received, then tap this button again.',
@@ -43,8 +41,8 @@ const en = <String, String>{
       'Hello',
   'Bonjour {name}':
       'Hello {name}',
-  'Bénéficiaire : {name}':
-      'Beneficiary: {name}',
+  "Qui reçoit : {name}":
+      "Receives: {name}",
   'Ce SMS est de l\'argent reçu, pas envoyé. Copiez le SMS de l\'argent envoyé au bénéficiaire.':
       'This SMS is for money received, not sent. Copy the SMS for the money sent to the beneficiary.',
   'Ce SMS est un retrait chez un agent, pas un envoi. Copiez le SMS de l\'argent envoyé au bénéficiaire.':
@@ -99,14 +97,10 @@ const en = <String, String>{
       'Only confirm if you have spoken to {name} directly (in person, or recognising their voice on the phone) and they told you they forgot their PIN.\n\nIf someone else has taken their number, confirming would give that person access to the account.',
   'Confirmé le':
       'Confirmed on',
-  'Confirmée':
-      'Confirmed',
   'Contestation enregistrée. Le groupe la voit.':
       'Dispute recorded. The group can see it.',
-  'Contester':
-      'Dispute',
-  'Contestée':
-      'Disputed',
+  "Il y a un problème":
+      "There is a problem",
   'Continuer':
       'Continue',
   'Copier':
@@ -189,7 +183,7 @@ const en = <String, String>{
       'Together, we contribute',
   'Entre 2 et 100 membres.':
       'Between 2 and 100 members.',
-  'Entrez l\'ID de transaction reçu par SMS.':
+  'Entrez le numéro de la transaction reçu par SMS.':
       'Enter the transaction ID received by SMS.',
   'Entrez un montant en chiffres, par exemple {example}.':
       'Enter an amount in figures, for example {example}.',
@@ -221,8 +215,8 @@ const en = <String, String>{
       'History',
   'Historique vérifié':
       'Verified history',
-  'ID de transaction':
-      'Transaction ID',
+  "Numéro de la transaction":
+      "Transaction number",
   'ID trouvé : {id}':
       'ID found: {id}',
   'Intact':
@@ -265,8 +259,6 @@ const en = <String, String>{
       'Everyone\'s money together: enough to buy a motorbike, open a shop, pay for school.',
   'La tontine':
       'The tontine',
-  'La catégorie':
-      'Category',
   'Communautaire':
       'Community',
   'Organisation':
@@ -283,8 +275,6 @@ const en = <String, String>{
       'Colleagues of the same employer or trade, civil servants.',
   'Églises, paroisses, mosquées, communautés et leurs groupes.':
       'Churches, parishes, mosques, communities and their groups.',
-  'Choisissez ce qui ressemble le plus à votre groupe. Pour l\'instant, toutes les catégories fonctionnent de la même façon.':
-      'Pick what is closest to your group. For now, all categories work the same way.',
   'La tontine est terminée : tous les tours sont payés':
       'The tontine is finished: every turn is paid',
   'Langue':
@@ -327,8 +317,6 @@ const en = <String, String>{
       'SMS amount: {amount}, same as the contribution.',
   'Montant du SMS : {amount}. La cotisation est de {expected} : vérifiez.':
       'SMS amount: {amount}. The contribution is {expected}: please check.',
-  'Montant versé par chaque membre à chaque tour':
-      'Amount paid by each member at each turn',
   'Montants des paiements confirmés par les bénéficiaires. {notice}':
       'Amounts of payments confirmed by the beneficiaries. {notice}',
   'Moyen':
@@ -337,8 +325,6 @@ const en = <String, String>{
       'Do not use your mobile money PIN.',
   'Nom de la tontine':
       'Tontine name',
-  'Nombre de membres prévu':
-      'Planned number of members',
   'Nouveau PIN (6 chiffres)':
       'New PIN (6 digits)',
   'Nouvelle tontine':
@@ -359,8 +345,6 @@ const en = <String, String>{
       'Turn order cleared',
   'Ordre des tours pas encore fixé.':
       'Turn order not set yet.',
-  'Ordre tiré au sort. Graine publique : {seed}…':
-      'Order drawn by lot. Public seed: {seed}…',
   'Oublier':
       'Forget',
   'Oublier ce téléphone ?':
@@ -447,8 +431,6 @@ const en = <String, String>{
       'Receives at turn {n}',
   'Reçu':
       'Received',
-  'Reçu ({n} paiement(s))':
-      'Received ({n} payment(s))',
   'Reçu Mchango':
       'Mchango receipt',
   'Reçu Mchango {number} : {payer} a payé {amount} à {beneficiary} ({group}, tour {n}), confirmé le {date}.':
@@ -523,10 +505,6 @@ const en = <String, String>{
       'Another member must have seen the handover. They will confirm, as well as the beneficiary.',
   'Un membre reçoit au tour {n}':
       'A member receives at turn {n}',
-  'Un membre reçoit à chaque tour : autant de tours que de membres.':
-      'One member receives at each turn: as many turns as members.',
-  'Un tour':
-      'One turn',
   'Une erreur est survenue. Réessayez.':
       'Something went wrong. Try again.',
   'Utiliser mon empreinte':
@@ -537,8 +515,6 @@ const en = <String, String>{
       'Confirm',
   'Verrouiller':
       'Lock',
-  'Versé ({n} paiement(s))':
-      'Paid ({n} payment(s))',
   'Voir la tontine':
       'See the tontine',
   'Voir mon reçu':
@@ -635,8 +611,6 @@ const en = <String, String>{
       '{actor} witnessed the cash handover',
   '{actor} est président(e)':
       '{actor} is the president',
-  '{date} · {status} · {done}/{total} confirmé(s)':
-      '{date} · {status} · {done}/{total} confirmed',
   '{group} · tour {n} · {when}':
       '{group} · turn {n} · {when}',
   '{name} (vous)':
@@ -649,10 +623,6 @@ const en = <String, String>{
       '{name} can now use their new PIN.',
   '{n} demandes de nouveau PIN':
       '{n} new PIN requests',
-  '{n} membre(s)':
-      '{n} member(s)',
-  '{n} tontine(s) · {active} en cours':
-      '{n} tontine(s) · {active} in progress',
   '{n} tours seront créés à partir du {date}. Ensuite, l\'ordre, le montant et la liste des membres ne pourront plus changer.':
       '{n} turns will be created from {date}. After that, the order, the amount and the list of members can no longer change.',
   '{phone} · tontine {group}':
@@ -663,16 +633,10 @@ const en = <String, String>{
       'At each turn, each member pays the same small amount directly to the member whose turn it is.',
   'À chaque tour, un membre reçoit tout':
       'At each turn, one member receives it all',
-  'À confirmer':
-      'To confirm',
   'À venir':
       'Upcoming',
-  'Échéance':
-      'Due date',
   'à {name} · {phone}':
       'to {name} · {phone}',
-  '⚠ Échéance dépassée':
-      '⚠ Due date passed',
   'Donner mon avis':
       'Give feedback',
   'Écrivez votre avis.':
@@ -691,11 +655,11 @@ const en = <String, String>{
       'Your feedback',
   'Exemple : le bénéficiaire ne confirme pas mon paiement.':
       'Example: the beneficiary does not confirm my payment.',
-  'N\'écrivez jamais votre PIN ni un code reçu par SMS. Pour un litige sur un paiement, utilisez « Contester » dans le tour concerné.':
+  'N\'écrivez jamais votre PIN ni un code reçu par SMS. Pour un litige sur un paiement, utilisez « Il y a un problème » dans le tour concerné.':
       'Never write your PIN or a code received by SMS. For a dispute about a payment, use “Dispute” in that turn.',
   'Envoyer':
       'Send',
-  'Cet ID de transaction a déjà été présenté puis rejeté.':
+  'Ce numéro de transaction a déjà été présenté puis rejeté.':
       'This transaction ID was already submitted and then rejected.',
   'La date inscrite dans l\'ID ne correspond pas au jour du paiement.':
       'The date in the ID does not match the payment day.',
@@ -788,14 +752,10 @@ const en = <String, String>{
       "Closed",
   "Terminée":
       "Completed",
-  "{n} manquant(s) pour atteindre le prix collectif":
-      "{n} more needed to reach the group price",
   "Meilleur prix atteint":
       "Best price reached",
   "Encore {n} pour passer à {price}":
       "{n} more to drop to {price}",
-  "{n} / {threshold} {unit} confirmé(s)":
-      "{n} / {threshold} {unit} confirmed",
   "Fin : {date}":
       "Ends: {date}",
   "Détail de l'offre":
@@ -874,10 +834,6 @@ const en = <String, String>{
       "No suggested purchases. From an offer, tap “Invite” to suggest it here.",
   "Proposé par {name}":
       "Suggested by {name}",
-  "{n} membre(s) du groupe ont réservé":
-      "{n} group member(s) reserved",
-  "{n} / {threshold} confirmé(s) · fin le {date}":
-      "{n} / {threshold} confirmed · ends {date}",
   "Ma boutique : {name}":
       "My shop: {name}",
   "Encaisser, remettre, publier une offre":
@@ -888,13 +844,11 @@ const en = <String, String>{
       "My offers",
   "Code de retrait ou nom du client":
       "Collection code or customer name",
-  "{n} commande(s) à encaisser ou à remettre":
-      "{n} order(s) to take payment for or hand over",
   "Payée":
       "Paid",
   "À encaisser":
       "To be paid",
-  "Saisissez l'ID de transaction du mobile money.":
+  "Saisissez le numéro de la transaction du mobile money.":
       "Enter the mobile money transaction ID.",
   "Produit remis. Merci !":
       "Product handed over. Thank you!",
@@ -1109,8 +1063,6 @@ const en = <String, String>{
       "{done} of {target} ({p}%)",
   "{name} propose d'échanger son tour {a} contre votre tour {b}":
       "{name} offers to swap their turn {a} for your turn {b}",
-  "{n} dont {done} terminée(s)":
-      "{n}, {done} completed",
   "À quoi servira la mise que vous recevrez à votre tour ? Un objectif clair aide à tenir jusqu'au bout.":
       "What will you do with the pot you receive at your turn? A clear goal helps you see it through.",
   "À temps":
@@ -1132,6 +1084,68 @@ const en = <String, String>{
       "Workers' tontine: each payment has its own log, visible only to the payer, the recipient, the witness and the president.",
   "Tour {n} · {name}":
       "Turn {n} · {name}",
-  "{n} événement(s) vérifié(s)":
-      "{n} event(s) verified",
+  "Membres : {n}":
+      "Members: {n}",
+  "{date} · {status} · payé : {done} sur {total}":
+      "{date} · {status} · paid: {done} of {total}",
+  "Tontines : {n} · en cours : {active}":
+      "Tontines: {n} · active: {active}",
+  "Versé · paiements : {n}":
+      "Paid · payments: {n}",
+  "Reçu · paiements : {n}":
+      "Received · payments: {n}",
+  "{n} · terminées : {done}":
+      "{n} · completed: {done}",
+  "Événements vérifiés : {n}":
+      "Verified events: {n}",
+  "Date du tour":
+      "Turn date",
+  "⚠ La date est passée":
+      "⚠ The date has passed",
+  "Pas encore payé":
+      "Not paid yet",
+  "À vérifier":
+      "To check",
+  "Problème signalé":
+      "Problem reported",
+  "Payé":
+      "Paid",
+  "Ordre tiré au sort : personne ne l'a choisi.":
+      "Order drawn by lot: nobody chose it.",
+  "Combien chacun paie à chaque tour":
+      "How much each person pays each turn",
+  "Tous les combien ?":
+      "How often?",
+  "Combien de personnes ?":
+      "How many people?",
+  "À chaque tour, une personne reçoit.":
+      "Each turn, one person receives.",
+  "Choisissez ce qui ressemble le plus à votre groupe. Dans le doute : Communautaire.":
+      "Pick what looks most like your group. If unsure: Community.",
+  "Membres du groupe qui ont réservé : {n}":
+      "Group members who reserved: {n}",
+  "Réservé : {n} sur {threshold} · fin le {date}":
+      "Reserved: {n} of {threshold} · ends {date}",
+  "Encore {n} pour avoir le prix du groupe":
+      "{n} more for the group price",
+  "Réservé : {n} sur {threshold} {unit}":
+      "Reserved: {n} of {threshold} {unit}",
+  "Commandes à encaisser ou à remettre : {n}":
+      "Orders to collect or hand over: {n}",
+  "Achats du groupe":
+      "Group purchases",
+  "Toutes les offres":
+      "All offers",
+  "Payé : {done} sur {total}":
+      "Paid: {done} of {total}",
+  "Le type de groupe":
+      "Type of group",
+  "Vous":
+      "You",
+  "dollars":
+      "dollars",
+  "francs":
+      "francs",
+  "Écouter":
+      "Listen",
 };

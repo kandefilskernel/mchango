@@ -66,7 +66,7 @@ class CarnetScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 t('Montants des paiements confirmés par les bénéficiaires. {notice}', {'notice': noCustodyNotice}),
-                style: TextStyle(color: Brand.ink.withValues(alpha: 0.6), fontSize: 12),
+                style: TextStyle(color: Brand.ink.withValues(alpha: 0.6), fontSize: 14),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -218,8 +218,8 @@ class _GroupLine extends StatelessWidget {
               const SizedBox(height: 4),
               Text(turn, style: TextStyle(color: Brand.ink.withValues(alpha: 0.7))),
               const Divider(height: 20),
-              InfoRow(t('Versé ({n} paiement(s))', {'n': g.paidCount}), formatAmount(g.paidMinor, g.currency)),
-              InfoRow(t('Reçu ({n} paiement(s))', {'n': g.receivedCount}), formatAmount(g.receivedMinor, g.currency)),
+              InfoRow(t("Versé · paiements : {n}", {'n': g.paidCount}), formatAmount(g.paidMinor, g.currency)),
+              InfoRow(t("Reçu · paiements : {n}", {'n': g.receivedCount}), formatAmount(g.receivedMinor, g.currency)),
               if (g.pendingCount > 0) InfoRow(t('En attente de confirmation'), '${g.pendingCount}'),
               const SizedBox(height: 8),
               if (g.goal != null)

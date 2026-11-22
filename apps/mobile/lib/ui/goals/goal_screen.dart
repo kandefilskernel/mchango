@@ -229,7 +229,7 @@ class GoalProgressBar extends StatelessWidget {
                   'target': formatAmount(g.effectiveTargetMinor, currency),
                   'p': g.progressPercent,
                 }),
-          style: TextStyle(color: Brand.muted, fontSize: 13),
+          style: TextStyle(color: Brand.muted, fontSize: 14),
         ),
       ],
     );

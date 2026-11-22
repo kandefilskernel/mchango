@@ -53,7 +53,7 @@ class _DeclareScreenState extends State<DeclareScreen> {
       setState(() => _sms = null);
       return showInfo(
         context,
-        t("Aucun ID de transaction trouvé. Copiez d'abord le SMS de confirmation de votre opérateur."),
+        t("Aucun numéro de transaction trouvé. Copiez d'abord le SMS de confirmation de votre opérateur."),
       );
     }
     if (sms.kind == SmsKind.withdrawal || sms.kind == SmsKind.received) {
@@ -76,7 +76,7 @@ class _DeclareScreenState extends State<DeclareScreen> {
     final services = Services.of(context);
     final isCash = _method == 'cash';
     if (!isCash && _txReference.text.trim().length < 5) {
-      return showInfo(context, t("Entrez l'ID de transaction reçu par SMS."));
+      return showInfo(context, t("Entrez le numéro de la transaction reçu par SMS."));
     }
     if (isCash && _witnessId == null) return showInfo(context, t('Choisissez un témoin.'));
     // Ce que le SMS collé a montré (couche 1) : sert au score de risque vu par le bénéficiaire.
@@ -177,7 +177,7 @@ class _DeclareScreenState extends State<DeclareScreen> {
               controller: _txReference,
               textCapitalization: TextCapitalization.characters,
               decoration: InputDecoration(
-                labelText: t('ID de transaction'),
+                labelText: t('Numéro de la transaction'),
                 helperText: t('Dans le SMS de confirmation de votre opérateur'),
               ),
             ),

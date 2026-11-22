@@ -94,7 +94,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            t('N\'écrivez jamais votre PIN ni un code reçu par SMS. Pour un litige sur un paiement, utilisez « Contester » dans le tour concerné.'),
+            t('N\'écrivez jamais votre PIN ni un code reçu par SMS. Pour un litige sur un paiement, utilisez « Il y a un problème » dans le tour concerné.'),
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 20),

@@ -125,7 +125,7 @@ class ReceiptCard extends StatelessWidget {
               InfoRow(t('Tontine'), r.groupName),
               InfoRow(t('Tour'), '${r.cycleNumber}'),
               InfoRow(t('Moyen'), methodLabels[r.method] ?? r.method),
-              if (r.txReference != null) InfoRow(t('ID de transaction'), r.txReference!),
+              if (r.txReference != null) InfoRow(t('Numéro de la transaction'), r.txReference!),
               if (r.witnessName != null) InfoRow(t('Témoin'), r.witnessName!),
               InfoRow(t('Déclaré le'), formatDateTime(r.declaredAt)),
               InfoRow(t('Confirmé le'), formatDateTime(r.confirmedAt)),

@@ -56,6 +56,11 @@ ThemeData buildTheme() {
           headlineSmall: base.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800, color: Brand.ink),
           titleLarge: base.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700, color: Brand.ink),
           titleMedium: base.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700, color: Brand.ink),
+          // Lisible sans lunettes : rien en dessous de 14 px, le texte courant à 16 px
+          bodyMedium: base.textTheme.bodyMedium?.copyWith(fontSize: 16, color: Brand.ink),
+          bodySmall: base.textTheme.bodySmall?.copyWith(fontSize: 14, color: Brand.ink),
+          labelMedium: base.textTheme.labelMedium?.copyWith(fontSize: 14),
+          labelSmall: base.textTheme.labelSmall?.copyWith(fontSize: 14),
         ),
     appBarTheme: const AppBarTheme(
       backgroundColor: Brand.surface,
@@ -88,6 +93,13 @@ ThemeData buildTheme() {
         minimumSize: const Size.fromHeight(54),
         shape: rounded,
         side: const BorderSide(color: Brand.green, width: 1.5),
+        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+      ),
+    ),
+    // Zones à toucher d'au moins 48 px, même pour un lien « texte »
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        minimumSize: const Size(64, 48),
         textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
       ),
     ),
@@ -133,11 +145,11 @@ class StatusPill extends StatelessWidget {
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (icon != null) ...[Icon(icon, size: 14, color: color), const SizedBox(width: 4)],
+        if (icon != null) ...[Icon(icon, size: 16, color: color), const SizedBox(width: 4)],
         Flexible(
           child: Text(
             text,
-            style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w700),
+            style: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.w700),
           ),
         ),
       ],
@@ -235,7 +247,7 @@ class PublisherSignature extends StatelessWidget {
     key: const Key('publisher'),
     textAlign: TextAlign.center,
     style: TextStyle(
-      fontSize: 12.5,
+      fontSize: 14,
       fontWeight: FontWeight.w700,
       letterSpacing: 0.4,
       color: light ? Colors.white.withValues(alpha: 0.75) : Brand.ink.withValues(alpha: 0.5),

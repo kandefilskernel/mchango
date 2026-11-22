@@ -10,6 +10,7 @@ import '../cycles/cycle_screen.dart';
 import '../goals/goal_screen.dart';
 import '../history/history_screen.dart';
 import '../purchases/group_proposals_screen.dart';
+import '../purchases/offers_screen.dart';
 import '../theme.dart';
 import 'terms_section.dart';
 import 'turn_order_screen.dart';
@@ -39,12 +40,37 @@ class _GroupScreenState extends State<GroupScreen> {
   /// Nom du groupe, une fois chargé (titre de l'écran des achats proposés).
   String? _groupName;
 
+  /// Dernières données chargées : ce que le bouton « Écouter » lit.
+  _GroupData? _data;
+
+  /// L'essentiel de l'écran, à voix haute : le groupe, le tour en cours, où en sont les paiements.
+  String _speech() {
+    final d = _data;
+    if (d == null) return _groupName ?? '';
+    final g = d.group;
+    final parts = [g.name, '${formatAmount(g.contributionAmountMinor, g.currency)}, ${frequencyLabels[g.frequency] ?? ''}'];
+    if (g.isDraft) {
+      parts.add(groupStatusLabels['draft']!);
+    } else {
+      for (final c in d.board!.cycles) {
+        if (c.status != 'open') continue;
+        parts
+          ..add(c.beneficiaryMembershipId == d.board!.myMembershipId
+              ? t('Tour {n} : vous recevez', {'n': c.cycleNumber})
+              : t('Tour {n} : {name}', {'n': c.cycleNumber, 'name': c.beneficiaryName}))
+          ..add('${t('Date du tour')} : ${formatDate(c.dueDate)}')
+          ..add(t('Payé : {done} sur {total}', {'done': c.confirmedCount, 'total': c.expectedCount}));
+      }
+    }
+    return spoken(parts);
+  }
+
   Future<_GroupData> _load() async {
     final api = Services.of(context).api;
     final group = await api.group(widget.groupId);
     _groupName = group.name;
-    if (group.isDraft) return _GroupData(group, null, const []);
-    return _GroupData(
+    if (group.isDraft) return _data = _GroupData(group, null, const []);
+    return _data = _GroupData(
       group,
       await api.board(widget.groupId),
       // Les échanges ne doivent pas empêcher d'afficher le tableau des tours
@@ -66,6 +92,7 @@ class _GroupScreenState extends State<GroupScreen> {
         foregroundColor: Colors.white,
         systemOverlayStyle: SystemUiOverlayStyle.light,
         actions: [
+          ListenButton(text: _speech, light: true),
           IconButton(
             key: const Key('open_proposals'),
             tooltip: t('Achats proposés'),
@@ -103,6 +130,11 @@ class _GroupScreenState extends State<GroupScreen> {
       ),
     );
   }
+
+  Widget _purchasesCard(Group g) => _PurchasesCard(
+    onProposals: () => _push(GroupProposalsScreen(groupId: g.id, groupName: g.name)),
+    onOffers: () => _push(const OffersScreen()),
+  );
 
   List<Widget> _draftSection(BuildContext context, Group g, Future<void> Function() reload) {
     final api = Services.of(context).api;
@@ -187,6 +219,8 @@ class _GroupScreenState extends State<GroupScreen> {
           onPressed: g.members.length < 2 ? null : () => _push(TurnOrderScreen(group: g)),
         ),
       ],
+      const SizedBox(height: 20),
+      _purchasesCard(g),
     ];
   }
 
@@ -238,27 +272,25 @@ class _GroupScreenState extends State<GroupScreen> {
         ),
         const SizedBox(height: 20),
       ],
-      Row(
-        children: [
-          Expanded(
-            child: OutlinedButton.icon(
-              key: const Key('open_goal'),
-              icon: const Icon(Icons.flag_outlined),
-              label: Text(t('Mon objectif')),
-              onPressed: () => _push(GoalScreen(groupId: g.id, groupName: g.name, currency: g.currency)),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: OutlinedButton.icon(
-              key: const Key('request_swap'),
-              icon: const Icon(Icons.swap_vert),
-              label: Text(t('Échanger mon tour')),
-              onPressed: canSwap ? () => _requestSwap(context, g, board) : null,
-            ),
-          ),
-        ],
+      // Un bouton par ligne, jamais coupé ; « Échanger » seulement quand c'est possible (pas de bouton grisé
+      // sans explication)
+      OutlinedButton.icon(
+        key: const Key('open_goal'),
+        icon: const Icon(Icons.flag_outlined),
+        label: Text(t('Mon objectif')),
+        onPressed: () => _push(GoalScreen(groupId: g.id, groupName: g.name, currency: g.currency)),
       ),
+      if (canSwap) ...[
+        const SizedBox(height: 10),
+        OutlinedButton.icon(
+          key: const Key('request_swap'),
+          icon: const Icon(Icons.swap_vert),
+          label: Text(t('Échanger mon tour')),
+          onPressed: () => _requestSwap(context, g, board),
+        ),
+      ],
+      const SizedBox(height: 16),
+      _purchasesCard(g),
       const SizedBox(height: 20),
       _SectionTitle(t('Tableau des tours')),
       for (final c in board.cycles)
@@ -453,7 +485,7 @@ class _Header extends StatelessWidget {
             children: [
               StatusPill(groupStatusLabels[g.status] ?? g.status, color: color, background: bg),
               StatusPill(
-                t('{n} membre(s)', {'n': g.members.length}),
+                t("Membres : {n}", {'n': g.members.length}),
                 color: Brand.ink,
                 background: Colors.white,
                 icon: Icons.people_outline,
@@ -513,14 +545,17 @@ class _CurrentCycleCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(title, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800)),
           const SizedBox(height: 4),
-          Text('${t('Échéance')} · ${formatDate(cycle.dueDate)}', style: TextStyle(color: Brand.muted)),
+          Text('${t("Date du tour")} · ${formatDate(cycle.dueDate)}', style: TextStyle(color: Brand.muted)),
           const SizedBox(height: 14),
           ClipRRect(
             borderRadius: BorderRadius.circular(6),
             child: LinearProgressIndicator(value: progress, minHeight: 8, color: accent, backgroundColor: Colors.white),
           ),
           const SizedBox(height: 6),
-          Text('${cycle.confirmedCount}/${cycle.expectedCount}', style: TextStyle(color: Brand.muted, fontWeight: FontWeight.w700)),
+          Text(
+            t('Payé : {done} sur {total}', {'done': cycle.confirmedCount, 'total': cycle.expectedCount}),
+            style: TextStyle(color: Brand.ink, fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 14),
           FilledButton.icon(
             key: const Key('open_current_cycle'),
@@ -573,7 +608,7 @@ class _CycleTile extends StatelessWidget {
         ),
         subtitle: Text(
           [
-            t('{date} · {status} · {done}/{total} confirmé(s)', {
+            t("{date} · {status} · payé : {done} sur {total}", {
               'date': formatDate(c.dueDate),
               'status': cycleStatusLabels[c.status],
               'done': c.confirmedCount,
@@ -617,7 +652,6 @@ class _StartChecklist extends StatelessWidget {
             ),
             for (final (done, label) in items)
               ListTile(
-                dense: true,
                 leading: Icon(
                   done ? Icons.check_circle : Icons.radio_button_unchecked,
                   color: done ? Brand.success : Brand.muted,
@@ -644,7 +678,7 @@ class _OrderInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     final seed = group.drawSeed;
     final text = switch (group.turnOrderMode) {
-      'draw' => t('Ordre tiré au sort. Graine publique : {seed}…', {'seed': seed!.substring(0, 16)}),
+      'draw' => t("Ordre tiré au sort : personne ne l'a choisi.", {'seed': seed!.substring(0, 16)}),
       'chosen' when seed != null => t('Ordre choisi par le président (un tirage au sort avait eu lieu avant).'),
       'chosen' => t('Ordre choisi par le président.'),
       _ => t('Ordre des tours pas encore fixé.'),
@@ -703,7 +737,7 @@ class _SwapCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             t('Sans réponse, la demande expire le {date}.', {'date': formatDateTime(s.expiresAt)}),
-            style: TextStyle(color: Brand.muted, fontSize: 13),
+            style: TextStyle(color: Brand.muted, fontSize: 14),
           ),
           const SizedBox(height: 10),
           if (incoming)
@@ -729,4 +763,63 @@ class _SwapCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Entrée « Achats groupés » de l'écran du groupe : les achats proposés aux membres, et les offres
+/// près de chez moi (d'où l'on peut en proposer une au groupe).
+class _PurchasesCard extends StatelessWidget {
+  const _PurchasesCard({required this.onProposals, required this.onOffers});
+
+  final VoidCallback onProposals;
+  final VoidCallback onOffers;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    key: const Key('group_purchases'),
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(color: Brand.goldLight, borderRadius: BorderRadius.circular(18)),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+              child: const Icon(Icons.shopping_basket_outlined, color: Brand.goldDark),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(t('Achats groupés'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                  Text(
+                    t('Avec ton groupe, achète moins cher.'),
+                    style: TextStyle(color: Brand.ink.withValues(alpha: 0.7)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        FilledButton.icon(
+          key: const Key('group_proposals'),
+          style: FilledButton.styleFrom(backgroundColor: Brand.goldDark),
+          onPressed: onProposals,
+          icon: const Icon(Icons.groups_rounded),
+          label: Text(t('Achats du groupe')),
+        ),
+        const SizedBox(height: 8),
+        OutlinedButton.icon(
+          key: const Key('group_offers'),
+          style: OutlinedButton.styleFrom(foregroundColor: Brand.goldDark, side: const BorderSide(color: Brand.goldDark, width: 1.5)),
+          onPressed: onOffers,
+          icon: const Icon(Icons.local_offer_outlined),
+          label: Text(t('Toutes les offres')),
+        ),
+      ],
+    ),
+  );
 }

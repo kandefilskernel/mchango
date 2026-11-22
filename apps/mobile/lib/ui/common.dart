@@ -2,20 +2,42 @@ import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
 import '../l10n/l10n.dart';
+import '../l10n/server_messages.dart';
+import '../services.dart';
 import 'theme.dart';
 
-String errorMessage(Object error) => error is ApiException ? error.message : t('Une erreur est survenue. Réessayez.');
+/// Erreur à montrer : le message du serveur traduit et simplifié (l10n/server_messages.dart).
+String errorMessage(Object error) =>
+    error is ApiException ? serverMessage(error.message) : serverMessage('Une erreur est survenue. Réessayez.');
 
+/// Erreur bien visible : icône, fond rouge, et le temps de la lire (8 secondes).
 void showError(BuildContext context, Object error) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(errorMessage(error))));
+    ..showSnackBar(
+      SnackBar(
+        backgroundColor: Brand.danger,
+        duration: const Duration(seconds: 8),
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white),
+            const SizedBox(width: 10),
+            Expanded(child: Text(errorMessage(error), style: const TextStyle(fontSize: 16, color: Colors.white))),
+          ],
+        ),
+      ),
+    );
 }
 
 void showInfo(BuildContext context, String message) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(t(message))));
+    ..showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 6),
+        content: Text(t(message), style: const TextStyle(fontSize: 16)),
+      ),
+    );
 }
 
 /// Gros bouton qui affiche un indicateur pendant l'action et montre l'erreur éventuelle.
@@ -192,3 +214,31 @@ class InfoRow extends StatelessWidget {
 
 /// Rappel affiché là où l'on parle d'argent.
 String get noCustodyNotice => t('Mchango ne détient, ne transfère et ne garantit aucun fonds.');
+
+/// Bouton « Écouter » : l'écran dit l'essentiel à voix haute, pour qui lit peu ou pas.
+/// [text] est calculé au moment du toucher, dans la langue de l'app.
+class ListenButton extends StatelessWidget {
+  const ListenButton({super.key, required this.text, this.light = false});
+
+  final String Function() text;
+
+  /// Sur un fond vert (barre du haut) : icône blanche.
+  final bool light;
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+    key: const Key('listen'),
+    tooltip: t('Écouter'),
+    iconSize: 28,
+    color: light ? Colors.white : Brand.green,
+    icon: const Icon(Icons.volume_up_rounded),
+    onPressed: () => Services.of(context).speaker.say(text()),
+  );
+}
+
+/// Texte pour la voix : « 20 000 FC » se dit « 20 000 francs », « 20,50 $ » « 20,50 dollars ».
+String spoken(Iterable<String> parts) => parts
+    .where((p) => p.trim().isNotEmpty)
+    .join('. ')
+    .replaceAll(' FC', ' ${t('francs')}')
+    .replaceAll(r' $', ' ${t('dollars')}');

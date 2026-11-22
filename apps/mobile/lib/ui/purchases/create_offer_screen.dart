@@ -214,7 +214,7 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
                   t(
                     'Le premier palier est le seuil : en dessous, l\'offre est annulée à la date de fin.',
                   ),
-                  style: TextStyle(color: Brand.muted, fontSize: 13),
+                  style: TextStyle(color: Brand.muted, fontSize: 14),
                 ),
                 for (final (i, f) in _tiers.indexed)
                   Padding(
@@ -229,7 +229,7 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
                             style: const TextStyle(
                               fontWeight: FontWeight.w800,
                               color: Brand.green,
-                              fontSize: 13,
+                              fontSize: 14,
                             ),
                           ),
                         ),

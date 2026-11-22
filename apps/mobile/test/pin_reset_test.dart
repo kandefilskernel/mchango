@@ -110,7 +110,7 @@ void main() {
     expect(store.data['device_id'], 'd-2');
     expect(store.data['pin_hash'], startsWith('pbkdf2-sha256'));
     expect(store.data.containsKey('pin_reset_id'), isFalse);
-    expect(find.text('Bonjour Papa'), findsOneWidget);
+    expect(find.text('Bonjour Papa Jean'), findsOneWidget);
   });
 
   testWidgets('le garant voit la demande sur l\'accueil et la confirme', (tester) async {

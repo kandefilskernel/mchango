@@ -6,10 +6,12 @@ import 'api/purchases_api.dart';
 import 'auth/auth_repository.dart';
 import 'auth/biometric.dart';
 import 'storage/key_value_store.dart';
+import 'voice/speaker.dart';
 
 class AppServices {
-  AppServices({required this.client, required this.store, BiometricGate? biometric})
-    : api = MchangoApi(client),
+  AppServices({required this.client, required this.store, BiometricGate? biometric, Speaker? speaker})
+    : speaker = speaker ?? DeviceSpeaker(),
+      api = MchangoApi(client),
       purchases = PurchasesApi(client),
       auth =AuthRepository(client, store, biometric ?? DeviceBiometricGate());
 
@@ -20,6 +22,9 @@ class AppServices {
   /// Achats groupés (spec/achats.md).
   final PurchasesApi purchases;
   final AuthRepository auth;
+
+  /// Lecture à voix haute (bouton « Écouter »).
+  final Speaker speaker;
 }
 
 /// Donne accès aux services partout dans l'arbre : `Services.of(context)`.

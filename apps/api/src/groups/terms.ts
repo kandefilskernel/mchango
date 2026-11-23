@@ -30,6 +30,8 @@ export function termsHash(t: {
   order: { membershipId: string; turnOrder: number | null }[];
   /** Calendrier de paie (Travailleurs). Absent : l'empreinte reste celle d'avant cette option. */
   payday?: { day: number; shift: string } | null;
+  /** Part du président en points de base. 0 ou absente : l'empreinte reste celle d'avant cette option. */
+  presidentFeeBps?: number;
 }): string {
   const canonical = JSON.stringify({
     amount_minor: String(t.amountMinor),
@@ -40,6 +42,7 @@ export function termsHash(t: {
       .sort((a, b) => (a.turnOrder ?? 1e9) - (b.turnOrder ?? 1e9) || a.membershipId.localeCompare(b.membershipId))
       .map((m) => [m.turnOrder, m.membershipId]),
     payout_mode: t.payoutMode,
+    ...(t.presidentFeeBps ? { president_fee_bps: t.presidentFeeBps } : {}),
     // Clé seulement si un jour de paie est fixé : les règlements sans calendrier gardent leur empreinte
     ...(t.payday ? { payday: [t.payday.day, t.payday.shift] } : {}),
     start_date: t.startDate,
@@ -58,9 +61,10 @@ export async function termsState(q: Queryable, groupId: string): Promise<TermsSt
     payout_mode: string;
     payday: number | null;
     payday_shift: string | null;
+    president_fee_bps: number;
   }>(
     `SELECT currency, contribution_amount_minor AS amount, frequency, start_date::text AS start_date, payout_mode,
-            payday, payday_shift
+            payday, payday_shift, president_fee_bps
      FROM groups WHERE id = $1`,
     [groupId],
   );
@@ -78,6 +82,7 @@ export async function termsState(q: Queryable, groupId: string): Promise<TermsSt
     startDate: row.start_date,
     payoutMode: row.payout_mode,
     payday: row.payday === null ? null : { day: row.payday, shift: row.payday_shift! },
+    presidentFeeBps: row.president_fee_bps,
     order: members.rows.map((m) => ({ membershipId: m.id, turnOrder: m.turn_order })),
   });
   const n = members.rows.length;

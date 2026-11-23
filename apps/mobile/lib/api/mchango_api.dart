@@ -1,3 +1,4 @@
+import '../util/format.dart';
 import 'api_client.dart';
 import 'models.dart';
 
@@ -36,8 +37,10 @@ class MchangoApi {
     String category = 'community',
     int? payday,
     String? paydayShift,
+    int presidentFeeBps = 0,
   }) async => Group.fromJson(
     await client.post('/groups', {
+      'presidentFeeBps': presidentFeeBps,
       'name': name,
       'category': category,
       'payday': ?payday,
@@ -58,9 +61,11 @@ class MchangoApi {
     String? frequency,
     String? startDate,
     int? maxMembers,
+    int? presidentFeeBps,
     bool removePayday = false,
   }) async => Group.fromJson(
     await client.patch('/groups/$groupId', {
+      'presidentFeeBps': ?presidentFeeBps,
       'name': ?name,
       'contributionAmountMinor': ?contributionAmountMinor,
       'frequency': ?frequency,
@@ -196,6 +201,18 @@ class MchangoApi {
     for (final c in (await client.get('/groups/$groupId/private-history') as Json)['chains'] as List)
       PrivateChain.fromJson(c as Json),
   ];
+
+  /// Le bénéficiaire déclare avoir payé la part du président de son tour.
+  Future<void> declarePresidentFee(String groupId, int cycleNumber, {required String method, String? txReference}) =>
+      client.post('/groups/$groupId/cycles/$cycleNumber/president-fee', {
+        'method': method,
+        'txReference': ?txReference,
+        'offlineId': uuidV4(),
+      });
+
+  /// Le président confirme avoir reçu sa part (confirm), ou signale un problème (dispute).
+  Future<void> decidePresidentFee(String feeId, String decision, {String? note}) =>
+      client.post('/president-fees/$feeId/decisions', {'decision': decision, 'note': ?note});
 
   /// Tout l'historique du groupe, page par page.
   Future<List<HistoryEvent>> history(String groupId) async {

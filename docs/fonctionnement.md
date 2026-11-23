@@ -60,14 +60,15 @@ flowchart TB
 - **Devise** : francs congolais (FC) ou dollars ($), fixée à la création pour toujours.
 - **Type de groupe** : Communautaire, Organisation, Travailleurs, Religion (`spec/categories.md`). Fixé à la création.
   - **Travailleurs** : le président peut caler les échéances sur un **jour de paie** (de 1 à 31, « 31 » = dernier jour du mois) ; si ce jour est un dimanche ou férié, l'échéance est avancée ou reportée au choix. Les collègues **ne voient pas** qui a payé ou qui est en retard, y compris dans le journal (section 8).
-- **Modifier avant le démarrage** : le président peut changer le nom, le montant, la fréquence, la date et le nombre de personnes (écran « Modifier la tontine »). Chacun devra alors **signer de nouveau**.
+- **Part du président** : de **0 à 10 %** de la mise de chaque tour, discutée avec les membres. Elle est dans le règlement que chacun signe, et visible avant de rejoindre. Le **bénéficiaire** de chaque tour la paie au président (hors de Mchango) et la déclare ; le président confirme l'avoir reçue. Au tour du président, rien à payer. Elle ne change plus après le démarrage (`spec/president-fee.md`).
+- **Modifier avant le démarrage** : le président peut changer le nom, le montant, la fréquence, la part du président, la date et le nombre de personnes (écran « Modifier la tontine »). Chacun devra alors **signer de nouveau**.
 - **Invitation** : un code du type `K7MP-Q2XW`, valable 72 h par défaut (jusqu'à 14 jours), limité à 10 essais par heure et par personne. Les invitations se ferment au démarrage.
 
 **Ordre des tours** : choisi par le président, ou **tiré au sort de façon vérifiable** : une graine aléatoire est publiée, et chacun peut refaire le calcul. Un seul tirage par liste de membres, pour que le président ne relance pas jusqu'à obtenir l'ordre qui l'arrange (`spec/draw.md`).
 
 **Règlement** : montant, devise, fréquence, date de début, mode de versement et ordre des tours. Chaque membre le signe avec son PIN. Si une règle change, les signatures sont annulées. Le démarrage exige la signature de tous.
 
-**Combien reçoit un bénéficiaire** : la somme des paiements des autres membres. Avec N membres et un montant M, chacun reçoit M × (N − 1). Une tontine de 2 personnes n'a que 2 tours, et on ne peut plus entrer après le démarrage : il faut inviter tout le monde avant.
+**Combien reçoit un bénéficiaire** : la somme des paiements des autres membres. Avec N membres et un montant M, chacun reçoit M × (N − 1), moins la part du président s'il y en a une (sauf le président lui-même). Une tontine de 2 personnes n'a que 2 tours, et on ne peut plus entrer après le démarrage : il faut inviter tout le monde avant.
 
 ## 5. Un tour : déclarer, confirmer
 
@@ -172,17 +173,18 @@ Back-office (Next.js) ─────────^        │               + jo
 |---|---|
 | **App mobile** | Flutter, Android 7.0 minimum. Aussi servie dans un navigateur pour les tests. Aucun mode hors-ligne complet : elle a besoin du réseau pour afficher et déclarer. |
 | **API** | NestJS (monolithe modulaire) : authentification, groupes, cotisations, échanges, objectifs, attestations, achats groupés, rappels, administration, IA. REST en JSON, montants en entiers. |
-| **Base** | PostgreSQL 16, 24 migrations (`db/`). Les règles importantes sont **portées par la base** : seul le receveur confirme, un numéro de transaction ne sert qu'une fois, un tour ne change de bénéficiaire que par un échange accepté, le prix final d'une offre est fixé par la base, le journal est en ajout seul. L'API se connecte avec un rôle sans droit de suppression. |
+| **Base** | PostgreSQL 16, 25 migrations (`db/`). Les règles importantes sont **portées par la base** : seul le receveur confirme, un numéro de transaction ne sert qu'une fois, un tour ne change de bénéficiaire que par un échange accepté, le prix final d'une offre est fixé par la base, le journal est en ajout seul. L'API se connecte avec un rôle sans droit de suppression. |
 | **Montants** | Entiers dans la plus petite unité : 20 000 FC se stocke `20000`, 20,50 $ se stocke `2050`. Jamais de nombre à virgule. |
 | **Redis** | Codes SMS hachés, compteurs de limitation. |
 | **Paquet d'audit** | `packages/mchango_audit` (Dart pur) : vérifie la chaîne du journal sur le téléphone. |
-| **Tests** | API : 95 tests unitaires et 124 de bout en bout (sur une base à part). Mobile : 79 tests. Base : 5 scripts SQL. Vecteurs communs Dart/Node pour le hash et la signature. |
+| **Tests** | API : 95 tests unitaires et 126 de bout en bout (sur une base à part). Mobile : 83 tests. Base : 5 scripts SQL. Vecteurs communs Dart/Node pour le hash et la signature. |
 | **Mise en ligne** | Un seul petit serveur (Docker, HTTPS automatique, sauvegardes nocturnes), décrit dans `docs/mise-en-ligne.md`. Pilote fermé : sans fournisseur SMS, les codes s'affichent dans les journaux du serveur. |
 | **Pilote prévu** | 10 à 20 groupes à Lubumbashi. |
 
 ## 13. Les chiffres et règles à retenir
 
 - 2 à 100 membres par tontine ; autant de tours que de membres au démarrage.
+- Part du président : 0 à 10 % de la mise d'un tour, fixée avant le démarrage.
 - Code SMS : 6 chiffres, 5 minutes. PIN : 6 chiffres.
 - Invitation : 72 h par défaut. Demande d'échange de tour : 72 h. « PIN oublié » : 48 h.
 - Rappel SMS : un par membre et par tour, 8 h à 20 h.

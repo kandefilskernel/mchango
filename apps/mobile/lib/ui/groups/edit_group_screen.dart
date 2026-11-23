@@ -8,6 +8,7 @@ import '../../util/format.dart';
 import '../common.dart';
 import '../theme.dart';
 import 'frequency_picker.dart';
+import 'president_fee_picker.dart';
 
 /// Le président change les règles avant le démarrage : nom, montant, tous les combien, date du
 /// premier tour, nombre de personnes. Chacun devra signer de nouveau : on le dit avant d'enregistrer.
@@ -26,6 +27,7 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
   late final _max = TextEditingController(text: '${widget.group.maxMembers}');
   late String _frequency = widget.group.frequency;
   late DateTime _startDate = DateTime.parse(widget.group.startDate);
+  late int _presidentFeeBps = widget.group.presidentFeeBps;
   String? _nameError, _amountError, _maxError;
 
   /// Montant déjà enregistré, sous la forme qu'on retape : « 20000 », « 20,50 ».
@@ -97,6 +99,7 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
       frequency: _frequency,
       startDate: _startIso,
       maxMembers: max,
+      presidentFeeBps: _presidentFeeBps,
       // Le jour de paie n'existe que pour une tontine mensuelle
       removePayday: g.payday != null && _frequency != 'monthly',
     );
@@ -138,6 +141,14 @@ class _EditGroupScreenState extends State<EditGroupScreen> {
           Text(t('Tous les combien ?'), style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           FrequencyPicker(value: _frequency, onChanged: (v) => setState(() => _frequency = v)),
+          const SizedBox(height: 16),
+          PresidentFeePicker(
+            bps: _presidentFeeBps,
+            currency: g.currency,
+            potMinor: (parseAmount(_amount.text, g.currency) ?? g.contributionAmountMinor) *
+                ((int.tryParse(_max.text.trim()) ?? g.maxMembers) - 1),
+            onChanged: (v) => setState(() => _presidentFeeBps = v),
+          ),
           const SizedBox(height: 8),
           Material(
             color: Colors.white,

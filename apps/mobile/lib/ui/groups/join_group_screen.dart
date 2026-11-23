@@ -75,6 +75,7 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                     InfoRow(t('Premier tour'), formatDate(p.startDate)),
                     InfoRow(t('Membres'), '${p.memberCount} / ${p.maxMembers}'),
                     if (p.presidentName != null) InfoRow(t('Président(e)'), p.presidentName!),
+                    if (p.presidentFeeBps > 0) InfoRow(t('Part du président'), '${p.presidentFeeBps ~/ 100} %'),
                     const SizedBox(height: 8),
                     Text(
                       t(

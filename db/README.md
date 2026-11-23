@@ -26,6 +26,7 @@
 | `022_attestations.sql` | Attestations de régularité : contenu figé et empreinte vérifiée par la base, code de vérification, retrait seul |
 | `023_payday.sql` | Travailleurs : jour de paie et règle de report, jours fériés de la RDC (à valider), calcul des échéances |
 | `024_private_slot_chains.sql` | Travailleurs : déclarations, confirmations et contestations dans une chaîne privée par payeur et par tour, au lieu de la chaîne du groupe |
+| `025_president_fee.sql` | Part du président (0 à 10 % de la mise), figée au démarrage ; payée par le bénéficiaire du tour, confirmée par le président ; montant et parties vérifiés par la base |
 | `tests/001_checks.sql` | Double regard, anti-fraude, journal en ajout seul, détection de falsification |
 | `tests/002_cash_witness.sql` | Règles du témoin (à lancer **après** `001_checks.sql`, sur la même base) |
 | `tests/003_turns_cycles.sql` | Ordre figé, bénéficiaire unique, receveur imposé (après `002`) |

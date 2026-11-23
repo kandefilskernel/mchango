@@ -48,6 +48,7 @@ class Group {
     this.category = 'community',
     this.payday,
     this.paydayShift,
+    this.presidentFeeBps = 0,
   });
 
   factory Group.fromJson(Json j) => Group(
@@ -69,6 +70,7 @@ class Group {
     category: j['category'] as String? ?? 'community',
     payday: j['payday'] as int?,
     paydayShift: j['paydayShift'] as String?,
+    presidentFeeBps: j['presidentFeeBps'] as int? ?? 0,
   );
 
   final String id;
@@ -94,6 +96,10 @@ class Group {
   final int? payday;
   final String? paydayShift;
 
+  /// Part du président en points de base (500 = 5 %), de 0 à 1000. Payée par le bénéficiaire de
+  /// chaque tour, sauf au tour du président.
+  final int presidentFeeBps;
+
   bool get isPresident => myRole == 'president';
   bool get isDraft => status == 'draft';
   bool get hasCompleteOrder => members.length >= 2 && members.every((m) => m.turnOrder != null);
@@ -108,7 +114,8 @@ class GroupPreview {
       startDate = j['startDate'] as String,
       memberCount = j['memberCount'] as int,
       maxMembers = j['maxMembers'] as int,
-      presidentName = j['presidentName'] as String?;
+      presidentName = j['presidentName'] as String?,
+      presidentFeeBps = j['presidentFeeBps'] as int? ?? 0;
 
   final String name;
   final String currency;
@@ -118,6 +125,9 @@ class GroupPreview {
   final int memberCount;
   final int maxMembers;
   final String? presidentName;
+
+  /// Part du président : vue avant d'accepter de rejoindre.
+  final int presidentFeeBps;
 }
 
 class Invitation {
@@ -267,6 +277,7 @@ class CycleDetail {
       status = j['status'] as String,
       beneficiaryMembershipId = j['beneficiaryMembershipId'] as String,
       privateStatuses = j['privateStatuses'] as bool? ?? false,
+      presidentFee = j['presidentFee'] == null ? null : CycleFee.fromJson(j['presidentFee'] as Json),
       payers = [for (final p in j['payers'] as List) PayerRow.fromJson(p as Json)];
 
   final String myMembershipId;
@@ -277,6 +288,9 @@ class CycleDetail {
 
   /// Travailleurs : l'état des cotisations des collègues est masqué (statut « private »).
   final bool privateStatuses;
+
+  /// Part du président pour ce tour (null : aucune, ou c'est le tour du président).
+  final CycleFee? presidentFee;
   final List<PayerRow> payers;
 
   bool get iAmBeneficiary => myMembershipId == beneficiaryMembershipId;
@@ -647,4 +661,35 @@ class PrivateChain {
   final int cycleNumber;
   final String payerName;
   final List<HistoryEvent> events;
+}
+
+/// Part du président pour un tour, et où en est son paiement (spec/president-fee.md).
+class CycleFee {
+  CycleFee.fromJson(Json j)
+    : bps = j['bps'] as int,
+      amountMinor = j['amountMinor'] as int,
+      payerMembershipId = j['payerMembershipId'] as String,
+      presidentMembershipId = j['presidentMembershipId'] as String,
+      payment = j['payment'] == null ? null : FeePayment.fromJson(j['payment'] as Json);
+
+  final int bps;
+  final int amountMinor;
+  final String payerMembershipId;
+  final String presidentMembershipId;
+  final FeePayment? payment;
+}
+
+class FeePayment {
+  FeePayment.fromJson(Json j)
+    : id = j['id'] as String,
+      status = j['status'] as String,
+      method = j['method'] as String,
+      txReference = j['txReference'] as String?;
+
+  final String id;
+
+  /// declared, confirmed, disputed, rejected
+  final String status;
+  final String method;
+  final String? txReference;
 }

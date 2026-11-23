@@ -1172,4 +1172,20 @@ const en = <String, String>{
       "Yes, change",
   "Vous pouvez changer avant le démarrage. Chacun devra signer de nouveau.":
       "You can change this before the start. Everyone will have to sign again.",
+  "Part du président":
+      "President's share",
+  "À discuter avec les membres. Chacun la verra dans le règlement avant de signer.":
+      "Discuss it with the members. Everyone will see it in the rules before signing.",
+  "Aucune":
+      "None",
+  "Celui qui reçoit son tour donne {amount} au président.":
+      "Whoever receives their turn gives {amount} to the president.",
+  "Part du président : {amount}":
+      "President's share: {amount}",
+  "{p} % de la mise, payé par celui qui reçoit ce tour.":
+      "{p}% of the pot, paid by whoever receives this turn.",
+  "J'ai payé le président":
+      "I paid the president",
+  "Pourquoi ?":
+      "Why?",
 };

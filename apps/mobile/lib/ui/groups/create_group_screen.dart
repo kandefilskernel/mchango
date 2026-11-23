@@ -6,6 +6,7 @@ import '../../util/format.dart';
 import '../common.dart';
 import '../theme.dart';
 import 'frequency_picker.dart';
+import 'president_fee_picker.dart';
 import 'group_screen.dart';
 import '../../l10n/l10n.dart';
 
@@ -27,6 +28,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   /// Travailleurs, tontine mensuelle : jour de paie (null = pas de calendrier de paie).
   int? _payday;
   String _paydayShift = 'before';
+
+  /// Part du président, points de base (0 à 1000).
+  int _presidentFeeBps = 0;
 
   bool get _paydayAllowed => _category == 'workers' && _frequency == 'monthly';
   DateTime _startDate = DateTime.now().add(const Duration(days: 7));
@@ -87,9 +91,18 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
       category: _category,
       payday: _paydayAllowed ? _payday : null,
       paydayShift: _paydayAllowed && _payday != null ? _paydayShift : null,
+      presidentFeeBps: _presidentFeeBps,
     );
     if (!mounted) return;
     await Navigator.pushReplacement(context, MaterialPageRoute<void>(builder: (_) => GroupScreen(groupId: group.id)));
+  }
+
+  /// Mise d'un tour si le groupe est complet (pour montrer la part du président en francs).
+  int? _potPreview() {
+    final amount = parseAmount(_amount.text, _currency);
+    final max = int.tryParse(_maxMembers.text.trim());
+    if (amount == null || amount <= 0 || max == null || max < 2) return null;
+    return amount * (max - 1);
   }
 
   /// Montant reçu par chaque bénéficiaire si le groupe est complet.
@@ -185,6 +198,13 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
               Text(t('Tous les combien ?'), style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               FrequencyPicker(value: _frequency, onChanged: (v) => setState(() => _frequency = v)),
+              const SizedBox(height: 16),
+              PresidentFeePicker(
+                bps: _presidentFeeBps,
+                currency: _currency,
+                potMinor: _potPreview(),
+                onChanged: (v) => setState(() => _presidentFeeBps = v),
+              ),
             ],
           ),
           _Section(

@@ -14,6 +14,7 @@ import { AccessGuard, CurrentAuth } from '../auth/access.guard.js';
 import type { AccessTokenClaims } from '../auth/auth.service.js';
 import { parseBody } from '../common/parse-body.js';
 import { ContributionsService } from './contributions.service.js';
+import { PresidentFeesService } from './president-fees.service.js';
 
 const Declare = z.object({
   method: z.enum(['mpesa', 'airtel', 'orange', 'cash', 'other']),
@@ -37,12 +38,44 @@ const Decide = z.object({
   receivedTxReference: z.string().max(40).optional(),
 });
 
+const DeclareFee = z.object({
+  method: z.enum(['mpesa', 'airtel', 'orange', 'cash', 'other']),
+  txReference: z.string().max(40).optional(),
+  offlineId: z.uuid(),
+});
+
+const DecideFee = z.object({
+  decision: z.enum(['confirm', 'dispute']),
+  note: z.string().max(500).optional(),
+});
+
 const actorOf = (auth: AccessTokenClaims) => ({ type: 'user' as const, id: auth.sub, deviceId: auth.did });
 
 @Controller()
 @UseGuards(AccessGuard)
 export class ContributionsController {
-  constructor(private readonly contributions: ContributionsService) {}
+  constructor(
+    private readonly contributions: ContributionsService,
+    private readonly presidentFees: PresidentFeesService,
+  ) {}
+
+  /** Le bénéficiaire déclare avoir payé la part du président (spec/president-fee.md). */
+  @Post('groups/:id/cycles/:number/president-fee')
+  declareFee(
+    @CurrentAuth() auth: AccessTokenClaims,
+    @Param('id', ParseUUIDPipe) groupId: string,
+    @Param('number', ParseIntPipe) cycleNumber: number,
+    @Body() body: unknown,
+  ) {
+    return this.presidentFees.declare(actorOf(auth), groupId, cycleNumber, parseBody(DeclareFee, body));
+  }
+
+  /** Le président confirme avoir reçu sa part, ou signale un problème. */
+  @Post('president-fees/:id/decisions')
+  @HttpCode(200)
+  decideFee(@CurrentAuth() auth: AccessTokenClaims, @Param('id', ParseUUIDPipe) id: string, @Body() body: unknown) {
+    return this.presidentFees.decide(actorOf(auth), id, parseBody(DecideFee, body));
+  }
 
   @Get('me/carnet')
   carnet(@CurrentAuth() auth: AccessTokenClaims) {

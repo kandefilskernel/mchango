@@ -487,6 +487,12 @@ class _Header extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text('${t('Premier tour')} · ${formatDate(g.startDate)}', style: TextStyle(color: soft)),
+          if (g.presidentFeeBps > 0)
+            Text(
+              '${t('Part du président')} · ${g.presidentFeeBps ~/ 100} %',
+              key: const Key('group_president_fee'),
+              style: TextStyle(color: soft),
+            ),
           if (g.payday != null)
             Text(
               '${t('Jour de paie')} · ${paydayLabel(g.payday!, g.paydayShift)}',

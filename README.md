@@ -72,6 +72,7 @@ Tests de la base : voir [`db/README.md`](db/README.md).
 - [Rappels SMS avant échéance](spec/reminders.md)
 - [« PIN oublié » avec confirmation d'un garant](spec/pin-reset.md)
 - [Échange de tour entre deux membres](spec/swaps.md)
+- [Part du président (0 à 10 %)](spec/president-fee.md)
 - [Objectifs d'épargne](spec/goals.md)
 - [Attestation de régularité (relevé vérifiable pour une IMF ou une coopec)](spec/attestations.md)
 - [Achats groupés : règles et contrat de l'API](spec/achats.md) — [plan et décisions](docs/plan-achats-groupes.md)

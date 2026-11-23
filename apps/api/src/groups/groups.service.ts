@@ -32,6 +32,8 @@ export interface CreateGroupInput {
   /** Travailleurs, tontine mensuelle : jour de paie (1 à 31) et report s'il tombe un jour chômé. */
   payday?: number | null;
   paydayShift?: 'before' | 'after' | null;
+  /** Part du président, en points de base (100 = 1 %), de 0 à 1000. */
+  presidentFeeBps?: number;
 }
 
 export interface GroupRow {
@@ -50,13 +52,14 @@ export interface GroupRow {
   draw_seed: string | null;
   payday: number | null;
   payday_shift: 'before' | 'after' | null;
+  president_fee_bps: number;
   started_at: Date | null;
   created_at: Date;
 }
 
 export const GROUP_COLUMNS = `g.id, g.name, g.type, g.category, g.currency, g.contribution_amount_minor,
   g.frequency, g.payout_mode, g.start_date::text AS start_date, g.status, g.max_members,
-  g.turn_order_mode, g.draw_seed, g.payday, g.payday_shift, g.started_at, g.created_at`;
+  g.turn_order_mode, g.draw_seed, g.payday, g.payday_shift, g.president_fee_bps, g.started_at, g.created_at`;
 
 export function toGroup(row: GroupRow) {
   return {
@@ -78,6 +81,8 @@ export function toGroup(row: GroupRow) {
     // Calendrier de paie (Travailleurs) : null pour les autres tontines
     payday: row.payday,
     paydayShift: row.payday_shift,
+    // Part du président (points de base : 500 = 5 %), acceptée par tous en signant le règlement
+    presidentFeeBps: row.president_fee_bps,
     startedAt: row.started_at?.toISOString() ?? null,
     createdAt: row.created_at.toISOString(),
   };
@@ -96,8 +101,8 @@ export class GroupsService {
     return this.db.transaction(actor, async (q) => {
       const { rows } = await q.query<GroupRow>(
         `INSERT INTO groups AS g (name, type, category, currency, contribution_amount_minor, frequency,
-                                  start_date, max_members, created_by, payday, payday_shift)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                                  start_date, max_members, created_by, payday, payday_shift, president_fee_bps)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
          RETURNING ${GROUP_COLUMNS}`,
         [
           input.name,
@@ -111,6 +116,7 @@ export class GroupsService {
           actor.id,
           input.payday ?? null,
           input.payday == null ? null : (input.paydayShift ?? 'before'),
+          input.presidentFeeBps ?? 0,
         ],
       );
       await q.query(
@@ -281,6 +287,7 @@ export class GroupsService {
       startDate: g.startDate,
       payday: g.payday,
       paydayShift: g.paydayShift,
+      presidentFeeBps: g.presidentFeeBps,
       status: g.status,
       maxMembers: g.maxMembers,
       memberCount: r.member_count,

@@ -1172,4 +1172,20 @@ const ln = <String, String>{
       "Ee, bongola",
   "Vous pouvez changer avant le démarrage. Chacun devra signer de nouveau.":
       "Okoki kobongola liboso ya kobanda. Moto na moto asengeli kosa signature lisusu.",
+  "Part du président":
+      "Likabo ya mokambi",
+  "À discuter avec les membres. Chacun la verra dans le règlement avant de signer.":
+      "Bosolola yango na basangani. Moto na moto akomona yango na mibeko liboso ya kosa signature.",
+  "Aucune":
+      "Ata moko te",
+  "Celui qui reçoit son tour donne {amount} au président.":
+      "Moto oyo azwi tango na ye apesaka mokambi {amount}.",
+  "Part du président : {amount}":
+      "Likabo ya mokambi: {amount}",
+  "{p} % de la mise, payé par celui qui reçoit ce tour.":
+      "{p} % ya mbongo, efutamaka na moto oyo azwi tango oyo.",
+  "J'ai payé le président":
+      "Nafuti mokambi",
+  "Pourquoi ?":
+      "Mpo na nini?",
 };

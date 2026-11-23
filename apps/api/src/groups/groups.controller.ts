@@ -36,6 +36,8 @@ const maxMembers = z.number().int().min(2).max(100);
 // Jour de paie (Travailleurs) : 1 à 31, 31 = dernier jour du mois
 const payday = z.number().int().min(1).max(31);
 const paydayShift = z.enum(['before', 'after']);
+// Part du président : 0 à 10 %, en points de base (100 = 1 %)
+const presidentFeeBps = z.number().int().min(0).max(1000);
 const PAYDAY_RULE = 'Le jour de paie ne concerne que les tontines mensuelles de la catégorie « Travailleurs ».';
 
 const CreateGroup = z
@@ -50,6 +52,7 @@ const CreateGroup = z
     maxMembers: maxMembers.default(30),
     payday: payday.nullable().optional(),
     paydayShift: paydayShift.optional(),
+    presidentFeeBps: presidentFeeBps.default(0),
   })
   .refine((g) => g.payday == null || (g.category === 'workers' && g.frequency === 'monthly'), {
     message: PAYDAY_RULE,
@@ -67,6 +70,7 @@ const UpdateGroup = z
     // null : retirer le calendrier de paie
     payday: payday.nullable(),
     paydayShift,
+    presidentFeeBps,
   })
   .partial()
   .refine((v) => Object.keys(v).length > 0, 'Aucune modification demandée.');

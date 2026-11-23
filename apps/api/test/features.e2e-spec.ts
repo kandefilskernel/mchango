@@ -93,6 +93,89 @@ describe('Échanges de tour, objectifs, attestations, calendrier de paie (e2e)',
       cycles: { cycleNumber: number; beneficiary: { membershipId: string; goal: { label: string } | null } }[];
     };
 
+  describe('part du président (0 à 10 %)', () => {
+    it('fixée avant le démarrage, signée par tous ; payée par le bénéficiaire, confirmée par le président', async () => {
+      const s = (await api.signUp()).session;
+      const base = { name: 'Likelemba', currency: 'CDF', contributionAmountMinor: AMOUNT, frequency: 'weekly', startDate: inDays(1) };
+      // Plus de 10 % : refusé
+      await http().post('/groups').set(auth(s)).send({ ...base, presidentFeeBps: 1500 }).expect(400);
+
+      // 3 membres, 20 000 FC : la mise d'un tour vaut 40 000 FC ; 5 % = 2 000 FC
+      const g = await startedGroup(3, { presidentFeeBps: 500 });
+      const [president, jean, neema] = g.members;
+      const detail = await http().get(`/groups/${g.groupId}`).set(auth(jean.session)).expect(200);
+      expect(detail.body.presidentFeeBps).toBe(500);
+
+      // Figée après le démarrage
+      await http().patch(`/groups/${g.groupId}`).set(auth(president.session)).send({ presidentFeeBps: 1000 }).expect(409);
+
+      // Tour 1 : le président reçoit lui-même, il n'y a rien à payer
+      const t1 = await http().get(`/groups/${g.groupId}/cycles/1`).set(auth(jean.session)).expect(200);
+      expect(t1.body.presidentFee).toBeNull();
+
+      // Tour 2 : Jean reçoit et doit 2 000 FC au président
+      const t2 = await http().get(`/groups/${g.groupId}/cycles/2`).set(auth(neema.session)).expect(200);
+      expect(t2.body.presidentFee).toMatchObject({ bps: 500, amountMinor: 2000, payerMembershipId: jean.membershipId, payment: null });
+
+      // Seul le bénéficiaire déclare
+      await http()
+        .post(`/groups/${g.groupId}/cycles/2/president-fee`)
+        .set(auth(neema.session))
+        .send({ method: 'cash', offlineId: randomUUID() })
+        .expect(403);
+      const declared = await http()
+        .post(`/groups/${g.groupId}/cycles/2/president-fee`)
+        .set(auth(jean.session))
+        .send({ method: 'mpesa', txReference: txRef(), offlineId: randomUUID() })
+        .expect(201);
+      expect(declared.body).toMatchObject({ status: 'declared', amountMinor: 2000 });
+      await http()
+        .post(`/groups/${g.groupId}/cycles/2/president-fee`)
+        .set(auth(jean.session))
+        .send({ method: 'cash', offlineId: randomUUID() })
+        .expect(409);
+
+      // Seul le président confirme
+      await http().post(`/president-fees/${declared.body.id}/decisions`).set(auth(jean.session)).send({ decision: 'confirm' }).expect(403);
+      const confirmed = await http()
+        .post(`/president-fees/${declared.body.id}/decisions`)
+        .set(auth(president.session))
+        .send({ decision: 'confirm' })
+        .expect(200);
+      expect(confirmed.body.status).toBe('confirmed');
+
+      // Visible de tous, et inscrit dans le journal du groupe
+      const after = await http().get(`/groups/${g.groupId}/cycles/2`).set(auth(neema.session)).expect(200);
+      expect(after.body.presidentFee.payment.status).toBe('confirmed');
+      const history = await http().get(`/groups/${g.groupId}/history`).set(auth(neema.session)).expect(200);
+      expect(history.body.events.map((e: { action: string }) => e.action)).toContain('president_fees.update');
+
+      // La base refuse un mauvais montant, même hors de l'API
+      await expect(
+        api.db.transaction({ type: 'system' }, (q) =>
+          q.query(
+            `INSERT INTO president_fees (group_id, cycle_id, payer_membership_id, receiver_membership_id, amount_minor, method, offline_id)
+             SELECT $1, c.id, $2, $3, 999999, 'cash', gen_random_uuid() FROM cycles c WHERE c.group_id = $1 AND c.cycle_number = 3`,
+            [g.groupId, neema.membershipId, president.membershipId],
+          ),
+        ),
+      ).rejects.toThrow(/montant de la part du président/);
+    });
+
+    it('le pourcentage entre dans le règlement : le changer annule les signatures', async () => {
+      const s = (await api.signUp()).session;
+      const created = await http()
+        .post('/groups')
+        .set(auth(s))
+        .send({ name: 'Likelemba', currency: 'CDF', contributionAmountMinor: AMOUNT, frequency: 'weekly', startDate: inDays(1) })
+        .expect(201);
+      const before = (await http().get(`/groups/${created.body.id}`).set(auth(s)).expect(200)).body.terms.hash;
+      await http().patch(`/groups/${created.body.id}`).set(auth(s)).send({ presidentFeeBps: 300 }).expect(200);
+      const after = (await http().get(`/groups/${created.body.id}`).set(auth(s)).expect(200)).body.terms.hash;
+      expect(after).not.toBe(before);
+    });
+  });
+
   describe('fréquence choisie par le président', () => {
     it.each([
       ['daily', 1],

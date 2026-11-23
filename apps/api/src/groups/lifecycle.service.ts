@@ -22,6 +22,7 @@ export interface UpdateGroupInput {
   maxMembers?: number;
   payday?: number | null;
   paydayShift?: 'before' | 'after';
+  presidentFeeBps?: number;
 }
 
 /** Violation d'une contrainte CHECK de PostgreSQL. */
@@ -48,6 +49,7 @@ export class GroupLifecycleService {
              frequency = coalesce($4::frequency_type, frequency),
              start_date = coalesce($5::date, start_date),
              max_members = coalesce($6::int, max_members),
+             president_fee_bps = coalesce($10::smallint, president_fee_bps),
              payday = CASE WHEN $7::boolean THEN $8::smallint ELSE payday END,
              -- La règle de report n'existe qu'avec un jour de paie (contrainte groups_payday_rules)
              payday_shift = CASE
@@ -65,6 +67,7 @@ export class GroupLifecycleService {
             paydayGiven,
             input.payday ?? null,
             input.paydayShift ?? null,
+            input.presidentFeeBps ?? null,
           ],
         )
         .catch((e: { code?: string; constraint?: string }) => {

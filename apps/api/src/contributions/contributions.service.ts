@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { appendAudit, Db, isUniqueViolation, type Actor, type Queryable } from '../infra/database.js';
 import { activeMembership, TODAY_DRC_SQL } from '../groups/membership.js';
+import { PresidentFeesService } from './president-fees.service.js';
+import { normalizeTxReference } from './tx-reference.js';
 import { assessContribution, type RiskLevel, type SmsCheck } from './risk.js';
 
 type UserActor = Actor & { id: string };
@@ -40,15 +42,7 @@ export class RiskCheckRequired extends ConflictException {
   }
 }
 
-/**
- * Référence de transaction normalisée : majuscules, sans espaces. Les formats exacts
- * des opérateurs (M-Pesa, Airtel Money, Orange Money) sont à confirmer avec de vrais
- * SMS : on ne vérifie ici qu'une forme plausible.
- */
-export function normalizeTxReference(input: string): string | null {
-  const ref = input.toUpperCase().replace(/\s/g, '');
-  return /^[A-Z0-9][A-Z0-9.-]{4,29}$/.test(ref) ? ref : null;
-}
+export { normalizeTxReference } from './tx-reference.js';
 
 interface ContributionRow {
   id: string;
@@ -117,7 +111,10 @@ function goalProgress(g: {
 
 @Injectable()
 export class ContributionsService {
-  constructor(private readonly db: Db) {}
+  constructor(
+    private readonly db: Db,
+    private readonly presidentFees: PresidentFeesService,
+  ) {}
 
   /** Tableau des tours : bénéficiaire, échéance, avancement des confirmations. */
   async board(userId: string, groupId: string) {
@@ -218,6 +215,8 @@ export class ContributionsService {
       dueDate: cycle.due_date,
       status: cycle.status,
       beneficiaryMembershipId: cycle.beneficiary_membership_id,
+      // Part du président pour ce tour (null : 0 %, ou tour du président)
+      presidentFee: await this.presidentFees.forCycle(this.db, groupId, cycle.id, cycle.beneficiary_membership_id),
       privateStatuses,
       payers: rows.map((r) =>
         privateStatuses && r.membership_id !== me.id && r.witness_membership_id !== me.id

@@ -1172,4 +1172,20 @@ const sw = <String, String>{
       "Ndiyo, badilisha",
   "Vous pouvez changer avant le démarrage. Chacun devra signer de nouveau.":
       "Unaweza kubadilisha kabla ya kuanza. Kila mtu atalazimika kusaini tena.",
+  "Part du président":
+      "Sehemu ya rais",
+  "À discuter avec les membres. Chacun la verra dans le règlement avant de signer.":
+      "Jadilianeni na wanachama. Kila mtu ataiona kwenye sheria kabla ya kusaini.",
+  "Aucune":
+      "Hakuna",
+  "Celui qui reçoit son tour donne {amount} au président.":
+      "Anayepokea zamu yake anampa rais {amount}.",
+  "Part du président : {amount}":
+      "Sehemu ya rais: {amount}",
+  "{p} % de la mise, payé par celui qui reçoit ce tour.":
+      "{p}% ya kiasi, inalipwa na anayepokea zamu hii.",
+  "J'ai payé le président":
+      "Nimemlipa rais",
+  "Pourquoi ?":
+      "Kwa nini?",
 };

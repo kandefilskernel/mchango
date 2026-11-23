@@ -187,9 +187,21 @@ class _SignDialogState extends State<_SignDialog> {
             InfoRow(t('Fréquence'), frequencyLabels[g.frequency] ?? g.frequency),
             InfoRow(t('Premier tour'), formatDate(g.startDate)),
             InfoRow(t('Votre tour'), '${widget.me.turnOrder}'),
+            if (g.presidentFeeBps > 0)
+              InfoRow(
+                t('Part du président'),
+                '${g.presidentFeeBps ~/ 100} % · ${formatAmount(presidentFeeAmount(g.contributionAmountMinor * beneficiaryCount, g.presidentFeeBps), g.currency)}',
+              ),
             InfoRow(
               t('Vous recevrez'),
-              formatAmount(g.contributionAmountMinor * beneficiaryCount, g.currency),
+              formatAmount(
+                g.contributionAmountMinor * beneficiaryCount -
+                    // Le président ne se paie pas sa propre part
+                    (widget.me.role == 'president'
+                        ? 0
+                        : presidentFeeAmount(g.contributionAmountMinor * beneficiaryCount, g.presidentFeeBps)),
+                g.currency,
+              ),
             ),
             const SizedBox(height: 10),
             Text(

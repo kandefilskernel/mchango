@@ -434,6 +434,7 @@ describe('Tours, cycles et cotisations (e2e)', () => {
         startDate: inDays(1),
         payday: null,
         paydayShift: null,
+        presidentFeeBps: 0,
         status: 'draft',
         maxMembers: 30,
         memberCount: 2,

@@ -129,6 +129,9 @@ String paydayLabel(int payday, String? shift) => payday >= 31
           ? t('Le {day} de chaque mois (reporté si dimanche ou férié)', {'day': payday})
           : t('Le {day} de chaque mois (avancé si dimanche ou férié)', {'day': payday}));
 
+/// Part du président sur une mise : arrondi vers le bas, comme l'API et la base.
+int presidentFeeAmount(int potMinor, int bps) => potMinor * bps ~/ 10000;
+
 /// UUID v4 aléatoire (identifiant hors ligne d'une déclaration).
 String uuidV4() {
   final r = Random.secure();

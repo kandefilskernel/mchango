@@ -1,3 +1,4 @@
+import 'president_fee_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -247,6 +248,15 @@ class _CycleScreenState extends State<CycleScreen> {
                   ),
                 ),
                 if (myRow != null && beneficiary != null) _myPart(context, cycle, myRow, beneficiary),
+                if (cycle.presidentFee != null)
+                  PresidentFeeCard(
+                    groupId: g.id,
+                    cycleNumber: cycle.cycleNumber,
+                    fee: cycle.presidentFee!,
+                    myMembershipId: cycle.myMembershipId,
+                    currency: g.currency,
+                    onChanged: reload,
+                  ),
                 const SizedBox(height: 16),
                 Text(t('Paiements'), style: Theme.of(context).textTheme.titleMedium),
                 if (cycle.privateStatuses)

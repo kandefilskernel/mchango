@@ -1,3 +1,4 @@
+import 'offer_discussion.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -39,6 +40,9 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
   DateTime _endsAt = DateTime.now().add(const Duration(days: 7));
   int _pickupHours = 72;
   bool _publish = true;
+
+  /// Photos de la marchandise, envoyées avant la publication (au plus 4).
+  List<PickedPhoto> _photos = [];
 
   @override
   void dispose() {
@@ -126,6 +130,10 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
       pickupWindowHours: _pickupHours,
       tiers: tiers!,
     );
+    // Les photos d'abord : une offre publiée ne change plus
+    for (final p in _photos) {
+      await api.uploadOfferPhoto(widget.merchantId, offer.id, p.bytes, p.contentType);
+    }
     if (_publish) await api.publishOffer(widget.merchantId, offer.id);
     if (mounted) Navigator.pop(context, true);
   }
@@ -303,6 +311,8 @@ class _CreateOfferScreenState extends State<CreateOfferScreen> {
                   ],
                   onChanged: (v) => setState(() => _pickupHours = v ?? 72),
                 ),
+                const SizedBox(height: 16),
+                OfferPhotoPicker(photos: _photos, onChanged: (p) => setState(() => _photos = p)),
                 const SizedBox(height: 4),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,

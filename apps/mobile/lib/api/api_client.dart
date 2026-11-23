@@ -38,17 +38,26 @@ class ApiClient {
 
   Future<dynamic> delete(String path) => _send('DELETE', path);
 
+  /// Envoie des octets bruts (photo), avec leur type (image/jpeg…).
+  Future<dynamic> postBytes(String path, List<int> bytes, String contentType) =>
+      _send('POST', path, rawBytes: bytes, contentType: contentType);
+
   Future<dynamic> _send(
     String method,
     String path, {
     Object? body,
     Map<String, String>? query,
     bool retried = false,
+    List<int>? rawBytes,
+    String? contentType,
   }) async {
     final uri = Uri.parse('$baseUrl$path').replace(queryParameters: query);
     final request = http.Request(method, uri)..headers['Accept'] = 'application/json';
     if (accessToken != null) request.headers['Authorization'] = 'Bearer $accessToken';
-    if (body != null) {
+    if (rawBytes != null) {
+      request.headers['Content-Type'] = contentType ?? 'application/octet-stream';
+      request.bodyBytes = rawBytes;
+    } else if (body != null) {
       request.headers['Content-Type'] = 'application/json';
       request.body = jsonEncode(body);
     }
@@ -62,7 +71,7 @@ class ApiClient {
 
     if (response.statusCode == 401 && accessToken != null && !retried && onUnauthorized != null) {
       if (await onUnauthorized!()) {
-        return _send(method, path, body: body, query: query, retried: true);
+        return _send(method, path, body: body, query: query, retried: true, rawBytes: rawBytes, contentType: contentType);
       }
     }
 

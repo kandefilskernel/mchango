@@ -8,14 +8,18 @@ import {
   Patch,
   Post,
   Query,
+  Res,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
+import type { Response } from 'express';
+import { z } from 'zod';
 import { AccessGuard, CurrentAuth } from '../auth/access.guard.js';
 import type { AccessTokenClaims } from '../auth/auth.service.js';
 import { parseBody } from '../common/parse-body.js';
 import type { Actor } from '../infra/database.js';
 import { MerchantsService } from './merchants.service.js';
+import { OfferDiscussionService } from './offer-discussion.service.js';
 import { OffersService, createOfferSchema, listOffersQuery } from './offers.service.js';
 import {
   OrdersService,
@@ -29,7 +33,9 @@ import {
 import { PgExceptionFilter } from './pg-exception.filter.js';
 import { SharesService, createShareSchema } from './shares.service.js';
 
-const actorOf = (auth: AccessTokenClaims): Actor => ({ type: 'user', id: auth.sub, deviceId: auth.did });
+const actorOf = (auth: AccessTokenClaims) => ({ type: 'user' as const, id: auth.sub, deviceId: auth.did }) satisfies Actor;
+
+const messageSchema = z.strictObject({ body: z.string().trim().min(1).max(500) });
 
 /** Sans compte : on regarde les offres et on ouvre un lien d'invitation. */
 @Controller()
@@ -38,7 +44,21 @@ export class PublicOffersController {
   constructor(
     private readonly offers: OffersService,
     private readonly shares: SharesService,
+    private readonly discussion: OfferDiscussionService,
   ) {}
+
+  /** Photo de la marchandise, servie telle quelle (mise en cache : elle ne change jamais). */
+  @Get('offers/:offerId/photos/:position')
+  async photo(
+    @Param('offerId', ParseUUIDPipe) offerId: string,
+    @Param('position') position: string,
+    @Res() res: Response,
+  ) {
+    const n = Number(position);
+    const p = await this.discussion.photo(offerId, Number.isInteger(n) ? n : 0);
+    res.set({ 'Content-Type': p.content_type, 'Cache-Control': 'public, max-age=604800, immutable', ETag: `"${p.sha256}"` });
+    res.send(p.bytes);
+  }
 
   @Get('zones')
   zones() {
@@ -69,7 +89,23 @@ export class BuyerController {
   constructor(
     private readonly orders: OrdersService,
     private readonly shares: SharesService,
+    private readonly discussion: OfferDiscussionService,
   ) {}
+
+  /** La discussion sous une offre : questions des membres, réponses de la boutique. */
+  @Get('offers/:offerId/messages')
+  messages(@CurrentAuth() auth: AccessTokenClaims, @Param('offerId', ParseUUIDPipe) offerId: string) {
+    return this.discussion.messages(auth.sub, offerId);
+  }
+
+  @Post('offers/:offerId/messages')
+  postMessage(
+    @CurrentAuth() auth: AccessTokenClaims,
+    @Param('offerId', ParseUUIDPipe) offerId: string,
+    @Body() body: unknown,
+  ) {
+    return this.discussion.post(actorOf(auth), offerId, parseBody(messageSchema, body).body);
+  }
 
   @Post('offers/:offerId/orders')
   reserve(
@@ -133,7 +169,20 @@ export class MerchantController {
     private readonly merchants: MerchantsService,
     private readonly offers: OffersService,
     private readonly orders: OrdersService,
+    private readonly discussion: OfferDiscussionService,
   ) {}
+
+  /** Photo de la marchandise (octets bruts : image/jpeg, image/png ou image/webp), avant publication. */
+  @Post('merchants/:merchantId/offers/:offerId/photos')
+  async addPhoto(
+    @CurrentAuth() auth: AccessTokenClaims,
+    @Param('merchantId', ParseUUIDPipe) merchantId: string,
+    @Param('offerId', ParseUUIDPipe) offerId: string,
+    @Body() body: unknown,
+  ) {
+    const memberId = await this.merchants.requireMember(auth.sub, merchantId);
+    return this.discussion.addPhoto(actorOf(auth), merchantId, memberId, offerId, body as Buffer);
+  }
 
   @Get('me/merchants')
   myMerchants(@CurrentAuth() auth: AccessTokenClaims) {

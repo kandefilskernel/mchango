@@ -272,7 +272,7 @@ void main() {
     await tester.enterText(find.byKey(const Key('offer_regular')), '60 000');
     await tester.enterText(find.byKey(const Key('tier_qty_0')), '20');
     await tester.enterText(find.byKey(const Key('tier_price_0')), '60000');
-    await tester.scrollUntilVisible(find.byKey(const Key('save_offer')), 200, scrollable: find.byType(Scrollable).first);
+    await tester.scrollUntilVisible(find.byKey(const Key('save_offer')), 200, scrollable: _listScroll());
     await tester.ensureVisible(find.byKey(const Key('save_offer')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('save_offer')));
@@ -284,12 +284,17 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byKey(const Key('tier_price_0')), '54000');
-    await tester.scrollUntilVisible(find.byKey(const Key('add_tier')), -200, scrollable: find.byType(Scrollable).first);
+    await tester.scrollUntilVisible(find.byKey(const Key('add_tier')), -200, scrollable: _listScroll());
+    await tester.ensureVisible(find.byKey(const Key('add_tier')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('add_tier')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('tier_qty_1')), '40');
     await tester.enterText(find.byKey(const Key('tier_price_1')), '51000');
-    await tester.scrollUntilVisible(find.byKey(const Key('save_offer')), 200, scrollable: find.byType(Scrollable).first);
+    // Le champ actif ramènerait la liste vers lui : on le quitte avant de descendre
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const Key('save_offer')), 200, scrollable: _listScroll());
     await tester.ensureVisible(find.byKey(const Key('save_offer')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('save_offer')));
@@ -304,6 +309,51 @@ void main() {
     ]);
     expect(backend.requests.where((r) => r.url.path == '/merchants/m-1/offers/o-9/publish'), hasLength(1));
   });
+
+  testWidgets("on voit les photos de la marchandise et on discute sous l'offre", (tester) async {
+    final messages = <Map<String, Object?>>[
+      {
+        'id': 'msg-1',
+        'authorName': 'Boutique Mama Kito',
+        'fromMerchant': true,
+        'mine': false,
+        'body': 'Riz de Kamina, récolte de juin.',
+        'createdAt': '2026-11-20T10:00:00Z',
+      },
+    ];
+    final backend = FakeBackend()
+      ..on('GET', '/offers/o-1', (_, _) => {...offerJson(), 'photos': ['/offers/o-1/photos/1', '/offers/o-1/photos/2']})
+      ..on('GET', '/offers/o-1/messages', (_, _) => messages)
+      ..on('GET', '/me/orders', (_, _) => [])
+      ..on('POST', '/offers/o-1/messages', (_, body) {
+        messages.add({
+          'id': 'msg-2',
+          'authorName': 'Maman Neema',
+          'fromMerchant': false,
+          'mine': true,
+          'body': (body as Map)['body'],
+          'createdAt': '2026-11-20T11:00:00Z',
+        });
+        return messages.last;
+      });
+    await tester.pumpWidget(_app(backend, const OfferScreen(offerId: 'o-1')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('offer_photos')), findsOneWidget);
+    await tester.scrollUntilVisible(find.byKey(const Key('offer_message')), 200, scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
+    expect(find.text('Riz de Kamina, récolte de juin.'), findsOneWidget);
+    expect(find.text('Boutique Mama Kito'), findsOneWidget);
+
+    await tester.enterText(find.byKey(const Key('offer_message')), 'Le sac pèse combien ?');
+    await tester.ensureVisible(find.byKey(const Key('send_offer_message')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('send_offer_message')));
+    await tester.pumpAndSettle();
+    expect(backend.bodiesOf('POST', '/offers/o-1/messages').single, {'body': 'Le sac pèse combien ?'});
+    await tester.scrollUntilVisible(find.text('Le sac pèse combien ?'), 200, scrollable: find.byType(Scrollable).first);
+    expect(find.text('Vous'), findsOneWidget);
+  });
 }
 
 /// Ouvre la fiche de l'offre o-1 par-dessus un premier écran (pour pouvoir revenir).
@@ -315,3 +365,6 @@ Widget _openOffer(BuildContext context) => TextButton(
   child: const Text('ouvrir'),
 );
 
+
+/// La liste qui défile (et non le petit défilement interne d'un champ de saisie).
+Finder _listScroll() => find.descendant(of: find.byType(ListView), matching: find.byType(Scrollable)).first;

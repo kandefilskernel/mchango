@@ -49,6 +49,7 @@ class Offer {
     required this.thresholdUnits,
     required this.reachedUnitPriceMinor,
     required this.tiers,
+    this.photos = const [],
   });
 
   factory Offer.fromJson(Json j) => Offer(
@@ -71,6 +72,7 @@ class Offer {
     thresholdUnits: _intOrNull(j['thresholdUnits']) ?? 0,
     reachedUnitPriceMinor: _intOrNull(j['reachedUnitPriceMinor']),
     tiers: [for (final t in (j['tiers'] as List? ?? const [])) OfferTier.fromJson(t as Json)],
+    photos: [for (final p in (j['photos'] as List? ?? const [])) p as String],
   );
 
   final String id;
@@ -96,6 +98,9 @@ class Offer {
   final int thresholdUnits;
   final int? reachedUnitPriceMinor;
   final List<OfferTier> tiers;
+
+  /// Photos de la marchandise : adresses relatives à l'API (`/offers/<id>/photos/<n>`).
+  final List<String> photos;
 
   bool get isOpen => status == 'open' && endsAt.isAfter(DateTime.now());
 
@@ -297,6 +302,17 @@ class PurchasesApi {
     return res['token'] as String;
   }
 
+  /// La boutique ajoute une photo à une offre encore en brouillon (au plus 4).
+  Future<void> uploadOfferPhoto(String merchantId, String offerId, List<int> bytes, String contentType) =>
+      client.postBytes('/merchants/$merchantId/offers/$offerId/photos', bytes, contentType);
+
+  /// La discussion sous une offre.
+  Future<List<OfferMessage>> offerMessages(String offerId) async => [
+    for (final m in await client.get('/offers/$offerId/messages') as List) OfferMessage.fromJson(m as Json),
+  ];
+
+  Future<void> postOfferMessage(String offerId, String body) => client.post('/offers/$offerId/messages', {'body': body});
+
   Future<List<GroupProposal>> groupProposals(String groupId) async => [
     for (final p in await client.get('/groups/$groupId/proposals') as List) GroupProposal.fromJson(p as Json),
   ];
@@ -394,4 +410,22 @@ class MerchantOrder {
   final int amountDueMinor;
   final String? paymentStatus;
   final String pickupCode;
+}
+
+/// Un message sous une offre : question d'un membre ou réponse de la boutique.
+class OfferMessage {
+  OfferMessage.fromJson(Json j)
+    : id = j['id'] as String,
+      authorName = j['authorName'] as String,
+      fromMerchant = j['fromMerchant'] as bool,
+      mine = j['mine'] as bool,
+      body = j['body'] as String,
+      createdAt = DateTime.parse(j['createdAt'] as String);
+
+  final String id;
+  final String authorName;
+  final bool fromMerchant;
+  final bool mine;
+  final String body;
+  final DateTime createdAt;
 }

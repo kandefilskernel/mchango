@@ -1188,4 +1188,24 @@ const ln = <String, String>{
       "Nafuti mokambi",
   "Pourquoi ?":
       "Mpo na nini?",
+  "Photo {n} de la marchandise":
+      "Foto {n} ya biloko",
+  "Questions et discussion":
+      "Mituna mpe masolo",
+  "Posez vos questions sur la marchandise. La boutique répond ici, tout le monde voit.":
+      "Tuna mituna na yo na ntina ya biloko. Butiki ezongisaka awa, moto nyonso amonaka.",
+  "Pas encore de message. Soyez la première personne à demander !":
+      "Naino nsango moko te. Zala moto ya liboso kotuna!",
+  "Votre question…":
+      "Motuna na yo…",
+  "Photo trop lourde : 600 Ko au plus. Réduisez-la avant de l’envoyer.":
+      "Foto ezali kilo mingi: 600 Ko kaka. Kitisa yango liboso ya kotinda.",
+  "Photos de la marchandise":
+      "Bafoto ya biloko",
+  "Jusqu’à 4 photos. Les acheteurs voient ce qu’ils achètent.":
+      "Tii bafoto 4. Basombi bamonaka oyo bakosomba.",
+  "Prendre":
+      "Zwa",
+  "Choisir":
+      "Pona",
 };

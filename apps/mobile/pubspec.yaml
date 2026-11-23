@@ -45,6 +45,7 @@ dependencies:
   flutter_svg: ^2.3.0
   local_auth: ^3.0.2
   flutter_tts: ^4.2.5
+  image_picker: ^1.2.4
 
 dev_dependencies:
   flutter_test:

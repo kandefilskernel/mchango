@@ -105,11 +105,12 @@ Les raisons (numéro déjà rejeté, date incohérente, SMS non collé, plusieur
 
 « Avec ton groupe, achète moins cher. » (`spec/achats.md`)
 
-1. Une **boutique partenaire** publie une offre à **paliers de prix** (plus il y a de réservations, plus le prix unitaire baisse) avec une date de fin. Une offre publiée ne change plus.
-2. Les acheteurs **réservent** leur quantité. Chacun agit pour soi ; l'offre arrive par une zone, un groupe ou un lien WhatsApp. Un achat proposé à un de mes groupes **s'affiche tout seul sur mon accueil** avec « Voir et réserver ».
-3. **À la date de fin**, automatiquement : on compte les commandes non annulées ; le **prix final est fixé par la base** au palier atteint. Sous le seuil minimum, l'offre est annulée.
-4. Chaque commande reçoit un **code de retrait**. L'acheteur **paie la boutique** (hors Mchango) et déclare le paiement ; **seule la boutique confirme** le paiement et le retrait, contre le code.
-5. Après le délai de retrait fixé par la boutique, une commande non retirée expire.
+1. Une **boutique partenaire** publie une offre à **paliers de prix** (plus il y a de réservations, plus le prix unitaire baisse) avec une date de fin, et **jusqu'à 4 photos de la marchandise**. Une offre publiée ne change plus, photos comprises.
+2. Les membres **voient la marchandise** en photo et **en discutent sous l'offre** : questions entre eux, réponses de la boutique (signalées « Boutique »). Tout le monde voit tout ; chaque message va dans le journal de l'offre.
+3. Les acheteurs **réservent** leur quantité. Chacun agit pour soi ; l'offre arrive par une zone, un groupe ou un lien WhatsApp. Un achat proposé à un de mes groupes **s'affiche tout seul sur mon accueil** avec « Voir et réserver ».
+4. **À la date de fin**, automatiquement : on compte les commandes non annulées ; le **prix final est fixé par la base** au palier atteint. Sous le seuil minimum, l'offre est annulée.
+5. Chaque commande reçoit un **code de retrait**. L'acheteur **paie la boutique** (hors Mchango) et déclare le paiement ; **seule la boutique confirme** le paiement et le retrait, contre le code.
+6. Après le délai de retrait fixé par la boutique, une commande non retirée expire.
 
 Chaque offre a sa propre chaîne de journal. Déclarer un paiement ne suffit pas : seule la boutique peut le confirmer.
 

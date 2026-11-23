@@ -1,3 +1,4 @@
+import 'offer_discussion.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -178,6 +179,8 @@ class _OfferScreenState extends State<OfferScreen> {
             ],
           ),
         ),
+        // La marchandise d'abord : on voit ce qu'on achète
+        if (o.photos.isNotEmpty) ...[const SizedBox(height: 12), OfferPhotos(paths: o.photos)],
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
           child: Column(
@@ -268,6 +271,8 @@ class _OfferScreenState extends State<OfferScreen> {
             ],
           ),
         ),
+        // Voir la marchandise et en discuter, entre membres et avec la boutique
+        if (o.status != 'draft') OfferDiscussion(offerId: o.id),
       ],
     ),
   );

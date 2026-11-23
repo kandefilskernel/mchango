@@ -1188,4 +1188,24 @@ const sw = <String, String>{
       "Nimemlipa rais",
   "Pourquoi ?":
       "Kwa nini?",
+  "Photo {n} de la marchandise":
+      "Picha {n} ya bidhaa",
+  "Questions et discussion":
+      "Maswali na mazungumzo",
+  "Posez vos questions sur la marchandise. La boutique répond ici, tout le monde voit.":
+      "Uliza maswali yako kuhusu bidhaa. Duka linajibu hapa, kila mtu anaona.",
+  "Pas encore de message. Soyez la première personne à demander !":
+      "Bado hakuna ujumbe. Kuwa wa kwanza kuuliza!",
+  "Votre question…":
+      "Swali lako…",
+  "Photo trop lourde : 600 Ko au plus. Réduisez-la avant de l’envoyer.":
+      "Picha ni nzito mno: KB 600 tu. Ipunguze kabla ya kutuma.",
+  "Photos de la marchandise":
+      "Picha za bidhaa",
+  "Jusqu’à 4 photos. Les acheteurs voient ce qu’ils achètent.":
+      "Hadi picha 4. Wanunuzi wanaona wanachonunua.",
+  "Prendre":
+      "Piga",
+  "Choisir":
+      "Chagua",
 };

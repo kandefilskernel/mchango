@@ -33,7 +33,10 @@ const OFFER_SELECT = `
          (SELECT coalesce(json_agg(json_build_object(
                     'min_quantity', t.min_quantity,
                     'unit_price_minor', t.unit_price_minor) ORDER BY t.min_quantity), '[]'::json)
-          FROM offer_tiers t WHERE t.offer_id = o.id) AS tiers
+          FROM offer_tiers t WHERE t.offer_id = o.id) AS tiers,
+         -- Photos de la marchandise : leurs adresses (GET /offers/:id/photos/:position)
+         (SELECT coalesce(json_agg('/offers/' || o.id || '/photos/' || ph.position ORDER BY ph.position), '[]'::json)
+          FROM offer_photos ph WHERE ph.offer_id = o.id) AS photos
   FROM offers o
   JOIN merchants m ON m.id = o.merchant_id
   JOIN pickup_zones z ON z.id = m.zone_id

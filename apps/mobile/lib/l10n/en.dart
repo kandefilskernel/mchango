@@ -1188,4 +1188,24 @@ const en = <String, String>{
       "I paid the president",
   "Pourquoi ?":
       "Why?",
+  "Photo {n} de la marchandise":
+      "Photo {n} of the goods",
+  "Questions et discussion":
+      "Questions and discussion",
+  "Posez vos questions sur la marchandise. La boutique répond ici, tout le monde voit.":
+      "Ask your questions about the goods. The shop answers here, everyone sees it.",
+  "Pas encore de message. Soyez la première personne à demander !":
+      "No messages yet. Be the first to ask!",
+  "Votre question…":
+      "Your question…",
+  "Photo trop lourde : 600 Ko au plus. Réduisez-la avant de l’envoyer.":
+      "Photo too large: 600 KB at most. Make it smaller before sending.",
+  "Photos de la marchandise":
+      "Photos of the goods",
+  "Jusqu’à 4 photos. Les acheteurs voient ce qu’ils achètent.":
+      "Up to 4 photos. Buyers see what they are buying.",
+  "Prendre":
+      "Take",
+  "Choisir":
+      "Choose",
 };

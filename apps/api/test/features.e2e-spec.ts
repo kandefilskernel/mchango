@@ -93,6 +93,43 @@ describe('Échanges de tour, objectifs, attestations, calendrier de paie (e2e)',
       cycles: { cycleNumber: number; beneficiary: { membershipId: string; goal: { label: string } | null } }[];
     };
 
+  describe('fréquence choisie par le président', () => {
+    it.each([
+      ['daily', 1],
+      ['weekly', 7],
+      ['monthly', 0],
+    ])('« %s » : change avant le démarrage, et les tours suivent', async (frequency, days) => {
+      const s = (await api.signUp()).session;
+      const created = await http()
+        .post('/groups')
+        .set(auth(s))
+        .send({ name: 'Likelemba', currency: 'CDF', contributionAmountMinor: AMOUNT, frequency: 'weekly', startDate: inDays(2) })
+        .expect(201);
+      const changed = await http().patch(`/groups/${created.body.id}`).set(auth(s)).send({ frequency }).expect(200);
+      expect(changed.body.frequency).toBe(frequency);
+
+      // Un autre membre ne change pas les règles
+      const other = (await api.signUp()).session;
+      await http().patch(`/groups/${created.body.id}`).set(auth(other)).send({ frequency: 'daily' }).expect(404);
+
+      // Démarrage à deux : l'écart entre les deux tours est celui de la fréquence choisie
+      const { code } = (await http().post(`/groups/${created.body.id}/invitations`).set(auth(s)).send({}).expect(201)).body;
+      await http().post('/groups/join').set(auth(other)).send({ code, acceptRules: true }).expect(200);
+      const detail = (await http().get(`/groups/${created.body.id}`).set(auth(s)).expect(200)).body;
+      await http()
+        .put(`/groups/${created.body.id}/turn-order`)
+        .set(auth(s))
+        .send({ membershipIds: detail.members.map((m: { membershipId: string }) => m.membershipId) })
+        .expect(200);
+      await api.signTerms(created.body.id, [s, other]);
+      await http().post(`/groups/${created.body.id}/start`).set(auth(s)).expect(200);
+      const board = (await http().get(`/groups/${created.body.id}/cycles`).set(auth(s)).expect(200)).body.cycles as { dueDate: string }[];
+      const gap = (new Date(board[1].dueDate).getTime() - new Date(board[0].dueDate).getTime()) / 86_400_000;
+      if (days > 0) expect(gap).toBe(days);
+      else expect(gap).toBeGreaterThanOrEqual(28);
+    });
+  });
+
   describe('échange de tour', () => {
     it('demande, acceptation : les bénéficiaires des deux tours sont échangés, dates inchangées', async () => {
       const g = await startedGroup(3);

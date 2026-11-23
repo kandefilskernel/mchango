@@ -1154,4 +1154,22 @@ const sw = <String, String>{
       "Kikundi: {name} · inaisha {date}",
   "Voir et réserver":
       "Tazama na uhifadhi",
+  "Un tour par jour":
+      "Zamu moja kwa siku",
+  "Un tour par semaine":
+      "Zamu moja kwa wiki",
+  "Un tour par mois":
+      "Zamu moja kwa mwezi",
+  "Modifier la tontine":
+      "Badilisha likelemba",
+  "Entre {min} et 100 personnes.":
+      "Kati ya watu {min} na 100.",
+  "Changer les règles ?":
+      "Kubadilisha sheria?",
+  "Chacun devra signer de nouveau.":
+      "Kila mtu atalazimika kusaini tena.",
+  "Oui, changer":
+      "Ndiyo, badilisha",
+  "Vous pouvez changer avant le démarrage. Chacun devra signer de nouveau.":
+      "Unaweza kubadilisha kabla ya kuanza. Kila mtu atalazimika kusaini tena.",
 };

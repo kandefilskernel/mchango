@@ -50,6 +50,26 @@ class MchangoApi {
     }) as Json,
   );
 
+  /// Le président change les règles avant le démarrage (chacun devra signer à nouveau).
+  Future<Group> updateGroup(
+    String groupId, {
+    String? name,
+    int? contributionAmountMinor,
+    String? frequency,
+    String? startDate,
+    int? maxMembers,
+    bool removePayday = false,
+  }) async => Group.fromJson(
+    await client.patch('/groups/$groupId', {
+      'name': ?name,
+      'contributionAmountMinor': ?contributionAmountMinor,
+      'frequency': ?frequency,
+      'startDate': ?startDate,
+      'maxMembers': ?maxMembers,
+      if (removePayday) 'payday': null,
+    }) as Json,
+  );
+
   Future<Invitation> createInvitation(String groupId) async =>
       Invitation.fromJson(await client.post('/groups/$groupId/invitations') as Json);
 

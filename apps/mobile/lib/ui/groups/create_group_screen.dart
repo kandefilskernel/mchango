@@ -5,6 +5,7 @@ import '../../services.dart';
 import '../../util/format.dart';
 import '../common.dart';
 import '../theme.dart';
+import 'frequency_picker.dart';
 import 'group_screen.dart';
 import '../../l10n/l10n.dart';
 
@@ -181,12 +182,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                initialValue: _frequency,
-                decoration: InputDecoration(labelText: t("Tous les combien ?")),
-                items: [for (final e in frequencyLabels.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
-                onChanged: (v) => setState(() => _frequency = v!),
-              ),
+              Text(t('Tous les combien ?'), style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              FrequencyPicker(value: _frequency, onChanged: (v) => setState(() => _frequency = v)),
             ],
           ),
           _Section(

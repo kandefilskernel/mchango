@@ -1154,4 +1154,22 @@ const en = <String, String>{
       "Group: {name} · ends {date}",
   "Voir et réserver":
       "View and reserve",
+  "Un tour par jour":
+      "One turn per day",
+  "Un tour par semaine":
+      "One turn per week",
+  "Un tour par mois":
+      "One turn per month",
+  "Modifier la tontine":
+      "Edit the tontine",
+  "Entre {min} et 100 personnes.":
+      "Between {min} and 100 people.",
+  "Changer les règles ?":
+      "Change the rules?",
+  "Chacun devra signer de nouveau.":
+      "Everyone will have to sign again.",
+  "Oui, changer":
+      "Yes, change",
+  "Vous pouvez changer avant le démarrage. Chacun devra signer de nouveau.":
+      "You can change this before the start. Everyone will have to sign again.",
 };

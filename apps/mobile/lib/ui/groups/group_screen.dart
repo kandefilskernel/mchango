@@ -12,6 +12,7 @@ import '../history/history_screen.dart';
 import '../purchases/group_proposals_screen.dart';
 import '../purchases/offers_screen.dart';
 import '../theme.dart';
+import 'edit_group_screen.dart';
 import 'terms_section.dart';
 import 'turn_order_screen.dart';
 import '../../l10n/l10n.dart';
@@ -201,6 +202,20 @@ class _GroupScreenState extends State<GroupScreen> {
               style: TextStyle(color: Brand.muted),
             ),
           ),
+        const SizedBox(height: 12),
+        BusyButton(
+          key: const Key('edit_group'),
+          label: t('Modifier la tontine'),
+          icon: Icons.edit_outlined,
+          outlined: true,
+          onPressed: () async {
+            final edited = await Navigator.push<bool>(
+              context,
+              MaterialPageRoute(builder: (_) => EditGroupScreen(group: g)),
+            );
+            if (edited == true) await reload();
+          },
+        ),
         const SizedBox(height: 12),
         BusyButton(
           label: t('Inviter des membres'),

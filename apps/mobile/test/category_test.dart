@@ -43,6 +43,7 @@ void main() {
     final backend = await openCreateScreen(tester);
     await tester.enterText(find.byKey(const Key('group_name')), 'Kwetu');
     await tester.enterText(find.byKey(const Key('group_amount')), '20000');
+    await tester.scrollUntilVisible(find.text('Créer la tontine'), 200, scrollable: find.byType(Scrollable).first);
     await tester.tap(find.text('Créer la tontine'));
     await tester.pumpAndSettle();
     expect(backend.bodiesOf('POST', '/groups').single['category'], 'community');
@@ -52,8 +53,10 @@ void main() {
     final backend = await openCreateScreen(tester);
     await tester.enterText(find.byKey(const Key('group_name')), 'Chorale Saint-Paul');
     await tester.enterText(find.byKey(const Key('group_amount')), '20000');
+    await tester.scrollUntilVisible(find.byKey(const Key('category_religion')), 200, scrollable: find.byType(Scrollable).first);
     await tester.tap(find.byKey(const Key('category_religion')));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Créer la tontine'), 200, scrollable: find.byType(Scrollable).first);
     await tester.tap(find.text('Créer la tontine'));
     await tester.pumpAndSettle();
     expect(backend.bodiesOf('POST', '/groups').single['category'], 'religion');

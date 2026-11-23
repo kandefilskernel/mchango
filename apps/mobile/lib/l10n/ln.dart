@@ -1154,4 +1154,22 @@ const ln = <String, String>{
       "Lisanga: {name} · esili na {date}",
   "Voir et réserver":
       "Tala mpe bomba",
+  "Un tour par jour":
+      "Tango moko na mokolo",
+  "Un tour par semaine":
+      "Tango moko na poso",
+  "Un tour par mois":
+      "Tango moko na sanza",
+  "Modifier la tontine":
+      "Bongisa likelemba",
+  "Entre {min} et 100 personnes.":
+      "Kati na bato {min} na 100.",
+  "Changer les règles ?":
+      "Kobongola mibeko?",
+  "Chacun devra signer de nouveau.":
+      "Moto na moto asengeli kosa signature lisusu.",
+  "Oui, changer":
+      "Ee, bongola",
+  "Vous pouvez changer avant le démarrage. Chacun devra signer de nouveau.":
+      "Okoki kobongola liboso ya kobanda. Moto na moto asengeli kosa signature lisusu.",
 };

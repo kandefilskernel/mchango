@@ -58,6 +58,7 @@ Tests de la base : voir [`db/README.md`](db/README.md).
 
 ## Documentation
 
+- [Comment fonctionne le logiciel (description complète)](docs/fonctionnement.md)
 - [Document de cadrage](Tontine%20digitale%20RDC%20-%20Document%20de%20cadrage.docx)
 - [Architecture et arbitrages](docs/architecture.md)
 - [Revue du schéma de base de données](docs/revue-schema.md)
